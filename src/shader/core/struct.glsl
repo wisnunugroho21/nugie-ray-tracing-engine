@@ -4,7 +4,7 @@
 
 struct Vertex {
   vec3 position;
-  vec2 texel;
+  vec2 textCoord;
 };
 
 struct Primitive {

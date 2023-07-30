@@ -3,8 +3,6 @@
 #include <vulkan/vulkan.h>
 #include <stdexcept>
 
-#include <stb_image.h>
-
 #include "../buffer/buffer.hpp"
 #include "../command/command_buffer.hpp"
 #include "../image/image.hpp"
