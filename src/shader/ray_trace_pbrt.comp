@@ -136,17 +136,18 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  shadowRay.origin = hitPoint;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
+  shadowRay.origin = hitPoint;
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hitPoint, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
-  if (!occludedHit.isHit) {
+  HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
+  HitRecord lightHit = hitLightBvh(shadowRay, 0.001f, FLT_MAX);
+
+  if (lightHit.isHit && (!objectHit.isHit || length(lightHit.point - shadowRay.origin) < length(objectHit.point - shadowRay.origin))) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 lightNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
-    float NloL = max(dot(lightNormal, -1.0f * unitLightDirection), 0.001f);
+    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
     float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
 
     vec3 unitViewDirection = normalize(rayDirection);
@@ -158,12 +159,14 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
     float NoH = max(dot(surfaceNormal, H), 0.001f);
     float VoH = max(dot(unitViewDirection, H), 0.001f);
 
+    vec3 vectorDistance = lightHit.point - shadowRay.origin;
+
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
-    float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaTriangle(lights[lightIndex].indices);
+    float sqrDistance = dot(vectorDistance, vectorDistance);
+    float area = areaTriangle(lights[lightHit.hitIndex].indices);
 
     scat.pdf = ggxPdfValue(NoH, NoL, surfaceRoughness);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
   }  
 
   return scat;
@@ -180,25 +183,28 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  shadowRay.origin = hitPoint;
   uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
 
+  shadowRay.origin = hitPoint;
   shadowRay.direction = triangleGenerateRandom(lights[lightIndex].indices, hitPoint, additionalRandomSeed);
-  HitRecord occludedHit = hitObjectBvh(shadowRay, 0.001f, 1.0f);
 
-  if (!occludedHit.isHit) {
+  HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
+  HitRecord lightHit = hitLightBvh(shadowRay, 0.001f, FLT_MAX);
+
+  if (lightHit.isHit && (!objectHit.isHit || length(lightHit.point - shadowRay.origin) < length(objectHit.point - shadowRay.origin))) {
     vec3 unitLightDirection = normalize(shadowRay.direction);
-    vec3 lightNormal = triangleFaceNormal(lights[lightIndex].indices, unitLightDirection);
 
-    float NloL = max(dot(lightNormal, -1.0f * unitLightDirection), 0.001f);
-    float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);    
+    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
+    float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
 
-    float sqrDistance = dot(shadowRay.direction, shadowRay.direction);
-    float area = areaTriangle(lights[lightIndex].indices);
+    vec3 vectorDistance = lightHit.point - shadowRay.origin;    
+
     float brdf = lambertBrdfValue();
+    float sqrDistance = dot(vectorDistance, vectorDistance);
+    float area = areaTriangle(lights[lightHit.hitIndex].indices);
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightIndex].color;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
   }  
 
   return scat;
@@ -232,7 +238,7 @@ void main() {
     HitRecord objectHit = hitObjectBvh(curRay, 0.001f, FLT_MAX);
     HitRecord lightHit = hitLightBvh(curRay, 0.001f, FLT_MAX);
 
-    if (lightHit.isHit && (!objectHit.isHit || lightHit.t < objectHit.t)) {
+    if (lightHit.isHit && (!objectHit.isHit || length(lightHit.point - curRay.origin) < length(objectHit.point - curRay.origin))) {
       if (i > 0u) {
         totalIndirect = totalIndirect * Gfactor(curRay, lightHit);
       }

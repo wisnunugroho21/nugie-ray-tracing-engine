@@ -67,9 +67,9 @@ struct FaceNormal {
 struct HitRecord {
   bool isHit;
   uint hitIndex;
+  vec3 point;
 
   float t;
-  vec3 point;
 
   vec3 color;
   vec3 normal;

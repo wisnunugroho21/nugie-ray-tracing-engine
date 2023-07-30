@@ -56,7 +56,6 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   }
 
   hit.isHit = true;
-  hit.t = t;
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
 
   vec2 uv = getTotalTextureCoordinate(triIndices, vec2(u, v));
@@ -114,7 +113,6 @@ HitRecord hitLight(uvec3 triIndices, Ray r, float tMin, float tMax) {
   }
 
   hit.isHit = true;
-  hit.t = t;
   hit.point = rayAt(r, t);
 
   vec3 outwardNormal = normalize(cross(v0v1, v0v2));
