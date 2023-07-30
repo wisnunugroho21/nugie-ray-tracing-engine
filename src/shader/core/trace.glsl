@@ -33,7 +33,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
-  if (det < KEPSILON) {
+  if (abs(det) < KEPSILON) {
     return hit;
   }
     
