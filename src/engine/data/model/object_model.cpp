@@ -4,8 +4,6 @@
 #include <iostream>
 #include <unordered_map>
 
-#include <tiny_obj_loader.h>
-
 namespace nugiEngine {
 	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
 		this->createBuffers(objects, createBvh(boundBoxes));
