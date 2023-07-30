@@ -17,7 +17,7 @@ float areaTriangle(uvec3 triIndices) {
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
-vec3 triangleGenerateRandom(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
+vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
   vec3 a = vertices[triIndices.y].position - vertices[triIndices.x].position;
   vec3 b = vertices[triIndices.z].position - vertices[triIndices.x].position;
 

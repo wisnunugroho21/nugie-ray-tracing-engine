@@ -81,7 +81,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float tMax, uint tr
   return hit;
 }
 
-HitRecord hitLight(uvec3 triIndices, Ray r, float dirMin, float tMax) {
+HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -252,9 +252,9 @@ HitRecord hitObjectBvh(Ray r, float dirMin, float tMax) {
   return hit;
 }
 
-// ------------- Light -------------
+// ------------- Triangle Light-------------
 
-HitRecord hitLightBvh(Ray r, float dirMin, float tMax) {
+HitRecord hitTriangleLightBvh(Ray r, float dirMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -276,7 +276,7 @@ HitRecord hitLightBvh(Ray r, float dirMin, float tMax) {
 
     uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
+      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -286,7 +286,7 @@ HitRecord hitLightBvh(Ray r, float dirMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
+      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;

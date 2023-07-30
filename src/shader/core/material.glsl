@@ -17,7 +17,7 @@ vec3 randomGGX(float roughness, uint additionalRandomSeed) {
   return vec3(x, y, z);
 }
 
-vec3 ggxGenerateRandom(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
+vec3 ggxRandomDirection(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
   vec3 source = randomGGX(roughness, additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
@@ -52,7 +52,7 @@ vec3 randomCosineDirection(uint additionalRandomSeed) {
   return vec3(x, y, z);
 }
 
-vec3 lambertGenerateRandom(vec3[3] globalOnb, uint additionalRandomSeed) {
+vec3 lambertRandomDirection(vec3[3] globalOnb, uint additionalRandomSeed) {
   vec3 source = randomCosineDirection(additionalRandomSeed);
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }

@@ -18,7 +18,7 @@ struct Object {
   uint transformIndex;
 };
 
-struct Light {
+struct TriangleLight{
   uvec3 indices;
   vec3 color;
 };
