@@ -43,7 +43,7 @@ namespace nugiEngine {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
-			.setDefault("shader/ray_trace_sampling.vert.spv", "shader/ray_trace_sampling.frag.spv")
+			.setDefault("shader/sampling.vert.spv", "shader/sampling.frag.spv")
 			.build();
 	}
 
