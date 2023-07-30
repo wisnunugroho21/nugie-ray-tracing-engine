@@ -1,0 +1,6 @@
+[submodule "libraries/stb"]
+	path = libraries/stb
+	url = https://github.com/nothings/stb.git
+[submodule "libraries/tinyobjloader"]
+	path = libraries/tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader.git

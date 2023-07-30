@@ -1,7 +1,7 @@
 #include "load_model.hpp"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+#include "../../../../libraries/tinyobjloader/tiny_obj_loader.h"
 
 namespace nugiEngine
 {
