@@ -36,26 +36,20 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   if (abs(det) < KEPSILON) {
     return hit;
   }
-    
-  float invDet = 1.0f / det;
 
   vec3 tvec = r.origin - vertices[triIndices.x].position;
-  float u = dot(tvec, pvec) * invDet;
+  float u = dot(tvec, pvec) / det;
   if (u < 0.0f || u > 1.0f) {
     return hit;
   }
 
   vec3 qvec = cross(tvec, v0v1);
-  float v = dot(r.direction, qvec) * invDet;
+  float v = dot(r.direction, qvec) / det;
   if (v < 0.0f || u + v > 1.0f) {
     return hit;
   }
   
-  float t = dot(v0v2, qvec) * invDet;
-
-  if (t <= KEPSILON) {
-    return hit;
-  }
+  float t = dot(v0v2, qvec) / det;
 
   if (t < tMin || t > tMax) {
     return hit;
@@ -100,26 +94,20 @@ HitRecord hitLight(uvec3 triIndices, Ray r, float tMin, float tMax) {
   if (abs(det) < KEPSILON) {
     return hit;
   }
-    
-  float invDet = 1.0f / det;
 
   vec3 tvec = r.origin - vertices[triIndices.x].position;
-  float u = dot(tvec, pvec) * invDet;
+  float u = dot(tvec, pvec) / det;
   if (u < 0.0f || u > 1.0f) {
     return hit;
   }
 
   vec3 qvec = cross(tvec, v0v1);
-  float v = dot(r.direction, qvec) * invDet;
+  float v = dot(r.direction, qvec) / det;
   if (v < 0.0f || u + v > 1.0f) {
     return hit;
   }
   
-  float t = dot(v0v2, qvec) * invDet;
-
-  if (t <= KEPSILON) {
-    return hit;
-  }
+  float t = dot(v0v2, qvec) / det;
 
   if (t < tMin || t > tMax) {
     return hit;
