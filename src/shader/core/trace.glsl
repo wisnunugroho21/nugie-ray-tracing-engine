@@ -24,7 +24,7 @@ vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
 
 // ------------- Triangle -------------
 
-HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint transformIndex, uint materialIndex) {
+HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float tMax, uint transformIndex, uint materialIndex) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -51,7 +51,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   
   float t = dot(v0v2, qvec) / det;
 
-  if (t < tMin || t > tMax) {
+  if (t > tMax || length(mat3(transformations[transformIndex].dirMatrix) * t * r.direction) < dirMin) {
     return hit;
   }
 
@@ -81,7 +81,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float tMin, float tMax, uint tran
   return hit;
 }
 
-HitRecord hitLight(uvec3 triIndices, Ray r, float tMin, float tMax) {
+HitRecord hitLight(uvec3 triIndices, Ray r, float dirMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
 
@@ -108,7 +108,7 @@ HitRecord hitLight(uvec3 triIndices, Ray r, float tMin, float tMax) {
   
   float t = dot(v0v2, qvec) / det;
 
-  if (t < tMin || t > tMax) {
+  if (t > tMax || length(t * r.direction) < dirMin) {
     return hit;
   }
 
@@ -128,17 +128,17 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
     return true;
   }
 
-  vec3 tMin = (boxMin - r.origin) / r.direction;
+  vec3 dirMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
-  vec3 t1 = min(tMin, tMax);
-  vec3 t2 = max(tMin, tMax);
+  vec3 t1 = min(dirMin, tMax);
+  vec3 t2 = max(dirMin, tMax);
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
   return tNear < tFar;
 }
 
-HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
+HitRecord hitPrimitiveBvh(Ray r, float dirMin, float tMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -164,7 +164,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
 
     uint primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftObjIndex;
     if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, tMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -174,7 +174,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
 
     primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightObjIndex;    
     if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, tMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
+      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.t, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -198,7 +198,7 @@ HitRecord hitPrimitiveBvh(Ray r, float tMin, float tMax, uint firstBvhIndex, uin
   return hit;
 }
 
-HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
+HitRecord hitObjectBvh(Ray r, float dirMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -220,7 +220,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
     uint objIndex = objectBvhNodes[currentNode - 1u].leftObjIndex;
     if (objIndex >= 1u) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
+      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -229,7 +229,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
     objIndex = objectBvhNodes[currentNode - 1u].rightObjIndex;
     if (objIndex >= 1u) {
-      HitRecord tempHit = hitPrimitiveBvh(r, tMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
+      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.t, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -254,7 +254,7 @@ HitRecord hitObjectBvh(Ray r, float tMin, float tMax) {
 
 // ------------- Light -------------
 
-HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
+HitRecord hitLightBvh(Ray r, float dirMin, float tMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.t = tMax;
@@ -276,7 +276,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, tMin, hit.t);
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;
@@ -286,7 +286,7 @@ HitRecord hitLightBvh(Ray r, float tMin, float tMax) {
 
     lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, tMin, hit.t);
+      HitRecord tempHit = hitLight(lights[lightIndex - 1u].indices, r, dirMin, hit.t);
 
       if (tempHit.isHit) {
         hit = tempHit;

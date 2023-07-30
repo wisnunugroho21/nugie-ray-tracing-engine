@@ -19,7 +19,13 @@ namespace nugiEngine {
 	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {
 		auto newTransforms = std::make_shared<std::vector<Transformation>>();
 		for (auto &&transform : transformations) {
-			newTransforms->emplace_back(Transformation{ transform->getPointMatrix(), transform->getPointInverseMatrix(), transform->getDirInverseMatrix(), transform->getNormalMatrix() });
+			newTransforms->emplace_back(Transformation{ 
+				transform->getPointMatrix(),
+				transform->getDirMatrix(), 
+				transform->getPointInverseMatrix(), 
+				transform->getDirInverseMatrix(), 
+				transform->getNormalMatrix() 
+			});
 		}
 
 		return newTransforms;

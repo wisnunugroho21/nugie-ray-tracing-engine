@@ -50,9 +50,10 @@ namespace nugiEngine {
 
   struct Transformation {
     glm::mat4 pointMatrix{1.0f};
+		glm::mat4 dirMatrix{1.0f};
     glm::mat4 pointInverseMatrix{1.0f};
     glm::mat4 dirInverseMatrix{1.0f};
-    glm::mat4 normalInverseMatrix{1.0f};
+    glm::mat4 normalMatrix{1.0f};
   };
 
   struct Light {

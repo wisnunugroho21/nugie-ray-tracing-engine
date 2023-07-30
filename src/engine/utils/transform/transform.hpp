@@ -18,6 +18,7 @@ namespace nugiEngine {
 		glm::vec3 objectMaximum{0.0f};
 
 		glm::mat4 getPointMatrix();
+		glm::mat4 getDirMatrix();
     glm::mat4 getPointInverseMatrix();
     glm::mat4 getDirInverseMatrix();
     glm::mat4 getNormalMatrix();

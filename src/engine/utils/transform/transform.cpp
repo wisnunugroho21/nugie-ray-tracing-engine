@@ -23,7 +23,7 @@ namespace nugiEngine {
     return glm::inverse(this->getPointMatrix());
   }
 
-  glm::mat4 TransformComponent::getDirInverseMatrix() {
+  glm::mat4 TransformComponent::getDirMatrix() {
     auto curTransf = glm::mat4{1.0f};
 
     curTransf = glm::scale(curTransf, this->scale);
@@ -32,7 +32,11 @@ namespace nugiEngine {
     curTransf = glm::rotate(curTransf, this->rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
     curTransf = glm::rotate(curTransf, this->rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-    return glm::mat4(glm::inverse(glm::mat3(curTransf)));
+    return curTransf;
+  }
+
+  glm::mat4 TransformComponent::getDirInverseMatrix() {
+    return glm::mat4(glm::inverse(glm::mat3(this->getDirInverseMatrix())));
   }
 
   glm::mat4 TransformComponent::getNormalMatrix() {
