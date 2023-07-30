@@ -248,7 +248,7 @@ namespace nugiEngine {
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, vertices->size());
+		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
 		for (auto &&vertex : *loadedModel.vertices) {
 			vertices->emplace_back(vertex);
 		}
@@ -275,7 +275,7 @@ namespace nugiEngine {
 		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 
-		this->numLights = lights->size();
+		this->numLights = static_cast<uint32_t>(lights->size());
 	}
 
 	void EngineApp::loadQuadModels() {

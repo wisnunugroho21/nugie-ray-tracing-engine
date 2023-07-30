@@ -36,7 +36,7 @@ namespace nugiEngine {
   }
 
   glm::mat4 TransformComponent::getDirInverseMatrix() {
-    return glm::mat4(glm::inverse(glm::mat3(this->getDirInverseMatrix())));
+    return glm::mat4(glm::inverse(glm::mat3(this->getDirMatrix())));
   }
 
   glm::mat4 TransformComponent::getNormalMatrix() {

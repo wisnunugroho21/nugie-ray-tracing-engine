@@ -19,8 +19,8 @@ namespace nugiEngine {
 				.addBinding(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(10, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(11, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(12, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(11, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[0].size()))
+				.addBinding(12, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[1].size()))
 				.build();
 		
 	this->descriptorSets.clear();
@@ -39,8 +39,8 @@ namespace nugiEngine {
 				.writeBuffer(8, &buffersInfo[6])
 				.writeBuffer(9, &buffersInfo[7])
 				.writeBuffer(10, &buffersInfo[8])
-				.writeImage(11, texturesInfo[0].data(), texturesInfo[0].size())
-				.writeImage(12, texturesInfo[1].data(), texturesInfo[1].size())
+				.writeImage(11, texturesInfo[0].data(), static_cast<uint32_t>(texturesInfo[0].size()))
+				.writeImage(12, texturesInfo[1].data(), static_cast<uint32_t>(texturesInfo[1].size()))
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
