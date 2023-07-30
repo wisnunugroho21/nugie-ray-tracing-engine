@@ -53,17 +53,17 @@ namespace nugiEngine
 					attrib.vertices[3 * vertexIndex2 + 2]
 				};
 
-				vertex0.texel = glm::vec2{
+				vertex0.textCoord = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex0 + 0],
 					1.0f - attrib.texcoords[2 * textCoordIndex0 + 1]
 				};
 
-				vertex1.texel = glm::vec2{
+				vertex1.textCoord = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex1 + 0],
 					1.0f - attrib.texcoords[2 * textCoordIndex1 + 1]
 				};
 
-				vertex2.texel = glm::vec2{
+				vertex2.textCoord = glm::vec2{
 					attrib.texcoords[2 * textCoordIndex2 + 0],
 					1.0f - attrib.texcoords[2 * textCoordIndex2 + 1]
 				};
