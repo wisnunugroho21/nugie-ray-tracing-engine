@@ -65,6 +65,7 @@ layout(push_constant) uniform Push {
 
 uvec2 imgSize = uvec2(imageSize(targetImage));
 
+#include "core/basic.glsl"
 #include "core/random.glsl"
 #include "core/trace.glsl"
 #include "core/ggx.glsl"
@@ -163,7 +164,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
     float sqrDistance = dot(vectorDistance, vectorDistance);
-    float area = areaTriangle(lights[lightHit.hitIndex].indices);
+    float area = triangleArea(lights[lightHit.hitIndex].indices);
 
     scat.pdf = ggxPdfValue(NoH, NoL, surfaceRoughness);
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
@@ -201,7 +202,7 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
 
     float brdf = lambertBrdfValue();
     float sqrDistance = dot(vectorDistance, vectorDistance);
-    float area = areaTriangle(lights[lightHit.hitIndex].indices);
+    float area = triangleArea(lights[lightHit.hitIndex].indices);
 
     scat.pdf = lambertPdfValue(NoL);
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
@@ -240,7 +241,7 @@ void main() {
 
     if (lightHit.isHit && (!objectHit.isHit || length(lightHit.point - curRay.origin) < length(objectHit.point - curRay.origin))) {
       if (i > 0u) {
-        totalIndirect = totalIndirect * Gfactor(curRay, lightHit);
+        totalIndirect = totalIndirect * GfactorTriangleLight(curRay, lightHit);
       }
 
       totalRadiance = totalRadiance + totalIndirect * lights[lightHit.hitIndex].color;
