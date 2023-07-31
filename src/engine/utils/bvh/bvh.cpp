@@ -110,6 +110,10 @@ namespace nugiEngine {
     node.maximum = box.max;      
 
     if (leaf) {
+      if (objects.empty()) {
+        return node;
+      }
+      
       node.leftObjIndex = objects[0]->index;
 
       if (objects.size() > 1) {
