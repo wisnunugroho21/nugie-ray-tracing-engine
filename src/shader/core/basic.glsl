@@ -15,7 +15,7 @@ vec3[3] buildOnb(vec3 normal) {
 }
 
 vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
-  return dot(r_direction, outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
+  return dot(normalize(r_direction), outwardNormal) < 0.0f ? outwardNormal : -1.0f * outwardNormal;
 }
 
 vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
