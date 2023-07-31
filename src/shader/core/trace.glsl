@@ -126,14 +126,10 @@ HitRecord hitPointLight(PointLight light, Ray r, float dirMin, float tMax) {
 // ------------- Bvh -------------
 
 bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
-  if (all(lessThan(boxMin, r.origin)) && all(greaterThan(boxMax, r.origin))) {
-    return true;
-  }
-
-  vec3 dirMin = (boxMin - r.origin) / r.direction;
+  vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
-  vec3 t1 = min(dirMin, tMax);
-  vec3 t2 = max(dirMin, tMax);
+  vec3 t1 = min(tMin, tMax);
+  vec3 t2 = max(tMin, tMax);
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
