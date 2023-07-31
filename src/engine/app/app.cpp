@@ -276,7 +276,6 @@ namespace nugiEngine {
 		triangleLights->emplace_back(TriangleLight{ glm::uvec3(6u, 7u, 4u), glm::vec3(0.0f, 0.0f, 0.0f) });
 
 		// ----------------------------------------------------------------------------
-		
 
 		// Object
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
@@ -366,8 +365,8 @@ namespace nugiEngine {
 		ubo.background = glm::vec3(0.52f, 0.8f, 0.92f);
 		ubo.numLights = this->numLights;
 
-		float phi = glm::radians(45);
-		float theta = glm::radians(45);
+		float phi = glm::radians(45.0f);
+		theta = glm::radians(45.0f);
 
 		float sunX = glm::sin(theta) * glm::cos(phi);
 		float sunY = glm::sin(theta) * glm::sin(phi);
