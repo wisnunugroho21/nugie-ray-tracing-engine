@@ -92,11 +92,11 @@ namespace nugiEngine {
   bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b);
   Aabb surroundingBox(Aabb box0, Aabb box1);
   Aabb objectListBoundingBox(std::vector<std::shared_ptr<BoundBox>> &objects);
-  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, uint32_t axis);
+  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis);
   bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  uint32_t findPrimitiveSplitIndex(BvhItemBuild node, uint32_t axis, float length);
+  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length);
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.

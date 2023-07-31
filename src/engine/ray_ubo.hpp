@@ -23,7 +23,7 @@ namespace nugiEngine {
   struct Object {
     uint32_t firstBvhIndex = 0;
     uint32_t firstPrimitiveIndex = 0;
-    uint32_t transformIndex;
+    uint32_t transformIndex = 0;
   };
 
   struct BvhNode {
