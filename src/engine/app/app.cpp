@@ -224,10 +224,10 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0, 0 });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1, 0 });
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
 
 		// ----------------------------------------------------------------------------
 
@@ -242,7 +242,7 @@ namespace nugiEngine {
 		// ----------------------------------------------------------------------------
 
 		// Object
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(300.0f, 200.0f, 200.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
