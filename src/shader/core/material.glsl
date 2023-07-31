@@ -22,8 +22,8 @@ vec3 ggxRandomDirection(vec3[3] globalOnb, float roughness, uint additionalRando
   return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
 }
 
-float ggxPdfValue(float NoH, float NoL, float roughness) {
-  return D_GGX(NoH, roughness) * NoH / (4.0 * NoL);
+float ggxPdfValue(float NoH, float VoH, float roughness) {
+  return D_GGX(NoH, roughness) * NoH / (4.0 * VoH);
 }
 
 float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {

@@ -94,7 +94,7 @@ ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor
 
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
 
-  scat.pdf = ggxPdfValue(NoH, NoL, surfaceRoughness);
+  scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
   scat.radiance = partialIntegrand(surfaceColor, brdf, NoL);
   
   return scat;
@@ -166,7 +166,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
     float sqrDistance = dot(vectorDistance, vectorDistance);
     float area = triangleArea(lights[lightHit.hitIndex].indices);
 
-    scat.pdf = ggxPdfValue(NoH, NoL, surfaceRoughness);
+    scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
   }  
 
