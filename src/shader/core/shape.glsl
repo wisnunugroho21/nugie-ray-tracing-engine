@@ -1,3 +1,17 @@
+// ------------- Sky Light ------------- 
+
+vec3 sunLightFaceNormal(vec3 rayDirection, vec3 origin) {
+  return -1.0f * normalize(rayDirection);
+}
+
+float sunLightArea() {
+  return 1.0f;
+}
+
+vec3 sunLightRandomDirection(SunLight light) {
+  return light.direction;
+}
+
 // ------------- Point Light ------------- 
 
 vec3 pointLightFaceNormal(PointLight light, vec3 rayDirection, vec3 origin) {

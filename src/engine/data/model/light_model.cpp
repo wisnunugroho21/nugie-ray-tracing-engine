@@ -8,17 +8,17 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<RayTraceVertex>> vertices) : engineDevice{device} {
+	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<RayTraceVertex>> vertices) : engineDevice{device} {
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (int i = 0; i < lights->size(); i++) {
-			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*lights)[i], vertices }));
+		for (int i = 0; i < triangleLights->size(); i++) {
+			boundBoxes.push_back(std::make_shared<LightBoundBox>(LightBoundBox{ i + 1, (*triangleLights)[i], vertices }));
 		}
 
-		this->createBuffers(lights, createBvh(boundBoxes));
+		this->createBuffers(triangleLights, createBvh(boundBoxes));
 	}
 
-	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<Light>> lights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
-		auto lightBufferSize = sizeof(Light) * lights->size();
+	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+		auto lightBufferSize = sizeof(TriangleLight) * triangleLights->size();
 		
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,
@@ -29,7 +29,7 @@ namespace nugiEngine {
 		};
 
 		lightStagingBuffer.map();
-		lightStagingBuffer.writeToBuffer(lights->data());
+		lightStagingBuffer.writeToBuffer(triangleLights->data());
 
 		this->lightBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,

@@ -28,6 +28,11 @@ struct PointLight {
   vec3 color;
 };
 
+struct SunLight {
+  vec3 direction;
+  vec3 color;
+};
+
 struct BvhNode {
   uint leftNode;
   uint rightNode;

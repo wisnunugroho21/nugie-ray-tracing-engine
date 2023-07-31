@@ -56,7 +56,12 @@ namespace nugiEngine {
     glm::mat4 normalMatrix{1.0f};
   };
 
-  struct Light {
+  struct SunLight {
+    alignas(16) glm::vec3 direction;
+    alignas(16) glm::vec3 color;
+  };
+
+  struct TriangleLight {
     alignas(16) glm::uvec3 indices;
     alignas(16) glm::vec3 color;
   };
@@ -67,7 +72,8 @@ namespace nugiEngine {
     alignas(16) glm::vec3 vertical;
     alignas(16) glm::vec3 lowerLeftCorner;
     alignas(16) glm::vec3 background;
-    uint32_t numLights = 0;
+    alignas(16) uint32_t numLights = 0;
+    SunLight sunLight;
   };
 
   struct RayTracePushConstant {

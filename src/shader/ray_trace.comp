@@ -18,6 +18,7 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 lowerLeftCorner;
   vec3 background;
   uint numLights;
+  SunLight sunLight;
 } ubo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
@@ -83,7 +84,7 @@ ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor
   float f0 = 0.16 * (fresnelReflect * fresnelReflect);
 
   vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, surfaceNormal));
-  scat.nextRay.direction = ggxRandomDirection(globalOnb,surfaceRoughness, additionalRandomSeed);
+  scat.nextRay.direction = ggxRandomDirection(globalOnb, surfaceRoughness, additionalRandomSeed);
 
   vec3 H = normalize(scat.nextRay.direction - rayDirection); // half vector
 
@@ -137,10 +138,14 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
-
+  uint lightIndex = randomUint(0u, ubo.numLights, additionalRandomSeed);
   shadowRay.origin = hitPoint;
-  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
+
+  if (lightIndex == 0u) {
+    shadowRay.direction = sunLightRandomDirection(ubo.sunLight);
+  } else {
+    shadowRay.direction = triangleRandomDirection(lights[lightIndex - 1u].indices, shadowRay.origin, additionalRandomSeed);
+  }
 
   HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
   HitRecord lightHit = hitTriangleLightBvh(shadowRay, 0.001f, FLT_MAX);
@@ -168,6 +173,27 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
 
     scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+  }
+
+  else if (!lightHit.isHit && !objectHit.isHit && dot(normalize(shadowRay.direction), ubo.sunLight.direction) >= 0.99f) {
+    vec3 unitLightDirection = normalize(shadowRay.direction);
+
+    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
+    float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
+
+    vec3 unitViewDirection = normalize(rayDirection);
+    vec3 H = normalize(shadowRay.direction - rayDirection); // half vector
+
+    float f0 = 0.16 * (fresnelReflect * fresnelReflect);
+    
+    float NoV = max(dot(surfaceNormal, -1.0f * unitViewDirection), 0.001f);
+    float NoH = max(dot(surfaceNormal, H), 0.001f);
+    float VoH = max(dot(unitViewDirection, H), 0.001f);
+
+    float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
+
+    scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
   }  
 
   return scat;
@@ -184,10 +210,14 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  uint lightIndex = randomUint(0, ubo.numLights - 1u, additionalRandomSeed);
-
+  uint lightIndex = randomUint(0u, ubo.numLights, additionalRandomSeed);
   shadowRay.origin = hitPoint;
-  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
+
+  if (lightIndex == 0u) {
+    shadowRay.direction = sunLightRandomDirection(ubo.sunLight);
+  } else {
+    shadowRay.direction = triangleRandomDirection(lights[lightIndex - 1u].indices, shadowRay.origin, additionalRandomSeed);
+  }
 
   HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
   HitRecord lightHit = hitTriangleLightBvh(shadowRay, 0.001f, FLT_MAX);
@@ -206,7 +236,17 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
 
     scat.pdf = lambertPdfValue(NoL);
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
-  }  
+  }
+
+  else if (!lightHit.isHit && !objectHit.isHit && dot(normalize(shadowRay.direction), ubo.sunLight.direction) >= 0.99f) {
+    vec3 unitLightDirection = normalize(shadowRay.direction);
+    
+    float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
+    float brdf = lambertBrdfValue();
+
+    scat.pdf = lambertPdfValue(NoL);
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
+  }
 
   return scat;
 }
@@ -251,7 +291,13 @@ void main() {
     totalIndirect = totalIndirect / indirectShadeResult.pdf;
 
     if (!objectHit.isHit && !lightHit.isHit) {
-      totalRadiance = totalRadiance + totalIndirect * ubo.background;
+      vec3 lightColor = ubo.background;
+
+      if (dot(normalize(curRay.direction), ubo.sunLight.direction) >= 0.99f) {
+        lightColor = ubo.sunLight.color;
+      }
+
+      totalRadiance = totalRadiance + totalIndirect * lightColor;
       break;
     }
 
