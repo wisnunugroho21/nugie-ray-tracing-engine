@@ -241,7 +241,7 @@ void main() {
       break;
     }
 
-    totalIndirect = totalIndirect / indirectShadeResult.pdf;
+    totalIndirect = totalIndirect / max(indirectShadeResult.pdf, 0.001f);
 
     if (!objectHit.isHit && !lightHit.isHit) {
       totalRadiance = totalRadiance + totalIndirect * ubo.background;
