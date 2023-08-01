@@ -123,14 +123,13 @@ ShadeRecord indirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
   return indirectLambertShade(hit.point, hit.color, hit.normal, additionalRandomSeed);
 }
 
-ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, float surfaceRoughness, float fresnelReflect, uint additionalRandomSeed) {
+ShadeRecord directGgxShade(uint lightIndex, vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, float surfaceRoughness, float fresnelReflect, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  uint lightIndex = randomUint(0u, ubo.numLights, additionalRandomSeed);
   shadowRay.origin = hitPoint;
 
   if (lightIndex == 0u) {
@@ -191,18 +190,17 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
   return scat;
 }
 
-ShadeRecord directGgxShade(Ray r, HitRecord hit, uint additionalRandomSeed) {
-  return directGgxShade(r.direction, hit.point, hit.color, hit.normal, hit.roughness, hit.fresnelReflect, additionalRandomSeed);
+ShadeRecord directGgxShade(uint lightIndex, Ray r, HitRecord hit, uint additionalRandomSeed) {
+  return directGgxShade(lightIndex, r.direction, hit.point, hit.color, hit.normal, hit.roughness, hit.fresnelReflect, additionalRandomSeed);
 }
 
-ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
+ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   ShadeRecord scat;
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
   scat.pdf = 0.0f;
 
-  uint lightIndex = randomUint(0u, ubo.numLights, additionalRandomSeed);
   shadowRay.origin = hitPoint;
 
   if (lightIndex == 0u) {
@@ -243,8 +241,8 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
   return scat;
 }
 
-ShadeRecord directLambertShade(HitRecord hit, uint additionalRandomSeed) {
-  return directLambertShade(hit.point, hit.color, hit.normal, additionalRandomSeed);
+ShadeRecord directLambertShade(uint lightIndex, HitRecord hit, uint additionalRandomSeed) {
+  return directLambertShade(lightIndex, hit.point, hit.color, hit.normal, additionalRandomSeed);
 }
 
 // ------------- Main -------------
@@ -260,7 +258,7 @@ void main() {
   vec3 totalRadiance = vec3(0.0f);
   vec3 totalIndirect = vec3(1.0f);
 
-  ShadeRecord indirectShadeResult, directShadeResult;
+  ShadeRecord indirectShadeResult, directShadeResult[10];
   Ray curRay;
 
   indirectShadeResult.pdf = 1.0f;
@@ -295,17 +293,28 @@ void main() {
 
     if (objectHit.metallicness >= randomFloat(i)) {
       indirectShadeResult = indirectGgxShade(curRay, objectHit, i);
-      directShadeResult = directGgxShade(curRay, objectHit, i);
+
+      for (uint j = 0; j < ubo.numLights; j++) {
+        directShadeResult[j] = directGgxShade(j, curRay, objectHit, i);
+      }
     } else {
       indirectShadeResult = indirectLambertShade(objectHit, i);
-      directShadeResult = directLambertShade(objectHit, i);
+
+      for (uint j = 0; j < ubo.numLights; j++) {
+        directShadeResult[j] = directLambertShade(j, objectHit, i);
+      }
     }
 
-    float totalPdf = directShadeResult.pdf + indirectShadeResult.pdf;
+    float totalPdf = indirectShadeResult.pdf;
+    for (uint j = 0; j < ubo.numLights; j++) {
+      totalPdf += directShadeResult[j].pdf;
+    }
 
-    totalRadiance = totalRadiance + totalIndirect * directShadeResult.radiance * directShadeResult.pdf / totalPdf;
+    for (uint j = 0; j < ubo.numLights; j++) {
+      totalRadiance += totalIndirect * directShadeResult[j].radiance * directShadeResult[j].pdf / totalPdf;
+    }
+
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
-
     curRay = indirectShadeResult.nextRay;
   }
   
