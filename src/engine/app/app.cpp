@@ -362,7 +362,6 @@ namespace nugiEngine {
 		ubo.horizontal = glm::vec3(viewportWidth * u);
 		ubo.vertical = glm::vec3(viewportHeight * v);
 		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
-		ubo.background = glm::vec3(0.52f, 0.8f, 0.92f);
 		ubo.numLights = this->numLights;
 
 		float phi = glm::radians(45.0f);
@@ -373,7 +372,7 @@ namespace nugiEngine {
 		float sunZ = glm::cos(theta);
 
 		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
-		ubo.sunLight.color = glm::vec3(0.99f, 0.72f, 0.07f);
+		ubo.sunLight.color = glm::vec3(0.52f, 0.8f, 0.92f);
 
 		return ubo;
 	}

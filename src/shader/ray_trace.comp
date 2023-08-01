@@ -16,7 +16,6 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   vec3 horizontal;
   vec3 vertical;
   vec3 lowerLeftCorner;
-  vec3 background;
   uint numLights;
   SunLight sunLight;
 } ubo;
@@ -284,9 +283,9 @@ void main() {
     totalIndirect = totalIndirect / max(indirectShadeResult.pdf, 0.1f);
 
     if (!objectHit.isHit && !lightHit.isHit) {
-      vec3 lightColor = ubo.background;
+      vec3 lightColor = vec3(0.0f);
 
-      if (dot(normalize(curRay.direction), ubo.sunLight.direction) >= 0.99f) {
+      if (dot(normalize(curRay.direction), ubo.sunLight.direction) >= 0.99f || i == 0u) {
         lightColor = ubo.sunLight.color;
       }
 
