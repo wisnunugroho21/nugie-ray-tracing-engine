@@ -23,7 +23,7 @@ vec3 ggxRandomDirection(vec3[3] globalOnb, float roughness, uint additionalRando
 }
 
 float ggxPdfValue(float NoH, float VoH, float roughness) {
-  return D_GGX(NoH, roughness) * NoH / (4.0 * VoH);
+  return max(D_GGX(NoH, roughness) * NoH / (4.0 * VoH), 0.001f);
 }
 
 float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {
@@ -58,7 +58,7 @@ vec3 lambertRandomDirection(vec3[3] globalOnb, uint additionalRandomSeed) {
 }
 
 float lambertPdfValue(float NoL) {
-  return NoL / pi;
+  return max(NoL / pi, 0.001f);
 }
 
 float lambertBrdfValue() {

@@ -128,7 +128,7 @@ ShadeRecord directGgxShade(uint lightIndex, vec3 rayDirection, vec3 hitPoint, ve
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
-  scat.pdf = 0.0f;
+  scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
   shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
@@ -173,7 +173,7 @@ ShadeRecord sunDirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColo
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
-  scat.pdf = 0.0f;
+  scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
   shadowRay.direction = sunLightRandomDirection(ubo.sunLight);
@@ -199,7 +199,7 @@ ShadeRecord sunDirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColo
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
 
     scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / max(scat.pdf, 0.1f);
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
   }  
 
   return scat;
@@ -214,7 +214,7 @@ ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
-  scat.pdf = 0.0f;
+  scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
   shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
@@ -250,7 +250,7 @@ ShadeRecord sunDirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surface
   Ray shadowRay;
 
   scat.radiance = vec3(0.0f);
-  scat.pdf = 0.0f;
+  scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
   shadowRay.direction = sunLightRandomDirection(ubo.sunLight);
@@ -265,7 +265,7 @@ ShadeRecord sunDirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surface
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / max(scat.pdf, 0.1f);
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
   }
 
   return scat;
@@ -308,7 +308,7 @@ void main() {
       break;
     }
 
-    totalIndirect = totalIndirect / max(indirectShadeResult.pdf, 0.1f);
+    totalIndirect = totalIndirect / indirectShadeResult.pdf;
 
     if (!objectHit.isHit && !lightHit.isHit) {
       vec3 lightColor = vec3(0.0f);
@@ -342,12 +342,14 @@ void main() {
       totalPdf += directShadeResult[j].pdf;
     }
 
-    totalRadiance += totalIndirect * directShadeResult[ubo.numLights].radiance * directShadeResult[ubo.numLights].pdf / totalPdf;
+    float cummulativeRadiance = directShadeResult[ubo.numLights].radiance * directShadeResult[ubo.numLights].pdf;
     for (uint j = 0; j < ubo.numLights; j++) {
-      totalRadiance += totalIndirect * directShadeResult[j].radiance * directShadeResult[j].pdf / totalPdf;
+      cummulativeRadiance += directShadeResult[j].radiance * directShadeResult[j].pdf;
     }
 
+    totalRadiance += totalIndirect * cummulativeRadiance / totalPdf;
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+
     curRay = indirectShadeResult.nextRay;
   }
   
