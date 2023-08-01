@@ -281,7 +281,7 @@ void main() {
       break;
     }
 
-    totalIndirect = totalIndirect / max(indirectShadeResult.pdf, 0.001f);
+    totalIndirect = totalIndirect / max(indirectShadeResult.pdf, 0.1f);
 
     if (!objectHit.isHit && !lightHit.isHit) {
       vec3 lightColor = ubo.background;

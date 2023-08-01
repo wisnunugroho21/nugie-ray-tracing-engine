@@ -21,16 +21,16 @@ namespace nugiEngine {
   };
 
   struct Object {
-    uint32_t firstBvhIndex = 0;
-    uint32_t firstPrimitiveIndex = 0;
-    uint32_t transformIndex = 0;
+    uint32_t firstBvhIndex = 0u;
+    uint32_t firstPrimitiveIndex = 0u;
+    uint32_t transformIndex = 0u;
   };
 
   struct BvhNode {
-    uint32_t leftNode = 0;
-    uint32_t rightNode = 0;
-    uint32_t leftObjIndex = 0;
-    uint32_t rightObjIndex = 0;
+    uint32_t leftNode = 0u;
+    uint32_t rightNode = 0u;
+    uint32_t leftObjIndex = 0u;
+    uint32_t rightObjIndex = 0u;
 
     alignas(16) glm::vec3 maximum;
     alignas(16) glm::vec3 minimum;
@@ -72,11 +72,11 @@ namespace nugiEngine {
     alignas(16) glm::vec3 vertical;
     alignas(16) glm::vec3 lowerLeftCorner;
     alignas(16) glm::vec3 background;
-    alignas(16) uint32_t numLights = 0;
+    uint32_t numLights = 0u;
     SunLight sunLight;
   };
 
   struct RayTracePushConstant {
-    uint32_t randomSeed;
+    uint32_t randomSeed = 0u;
   };
 }
