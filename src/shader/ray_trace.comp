@@ -185,7 +185,7 @@ ShadeRecord directGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor, 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
 
     scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / max(scat.pdf, 0.1f);
   }  
 
   return scat;
@@ -237,7 +237,7 @@ ShadeRecord directLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNor
     float brdf = lambertBrdfValue();
 
     scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / max(scat.pdf, 0.1f);
   }
 
   return scat;
