@@ -44,7 +44,8 @@ namespace nugiEngine {
 			void renderLoop();
 
 		private:
-			void loadObjects();
+			void loadCornellBox();
+			void loadSkyLight();
 			void loadQuadModels();
 
 			RayTraceUbo updateCamera(uint32_t width, uint32_t height);
