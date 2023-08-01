@@ -69,11 +69,11 @@ namespace nugiEngine {
       float findMin(uint32_t index);
   };
 
-  struct LightBoundBox : BoundBox {
-    Light &light;
+  struct TriangleLightBoundBox : BoundBox {
+    TriangleLight &light;
     std::shared_ptr<std::vector<RayTraceVertex>> vertices;
 
-    LightBoundBox(int i, Light &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
+    TriangleLightBoundBox(int i, TriangleLight &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
 
     Aabb boundingBox();
   };

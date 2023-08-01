@@ -29,7 +29,7 @@ namespace nugiEngine {
     };
   }
 
-  Aabb LightBoundBox::boundingBox() {
+  Aabb TriangleLightBoundBox::boundingBox() {
     return Aabb { 
       glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - eps,
       glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + eps
@@ -110,6 +110,10 @@ namespace nugiEngine {
     node.maximum = box.max;      
 
     if (leaf) {
+      if (objects.empty()) {
+        return node;
+      }
+      
       node.leftObjIndex = objects[0]->index;
 
       if (objects.size() > 1) {

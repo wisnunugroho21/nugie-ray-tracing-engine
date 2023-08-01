@@ -18,7 +18,7 @@ namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
 
-		this->loadObjects();
+		this->loadCornellBox();
 		this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
@@ -96,12 +96,12 @@ namespace nugiEngine {
 		vkDeviceWaitIdle(this->device.getLogicalDevice());
 	}
 
-	void EngineApp::loadObjects() {
+	void EngineApp::loadCornellBox() {
 		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
 
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
-		auto lights = std::make_shared<std::vector<Light>>();
+		auto triangleLights = std::make_shared<std::vector<TriangleLight>>();
 		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
@@ -224,20 +224,20 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
-
-		// ----------------------------------------------------------------------------
-
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
 
-		lights->emplace_back(Light{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
-		lights->emplace_back(Light{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
+
+		// ----------------------------------------------------------------------------
+
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
 
 		// ----------------------------------------------------------------------------
 
@@ -265,7 +265,7 @@ namespace nugiEngine {
 
 		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
 		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, lights, vertices);
+		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
 		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
 		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
 
@@ -275,7 +275,100 @@ namespace nugiEngine {
 		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 
-		this->numLights = static_cast<uint32_t>(lights->size());
+		this->numLights = static_cast<uint32_t>(triangleLights->size());
+	}
+
+	void EngineApp::loadSkyLight() {
+		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
+
+		auto objects = std::make_shared<std::vector<Object>>();
+		auto materials = std::make_shared<std::vector<Material>>();
+		auto triangleLights = std::make_shared<std::vector<TriangleLight>>();
+		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
+
+		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
+		std::vector<std::shared_ptr<TransformComponent>> transforms{};
+
+		// ----------------------------------------------------------------------------
+		
+		// bawah
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
+
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
+
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+
+		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
+		
+		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
+		
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex], vertices }));
+		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
+
+		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+
+		// ----------------------------------------------------------------------------
+
+		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
+
+		// ----------------------------------------------------------------------------
+
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
+
+		triangleLights->emplace_back(TriangleLight{ glm::uvec3(4u, 5u, 6u), glm::vec3(0.0f, 0.0f, 0.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec3(6u, 7u, 4u), glm::vec3(0.0f, 0.0f, 0.0f) });
+
+		// ----------------------------------------------------------------------------
+
+		// Object
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
+		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
+
+		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+
+		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
+		for (auto &&vertex : *loadedModel.vertices) {
+			vertices->emplace_back(vertex);
+		}
+
+		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
+
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], loadedModel.primitives, transforms[transformIndex], vertices }));
+		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
+
+		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+
+		// ----------------------------------------------------------------------------
+
+		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
+		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
+		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
+		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
+		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
+
+		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
+		this->primitiveModel->createBuffers();
+
+		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
+
+		this->numLights = 0u;
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -326,8 +419,17 @@ namespace nugiEngine {
 		ubo.horizontal = glm::vec3(viewportWidth * u);
 		ubo.vertical = glm::vec3(viewportHeight * v);
 		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
-		ubo.background = glm::vec3(0.0f);
 		ubo.numLights = this->numLights;
+
+		float phi = glm::radians(45.0f);
+		theta = glm::radians(45.0f);
+
+		float sunX = glm::sin(theta) * glm::cos(phi);
+		float sunY = glm::sin(theta) * glm::sin(phi);
+		float sunZ = glm::cos(theta);
+
+		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
+		ubo.sunLight.color = glm::vec3(0.52f, 0.8f, 0.92f);
 
 		return ubo;
 	}
