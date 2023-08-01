@@ -342,7 +342,7 @@ void main() {
       totalPdf += directShadeResult[j].pdf;
     }
 
-    float cummulativeRadiance = directShadeResult[ubo.numLights].radiance * directShadeResult[ubo.numLights].pdf;
+    vec3 cummulativeRadiance = directShadeResult[ubo.numLights].radiance * directShadeResult[ubo.numLights].pdf;
     for (uint j = 0; j < ubo.numLights; j++) {
       cummulativeRadiance += directShadeResult[j].radiance * directShadeResult[j].pdf;
     }
