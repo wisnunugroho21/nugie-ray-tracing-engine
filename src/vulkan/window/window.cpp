@@ -12,11 +12,10 @@ namespace nugiEngine {
   void EngineWindow::init() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
-    this->window = glfwCreateWindow(this->width, this->height, this->name.c_str(), glfwGetPrimaryMonitor(), nullptr);
-    glfwGetWindowSize(this->window, &this->width, &this->height);
-    
+    this->window = glfwCreateWindow(this->width, this->height, this->name.c_str(), nullptr, nullptr);
+
     glfwSetWindowUserPointer(this->window, this);
     glfwSetFramebufferSizeCallback(this->window, this->frameBufferResizedCallback);
   }
