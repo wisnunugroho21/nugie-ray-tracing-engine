@@ -84,7 +84,9 @@ namespace nugiEngine {
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
-			this->window.pollEvents();
+			if (!this->userInterface->wantToCaptureMouse()) {
+				this->window.pollEvents();
+			}
 
 			/*auto newTime = std::chrono::high_resolution_clock::now();
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();

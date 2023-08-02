@@ -22,6 +22,7 @@ namespace nugiEngine {
         std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
       ~EngineUserInterface();
 
+      bool wantToCaptureMouse() const { return ImGui::GetIO().WantCaptureMouse; }
       void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::shared_ptr<CameraPosition> cameraPosition);
       
   };

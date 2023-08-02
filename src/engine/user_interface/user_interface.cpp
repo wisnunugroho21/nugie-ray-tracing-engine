@@ -40,8 +40,6 @@ namespace nugiEngine
       commandBuffer->endCommand();
       commandBuffer->submitCommand(engineDevice.getTransferQueue(0));
     }
-
-    ImGui::GetIO().WantCaptureMouse;
   }
 
   EngineUserInterface::~EngineUserInterface() {
