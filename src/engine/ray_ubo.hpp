@@ -6,6 +6,11 @@
 #include <glm/gtc/constants.hpp>
 
 namespace nugiEngine {
+  struct CameraPosition {
+    glm::vec3 lookFrom{278.0f, 278.0f, -800.0f};
+    glm::vec3 lookTo{278.0f, 278.0f, 0.0f};
+  };
+
   struct RayTraceVertex {
     alignas(16) glm::vec3 position;
     alignas(16) glm::vec2 textCoord;

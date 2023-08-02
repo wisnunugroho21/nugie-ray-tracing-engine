@@ -26,7 +26,12 @@ namespace nugiEngine {
 	EngineApp::~EngineApp() {}
 
 	void EngineApp::renderLoop() {
+		uint32_t width = this->renderer->getSwapChain()->width();
+		uint32_t height = this->renderer->getSwapChain()->height();
+
 		while (this->isRendering) {
+			this->globalUbo = this->updateCamera(width, height);
+			
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -44,7 +49,7 @@ namespace nugiEngine {
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 
 				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);
-				this->userInterface->render(commandBuffer);
+				this->userInterface->render(commandBuffer, this->cameraPosition);
 
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
@@ -56,7 +61,10 @@ namespace nugiEngine {
 
 				if (!this->renderer->presentFrame()) {
 					this->recreateSubRendererAndSubsystem();
+
 					this->randomSeed = 0;
+					width = this->renderer->getSwapChain()->width();
+					height = this->renderer->getSwapChain()->height();
 
 					continue;
 				}				
@@ -402,8 +410,8 @@ namespace nugiEngine {
 	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
+		glm::vec3 lookFrom = this->cameraPosition->lookFrom;
+		glm::vec3 lookAt = this->cameraPosition->lookTo;
 		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
 		
 		float vfov = 40.0f;
@@ -440,8 +448,6 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
-
-		this->globalUbo = this->updateCamera(width, height);
 
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();

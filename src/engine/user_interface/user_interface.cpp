@@ -50,7 +50,11 @@ namespace nugiEngine
     ImGui::DestroyContext();
   }
 
-  void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+  void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::shared_ptr<CameraPosition> cameraPosition) {
+    if (!this->showUI) {
+      return;
+    }
+
     ImGui_ImplGlfw_NewFrame();
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
@@ -60,8 +64,13 @@ namespace nugiEngine
     const ImVec2 posPivot = ImVec2(0.0f, 0.0f);
     ImGui::SetNextWindowPos(pos, ImGuiCond_Always, posPivot);
 
-    ImGui::Begin("Hello, world!", &this->showUI, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    if (ImGui::Begin("Hello, world!", &this->showUI, ImGuiWindowFlags_AlwaysAutoResize)) {
+      ImGui::Text("Camera Position");
+      ImGui::Separator();
+      ImGui::SliderFloat("X", &cameraPosition->lookFrom.x, 0.0f, 550.0f, "%.2f");
+      ImGui::SliderFloat("Y", &cameraPosition->lookFrom.y, 0.0f, 550.0f, "%.2f");
+      ImGui::SliderFloat("Z", &cameraPosition->lookFrom.z, -800.0f, 0.0f, "%.2f");
+    }
 
     ImGui::End();
     ImGui::Render();

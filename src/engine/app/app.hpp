@@ -85,5 +85,6 @@ namespace nugiEngine {
 			bool isRendering = true;
 
 			RayTraceUbo globalUbo;
+			std::shared_ptr<CameraPosition> cameraPosition;
 	};
 }

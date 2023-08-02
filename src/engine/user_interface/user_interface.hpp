@@ -22,7 +22,7 @@ namespace nugiEngine {
         std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
       ~EngineUserInterface();
 
-      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+      void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, std::shared_ptr<CameraPosition> cameraPosition);
       
   };
 }
