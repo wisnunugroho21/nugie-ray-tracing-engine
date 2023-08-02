@@ -18,7 +18,7 @@ namespace nugiEngine
     init_info.Subpass = 0;
     init_info.MinImageCount = 1;
     init_info.ImageCount = static_cast<int>(renderer->getSwapChain()->imageCount());
-    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    init_info.MSAASamples = engineDevice.getMSAASamples();
 
     ImGui_ImplVulkan_Init(&init_info, subRenderer->getRenderPass()->getRenderPass());
   }
