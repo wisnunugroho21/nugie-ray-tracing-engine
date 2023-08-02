@@ -17,7 +17,7 @@ namespace nugiEngine
     init_info.Queue = engineDevice.getGraphicsQueue(0);
     init_info.DescriptorPool = renderer->getDescriptorPool()->getDescriptorPool();
     init_info.Subpass = 0;
-    init_info.MinImageCount = 1;
+    init_info.MinImageCount = 2;
     init_info.ImageCount = static_cast<int>(renderer->getSwapChain()->imageCount());
     init_info.MSAASamples = engineDevice.getMSAASamples();
 
