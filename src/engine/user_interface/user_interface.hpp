@@ -17,10 +17,11 @@ namespace nugiEngine {
       ImGuiIO io;
 
     public:
-      EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, std::shared_ptr<EngineHybridRenderer> renderer, 
-        std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
+      EngineUserInterface(GLFWwindow* window);
       ~EngineUserInterface();
 
+      void initVulkan(EngineDevice &engineDevice, std::shared_ptr<EngineHybridRenderer> renderer, 
+        std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
       void render(std::shared_ptr<EngineCommandBuffer> commandBuffer);
       
   };
