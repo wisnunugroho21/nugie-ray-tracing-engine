@@ -17,7 +17,6 @@
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_shared<EngineHybridRenderer>(this->window, this->device);
-		this->userInterface = std::make_unique<EngineUserInterface>(this->window.getWindow());
 
 		this->loadCornellBox();
 		this->loadQuadModels();
@@ -485,7 +484,7 @@ namespace nugiEngine {
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
-		
-		this->userInterface->initVulkan(this->device, this->renderer, this->swapChainSubRenderer);
+
+		this->userInterface = std::make_unique<EngineUserInterface>(this->device, this->window.getWindow(), this->renderer, this->swapChainSubRenderer);
 	}
 }

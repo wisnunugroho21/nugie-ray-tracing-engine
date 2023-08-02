@@ -2,23 +2,15 @@
 
 namespace nugiEngine
 {
-  EngineUserInterface::EngineUserInterface(GLFWwindow* window)
+  EngineUserInterface::EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, 
+    std::shared_ptr<EngineHybridRenderer> renderer, std::shared_ptr<EngineSwapChainSubRenderer> subRenderer,
+    std::shared_ptr<EngineCommandBuffer> commandBuffer)
   {
     ImGui::CreateContext();
     this->io = ImGui::GetIO(); (void) this->io;
 
     ImGui_ImplGlfw_InitForVulkan(window, false);
-  }
-
-  EngineUserInterface::~EngineUserInterface() {
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-  }
-
-  void EngineUserInterface::initVulkan(EngineDevice &engineDevice, std::shared_ptr<EngineHybridRenderer> renderer, 
-    std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer) 
-  {
+    
     ImGui_ImplVulkan_InitInfo init_info = {};
     init_info.Instance = engineDevice.getInstance();
     init_info.PhysicalDevice = engineDevice.getPhysicalDevice();
@@ -48,6 +40,12 @@ namespace nugiEngine
       commandBuffer->endCommand();
       commandBuffer->submitCommand(engineDevice.getTransferQueue(0));
     }
+  }
+
+  EngineUserInterface::~EngineUserInterface() {
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
   }
 
   void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
