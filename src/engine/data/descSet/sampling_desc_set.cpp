@@ -12,8 +12,8 @@ namespace nugiEngine {
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_FRAGMENT_BIT)
 				.build();
 		
-	this->descriptorSets.clear();
-	for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+		this->descriptorSets.clear();
+		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			VkDescriptorSet descSet{};
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)

@@ -21,7 +21,52 @@ namespace nugiEngine {
 
 		this->loadCornellBox();
 		this->loadQuadModels();
-		this->recreateSubRendererAndSubsystem();
+
+		uint32_t width = this->renderer->getSwapChain()->width();
+		uint32_t height = this->renderer->getSwapChain()->height();
+		uint32_t imageCount = static_cast<int>(this->renderer->getSwapChain()->imageCount());
+
+		this->globalUbo = this->updateCamera(width, height);
+		this->swapChainSubRenderer = std::make_shared<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
+			this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+
+		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, imageCount);
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, imageCount);
+
+		VkDescriptorBufferInfo buffersInfo[9] { 
+			this->objectModel->getObjectInfo(), 
+			this->objectModel->getBvhInfo(),
+			this->primitiveModel->getPrimitiveInfo(), 
+			this->primitiveModel->getBvhInfo(),
+			this->rayTraceVertexModels->getVertexnfo(),
+			this->lightModel->getLightInfo(),
+			this->lightModel->getBvhInfo(),
+			this->materialModel->getMaterialInfo(),
+			this->transformationModel->getTransformationInfo() 
+		};
+
+		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
+			this->rayTraceImage->getImagesInfo(),
+			this->accumulateImages->getImagesInfo()
+		};
+
+		std::vector<VkDescriptorImageInfo> texturesInfo[2];
+		for (int i = 0; i < this->colorTextures.size(); i++) {
+			texturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
+		}
+
+		for (int i = 0; i < this->normalTextures.size(); i++) {
+			texturesInfo[1].emplace_back(this->normalTextures[i]->getDescriptorInfo());
+		}
+
+		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo, texturesInfo);
+		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
+
+		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+
+		this->userInterface->initVulkan(this->device, this->renderer, this->swapChainSubRenderer);
 	}
 
 	EngineApp::~EngineApp() {}
@@ -441,18 +486,14 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
+		uint32_t imageCount = static_cast<int>(this->renderer->getSwapChain()->imageCount());
 
 		this->globalUbo = this->updateCamera(width, height);
+		this->swapChainSubRenderer->resizeWindow(this->renderer->getSwapChain()->getswapChainImages(), this->renderer->getSwapChain()->getSwapChainImageFormat(), 
+			imageCount, width, height);
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
-
-		this->swapChainSubRenderer = std::make_shared<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
-			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
-			width, height);
-
-		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, imageCount);
+		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, imageCount);
 
 		VkDescriptorBufferInfo buffersInfo[9] { 
 			this->objectModel->getObjectInfo(), 
@@ -485,7 +526,5 @@ namespace nugiEngine {
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
-		
-		this->userInterface->initVulkan(this->device, this->renderer, this->swapChainSubRenderer);
 	}
 }

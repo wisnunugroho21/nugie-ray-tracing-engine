@@ -167,5 +167,21 @@ namespace nugiEngine {
 	void EngineSwapChainSubRenderer::endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
 		vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
 	}
+
+  void EngineSwapChainSubRenderer::resizeWindow(std::vector<std::shared_ptr<EngineImage>> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height) {
+    this->createColorResources(swapChainImageFormat, imageCount);
+    this->createDepthResources(imageCount);
+
+    std::vector<std::vector<VkImageView>> viewImages;
+    for (int i = 0; i < imageCount; i++) {
+			viewImages.emplace_back(std::vector<VkImageView> {
+        this->colorImages[i]->getImageView(), 
+        this->depthImages[i]->getImageView(),
+        this->swapChainImages[i]->getImageView()
+      });
+    }
+
+    this->renderPass->recreateFrameBuffer(viewImages, width, height);
+  }
   
 } // namespace nugiEngine

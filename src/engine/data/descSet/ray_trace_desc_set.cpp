@@ -23,7 +23,7 @@ namespace nugiEngine {
 				.addBinding(12, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[1].size()))
 				.build();
 		
-	this->descriptorSets.clear();
+		this->descriptorSets.clear();
 		for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			VkDescriptorSet descSet{};
 
