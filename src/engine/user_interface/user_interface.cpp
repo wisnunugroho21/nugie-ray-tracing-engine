@@ -30,6 +30,8 @@ namespace nugiEngine
   }
 
   void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->getCommandBuffer());
+
     ImGui_ImplGlfw_NewFrame();
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
