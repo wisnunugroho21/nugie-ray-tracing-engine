@@ -21,6 +21,7 @@
 #include "../renderer_system/trace_ray_render_system.hpp"
 #include "../renderer_system/sampling_ray_raster_render_system.hpp"
 #include "../utils/load_model/load_model.hpp"
+#include "../user_interface/user_interface.hpp"
 
 #include <memory>
 #include <vector>
@@ -76,6 +77,8 @@ namespace nugiEngine {
 
 			std::vector<std::unique_ptr<EngineTexture>> colorTextures{};
 			std::vector<std::unique_ptr<EngineTexture>> normalTextures{};
+
+			std::unique_ptr<EngineUserInterface> userInterface{};
 
 			uint32_t randomSeed = 0;
 			uint32_t numLights = 0;
