@@ -4,9 +4,11 @@ namespace nugiEngine
 {
   EngineUserInterface::EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, 
     std::shared_ptr<EngineHybridRenderer> renderer, std::shared_ptr<EngineSwapChainSubRenderer> subRenderer,
-    std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{engineDevice}
+    std::shared_ptr<EngineCommandBuffer> commandBuffer)
   {
     ImGui::CreateContext();
+    this->io = ImGui::GetIO(); (void) this->io;
+
     ImGui_ImplGlfw_InitForVulkan(window, false);
     
     ImGui_ImplVulkan_InitInfo init_info = {};
@@ -52,7 +54,7 @@ namespace nugiEngine
     ImGui::NewFrame();
 
     ImGui::Begin("Hello, world!");
-    ImGui::Text("This is some useful text.");
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
     ImGui::End();
     ImGui::Render();

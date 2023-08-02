@@ -14,7 +14,7 @@ namespace nugiEngine {
   class EngineUserInterface
   {
     private:
-      EngineDevice &engineDevice;
+      ImGuiIO io;
 
     public:
       EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, std::shared_ptr<EngineHybridRenderer> renderer, 
