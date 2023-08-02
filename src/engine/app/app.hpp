@@ -54,8 +54,8 @@ namespace nugiEngine {
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
 			EngineDevice device{window};
 			
-			std::unique_ptr<EngineHybridRenderer> renderer{};
-			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
+			std::shared_ptr<EngineHybridRenderer> renderer{};
+			std::shared_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 			std::unique_ptr<EngineTraceRayRenderSystem> traceRayRender{};
 			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
 

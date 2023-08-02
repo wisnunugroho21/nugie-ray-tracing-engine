@@ -1,0 +1,45 @@
+#include "user_interface.hpp"
+
+namespace nugiEngine
+{
+  EngineUserInterface::EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, 
+    std::shared_ptr<EngineHybridRenderer> renderer, std::shared_ptr<EngineSwapChainSubRenderer> subRenderer)
+  {
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForVulkan(window, false);
+    
+    ImGui_ImplVulkan_InitInfo init_info = {};
+    init_info.Instance = engineDevice.getInstance();
+    init_info.PhysicalDevice = engineDevice.getPhysicalDevice();
+    init_info.Device = engineDevice.getLogicalDevice();
+    init_info.QueueFamily = engineDevice.getQueueFamilyIndices().graphicsFamily;
+    init_info.Queue = engineDevice.getGraphicsQueue(0);
+    init_info.DescriptorPool = renderer->getDescriptorPool()->getDescriptorPool();
+    init_info.Subpass = 0;
+    init_info.MinImageCount = 1;
+    init_info.ImageCount = static_cast<int>(renderer->getSwapChain()->imageCount());
+    init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+    ImGui_ImplVulkan_Init(&init_info, subRenderer->getRenderPass()->getRenderPass());
+  }
+
+  EngineUserInterface::~EngineUserInterface() {
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+  }
+
+  void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+    ImGui_ImplGlfw_NewFrame();
+    ImGui_ImplVulkan_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::Begin("Hello, world!");
+    ImGui::Text("This is some useful text.");
+
+    ImGui::End();
+    ImGui::Render();
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer->getCommandBuffer());
+  }
+} // namespace name
+

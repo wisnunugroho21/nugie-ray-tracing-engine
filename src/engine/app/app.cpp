@@ -16,7 +16,7 @@
 
 namespace nugiEngine {
 	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
+		this->renderer = std::make_shared<EngineHybridRenderer>(this->window, this->device);
 
 		this->loadCornellBox();
 		this->loadQuadModels();
@@ -443,7 +443,7 @@ namespace nugiEngine {
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+		this->swapChainSubRenderer = std::make_shared<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
 

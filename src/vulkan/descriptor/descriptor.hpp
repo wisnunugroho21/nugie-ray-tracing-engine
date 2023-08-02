@@ -72,6 +72,8 @@ class EngineDescriptorPool {
   
   EngineDescriptorPool(const EngineDescriptorPool &) = delete;
   EngineDescriptorPool &operator=(const EngineDescriptorPool &) = delete;
+
+  VkDescriptorPool getDescriptorPool() const { return this->descriptorPool; }
  
   bool allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet *descriptor) const;
   void freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;

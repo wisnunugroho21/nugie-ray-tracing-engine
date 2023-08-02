@@ -45,22 +45,24 @@ namespace nugiEngine {
       void operator=(const EngineDevice &) = delete;
       EngineDevice(EngineDevice &&) = delete;
       EngineDevice &operator=(EngineDevice &&) = delete;
+
+      VkInstance getInstance() const { return this->instance; }
       
-      VkDevice getLogicalDevice() { return this->device; }
-      VkPhysicalDevice getPhysicalDevice() { return this->physicalDevice; }
+      VkDevice getLogicalDevice() const { return this->device; }
+      VkPhysicalDevice getPhysicalDevice() const { return this->physicalDevice; }
 
-      VkCommandPool getCommandPool() { return this->commandPool; }
-      VkSurfaceKHR getSurface() { return this->surface; }
+      VkCommandPool getCommandPool() const { return this->commandPool; }
+      VkSurfaceKHR getSurface() const { return this->surface; }
 
-      VkQueue getGraphicsQueue(uint32_t index) { return this->graphicsQueue[index]; }
-      VkQueue getPresentQueue(uint32_t index) { return this->presentQueue[index]; }
-      VkQueue getComputeQueue(uint32_t index) { return this->computeQueue[index]; }
-      VkQueue getTransferQueue(uint32_t index) { return this->transferQueue[index]; }
+      VkQueue getGraphicsQueue(uint32_t index) const { return this->graphicsQueue[index]; }
+      VkQueue getPresentQueue(uint32_t index) const { return this->presentQueue[index]; }
+      VkQueue getComputeQueue(uint32_t index) const { return this->computeQueue[index]; }
+      VkQueue getTransferQueue(uint32_t index) const { return this->transferQueue[index]; }
 
-      QueueFamilyIndices getFamilyIndices() { return this->familyIndices; }
+      QueueFamilyIndices getQueueFamilyIndices() const { return this->queueFamilyIndices; }
       
-      VkPhysicalDeviceProperties getProperties() { return this->properties; }
-      VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
+      VkPhysicalDeviceProperties getProperties() const { return this->properties; }
+      VkSampleCountFlagBits getMSAASamples() const { return this->msaaSamples; }
 
       SwapChainSupportDetails getSwapChainSupport() { return this->querySwapChainSupport(this->physicalDevice); }
       QueueFamilyIndices findPhysicalQueueFamilies() { return this->findQueueFamilies(this->physicalDevice); }
@@ -110,7 +112,7 @@ namespace nugiEngine {
       std::vector<VkQueue> transferQueue;
 
       // Queue Family Index
-      QueueFamilyIndices familyIndices;
+      QueueFamilyIndices queueFamilyIndices;
 
       // Anti-aliasing
       VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_1_BIT;
