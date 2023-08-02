@@ -3,7 +3,8 @@
 namespace nugiEngine
 {
   EngineUserInterface::EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, 
-    std::shared_ptr<EngineHybridRenderer> renderer, std::shared_ptr<EngineSwapChainSubRenderer> subRenderer)
+    std::shared_ptr<EngineHybridRenderer> renderer, std::shared_ptr<EngineSwapChainSubRenderer> subRenderer,
+    std::shared_ptr<EngineCommandBuffer> commandBuffer) : engineDevice{engineDevice}
   {
     ImGui::CreateContext();
     ImGui_ImplGlfw_InitForVulkan(window, false);
@@ -21,6 +22,22 @@ namespace nugiEngine
     init_info.MSAASamples = engineDevice.getMSAASamples();
 
     ImGui_ImplVulkan_Init(&init_info, subRenderer->getRenderPass()->getRenderPass());
+
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(engineDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;  
+    }
+
+    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->getCommandBuffer());
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(engineDevice.getTransferQueue(0));
+    }
   }
 
   EngineUserInterface::~EngineUserInterface() {
@@ -30,8 +47,6 @@ namespace nugiEngine
   }
 
   void EngineUserInterface::render(std::shared_ptr<EngineCommandBuffer> commandBuffer) {
-    ImGui_ImplVulkan_CreateFontsTexture(commandBuffer->getCommandBuffer());
-
     ImGui_ImplGlfw_NewFrame();
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();

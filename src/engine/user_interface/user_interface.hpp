@@ -14,10 +14,11 @@ namespace nugiEngine {
   class EngineUserInterface
   {
     private:
-      /* data */
+      EngineDevice &engineDevice;
+
     public:
       EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, std::shared_ptr<EngineHybridRenderer> renderer, 
-        std::shared_ptr<EngineSwapChainSubRenderer> subRenderer);
+        std::shared_ptr<EngineSwapChainSubRenderer> subRenderer, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr);
       ~EngineUserInterface();
 
       void render(std::shared_ptr<EngineCommandBuffer> commandBuffer);
