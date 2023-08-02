@@ -17,6 +17,7 @@
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
+		this->keyboardController = std::make_shared<EngineKeyboardController>();
 
 		this->loadCornellBox();
 		this->loadQuadModels();
@@ -27,9 +28,6 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
-			this->globalUbo = this->updateCamera(this->renderer->getSwapChain()->width(), 
-				this->renderer->getSwapChain()->height());
-
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -72,13 +70,15 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		// this->globalUniforms->writeGlobalData(0, this->globalUbo);
+		this->globalUbo = this->updateUbo(this->renderer->getSwapChain()->width(), 
+			this->renderer->getSwapChain()->height());
+
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
 			this->window.pollEvents();
 
-			/*auto newTime = std::chrono::high_resolution_clock::now();
+			auto newTime = std::chrono::high_resolution_clock::now();
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 
 			if (t == 10) {
@@ -90,7 +90,16 @@ namespace nugiEngine {
 				t++;
 			}
 
-			currentTime = newTime;*/
+			CameraRay cameraRay = this->camera->getCameraRay();
+			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay);
+		
+			this->globalUbo.origin = cameraRay.origin;
+			this->globalUbo.horizontal = cameraRay.horizontal;
+			this->globalUbo.vertical = cameraRay.vertical;
+			this->globalUbo.lowerLeftCorner = cameraRay.lowerLeftCorner;
+			this->globalUbo.numLights = this->numLights;
+
+			currentTime = newTime;
 		}
 
 		this->isRendering = false;
@@ -399,16 +408,16 @@ namespace nugiEngine {
 		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
+	RayTraceUbo EngineApp::updateUbo(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
 		this->camera->setViewDirection(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{278.0f, 278.0f, 0.0f}, 40.0f);
-		CameraRay camera = this->camera->getCameraRay();
+		CameraRay cameraRay = this->camera->getCameraRay();
 		
-		ubo.origin = camera.origin;
-		ubo.horizontal = camera.horizontal;
-		ubo.vertical = camera.vertical;
-		ubo.lowerLeftCorner = camera.lowerLeftCorner;
+		ubo.origin = cameraRay.origin;
+		ubo.horizontal = cameraRay.horizontal;
+		ubo.vertical = cameraRay.vertical;
+		ubo.lowerLeftCorner = cameraRay.lowerLeftCorner;
 		ubo.numLights = this->numLights;
 
 		float phi = glm::radians(45.0f);

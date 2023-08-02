@@ -22,6 +22,7 @@
 #include "../renderer_system/sampling_ray_raster_render_system.hpp"
 #include "../utils/load_model/load_model.hpp"
 #include "../utils/camera/camera.hpp"
+#include "../controller/keyboard/keyboard_controller.hpp"
 
 #include <memory>
 #include <vector>
@@ -49,7 +50,7 @@ namespace nugiEngine {
 			void loadSkyLight();
 			void loadQuadModels();
 
-			RayTraceUbo updateCamera(uint32_t width, uint32_t height);
+			RayTraceUbo updateUbo(uint32_t width, uint32_t height);
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
@@ -79,6 +80,7 @@ namespace nugiEngine {
 			std::vector<std::unique_ptr<EngineTexture>> normalTextures{};
 
 			std::shared_ptr<EngineCamera> camera{};
+			std::shared_ptr<EngineKeyboardController> keyboardController{};
 
 			uint32_t randomSeed = 0, numLights = 0;
 			bool isRendering = true;
