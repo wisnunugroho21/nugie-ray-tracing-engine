@@ -14,7 +14,9 @@ namespace nugiEngine {
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
-    this->window = glfwCreateWindow(this->width, this->height, this->name.c_str(), nullptr, nullptr);
+    this->window = glfwCreateWindow(this->width, this->height, this->name.c_str(), glfwGetPrimaryMonitor(), nullptr);
+    glfwGetWindowSize(this->window, &this->width, &this->height);
+    
     glfwSetWindowUserPointer(this->window, this);
     glfwSetFramebufferSizeCallback(this->window, this->frameBufferResizedCallback);
   }
