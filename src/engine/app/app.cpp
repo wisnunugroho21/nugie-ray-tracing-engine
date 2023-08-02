@@ -91,7 +91,13 @@ namespace nugiEngine {
 			}
 
 			CameraRay cameraRay = this->camera->getCameraRay();
-			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay);
+			bool isKeyPressed = false;
+
+			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay, &isKeyPressed);
+			if (isKeyPressed) {
+				this->camera->updateCameraRay(cameraRay);
+				this->randomSeed = 0;
+			}
 		
 			this->globalUbo.origin = cameraRay.origin;
 			this->globalUbo.horizontal = cameraRay.horizontal;

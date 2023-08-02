@@ -19,6 +19,7 @@ namespace nugiEngine {
       void setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f});
 
       CameraRay getCameraRay() const { return this->cameraRay; }
+      void updateCameraRay(CameraRay cameraRay);
 
     private:
       CameraRay cameraRay;

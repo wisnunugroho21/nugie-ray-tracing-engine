@@ -25,5 +25,9 @@ namespace nugiEngine {
   void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 up) {
     this->setViewDirection(position, target - position, vfov, up);
   }
+
+	void EngineCamera::updateCameraRay(CameraRay cameraRay) {
+		this->cameraRay = cameraRay;
+	}
 } // namespace nugiEngine
 
