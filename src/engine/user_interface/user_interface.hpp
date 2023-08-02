@@ -15,6 +15,7 @@ namespace nugiEngine {
   {
     private:
       ImGuiIO io;
+      bool showUI = true;
 
     public:
       EngineUserInterface(EngineDevice &engineDevice, GLFWwindow* window, std::shared_ptr<EngineHybridRenderer> renderer, 

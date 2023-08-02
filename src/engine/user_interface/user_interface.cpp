@@ -40,6 +40,8 @@ namespace nugiEngine
       commandBuffer->endCommand();
       commandBuffer->submitCommand(engineDevice.getTransferQueue(0));
     }
+
+    ImGui::GetIO().WantCaptureMouse;
   }
 
   EngineUserInterface::~EngineUserInterface() {
@@ -53,7 +55,12 @@ namespace nugiEngine
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::Begin("Hello, world!");
+    const float distance = 10.0f;
+    const ImVec2 pos = ImVec2(distance, distance);
+    const ImVec2 posPivot = ImVec2(0.0f, 0.0f);
+    ImGui::SetNextWindowPos(pos, ImGuiCond_Always, posPivot);
+
+    ImGui::Begin("Hello, world!", &this->showUI, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 
     ImGui::End();
