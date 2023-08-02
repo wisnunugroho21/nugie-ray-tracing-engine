@@ -21,6 +21,7 @@
 #include "../renderer_system/trace_ray_render_system.hpp"
 #include "../renderer_system/sampling_ray_raster_render_system.hpp"
 #include "../utils/load_model/load_model.hpp"
+#include "../utils/camera/camera.hpp"
 
 #include <memory>
 #include <vector>
@@ -77,8 +78,9 @@ namespace nugiEngine {
 			std::vector<std::unique_ptr<EngineTexture>> colorTextures{};
 			std::vector<std::unique_ptr<EngineTexture>> normalTextures{};
 
-			uint32_t randomSeed = 0;
-			uint32_t numLights = 0;
+			std::shared_ptr<EngineCamera> camera{};
+
+			uint32_t randomSeed = 0, numLights = 0;
 			bool isRendering = true;
 
 			RayTraceUbo globalUbo;

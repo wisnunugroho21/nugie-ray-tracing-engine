@@ -27,6 +27,9 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
+			this->globalUbo = this->updateCamera(this->renderer->getSwapChain()->width(), 
+				this->renderer->getSwapChain()->height());
+
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -399,30 +402,17 @@ namespace nugiEngine {
 	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
-		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
+		this->camera->setViewDirection(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{278.0f, 278.0f, 0.0f}, 40.0f);
+		CameraRay camera = this->camera->getCameraRay();
 		
-		float vfov = 40.0f;
-		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-		float theta = glm::radians(vfov);
-		float h = glm::tan(theta / 2.0f);
-		float viewportHeight = 2.0f * h;
-		float viewportWidth = aspectRatio * viewportHeight;
-
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::normalize(glm::cross(vup, w));
-		glm::vec3 v = glm::cross(w, u);
-
-		ubo.origin = glm::vec3(lookFrom);
-		ubo.horizontal = glm::vec3(viewportWidth * u);
-		ubo.vertical = glm::vec3(viewportHeight * v);
-		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
+		ubo.origin = camera.origin;
+		ubo.horizontal = camera.horizontal;
+		ubo.vertical = camera.vertical;
+		ubo.lowerLeftCorner = camera.lowerLeftCorner;
 		ubo.numLights = this->numLights;
 
 		float phi = glm::radians(45.0f);
-		theta = glm::radians(45.0f);
+		float theta = glm::radians(45.0f);
 
 		float sunX = glm::sin(theta) * glm::cos(phi);
 		float sunY = glm::sin(theta) * glm::sin(phi);
@@ -437,8 +427,6 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
-
-		this->globalUbo = this->updateCamera(width, height);
 
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
@@ -481,5 +469,7 @@ namespace nugiEngine {
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+
+		this->camera = std::make_shared<EngineCamera>(width, height);
 	}
 }

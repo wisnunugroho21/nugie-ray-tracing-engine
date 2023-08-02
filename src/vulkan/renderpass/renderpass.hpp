@@ -12,7 +12,7 @@ namespace nugiEngine {
     public:
       class Builder {
         public:
-          Builder(EngineDevice &appDevice, int width, int height);
+          Builder(EngineDevice &appDevice, uint32_t width, uint32_t height);
 
           Builder addSubpass(VkSubpassDescription subpass);
           Builder addAttachments(VkAttachmentDescription attachment);
@@ -22,7 +22,7 @@ namespace nugiEngine {
           std::shared_ptr<EngineRenderPass> build();
 
         private:
-          int width, height;
+          uint32_t width, height;
           EngineDevice &appDevice;
           std::vector<VkSubpassDescription> subpasses;
           std::vector<VkAttachmentDescription> attachments;
@@ -30,7 +30,7 @@ namespace nugiEngine {
           std::vector<std::vector<VkImageView>> viewImages;
       };
 
-      EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, int width, int height);
+      EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height);
       ~EngineRenderPass();
 
       EngineRenderPass(const EngineRenderPass &) = delete;
@@ -46,7 +46,7 @@ namespace nugiEngine {
       VkRenderPass renderPass;
 
       void createRenderPass(VkRenderPassCreateInfo renderPassInfo);
-      void createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, int width, int height);
+      void createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, uint32_t width, uint32_t height);
   };
 } // namespace nugiEngin 
 
