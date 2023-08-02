@@ -84,26 +84,4 @@ namespace nugiEngine {
       }
     }
   }
-
-  void EngineRenderPass::recreateFrameBuffer(std::vector<std::vector<VkImageView>> viewImages, int width, int height) {
-    for (size_t i = 0; i < viewImages.size(); i++) {
-      VkFramebufferCreateInfo framebufferInfo = {};
-      framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-      framebufferInfo.renderPass = this->renderPass;
-      framebufferInfo.attachmentCount = static_cast<uint32_t>(viewImages[i].size());
-      framebufferInfo.pAttachments = viewImages[i].data();
-      framebufferInfo.width = width;
-      framebufferInfo.height = height;
-      framebufferInfo.layers = 1;
-
-      if (vkCreateFramebuffer(
-        this->appDevice.getLogicalDevice(),
-        &framebufferInfo,
-        nullptr,
-        &this->framebuffers[i]) != VK_SUCCESS) 
-      {
-        throw std::runtime_error("failed to create framebuffer!");
-      }
-    }
-  }
 } // namespace nugiEngine

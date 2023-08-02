@@ -39,8 +39,6 @@ namespace nugiEngine {
       VkFramebuffer getFramebuffers(int index) { return this->framebuffers[index]; }
       VkRenderPass getRenderPass() { return this->renderPass; }
 
-      void recreateFrameBuffer(std::vector<std::vector<VkImageView>> viewImages, int width, int height);
-
     private:
       EngineDevice &appDevice;
 

@@ -15,8 +15,6 @@ namespace nugiEngine {
 
       void beginRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer, int currentImageIndex);
 			void endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer);
-
-      void resizeWindow(std::vector<std::shared_ptr<EngineImage>> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height);
       
     private:
       int width, height;
