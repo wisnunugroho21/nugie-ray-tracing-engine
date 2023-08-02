@@ -169,6 +169,9 @@ namespace nugiEngine {
 	}
 
   void EngineSwapChainSubRenderer::resizeWindow(std::vector<std::shared_ptr<EngineImage>> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height) {
+    this->width = width;
+    this->height = height;
+    
     this->createColorResources(swapChainImageFormat, imageCount);
     this->createDepthResources(imageCount);
 
