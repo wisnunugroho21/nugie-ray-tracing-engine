@@ -3,9 +3,11 @@
 namespace nugiEngine {
 
   CameraRay EngineKeyboardController::moveInPlaceXZ(GLFWwindow* window, float dt, CameraRay cameraRay, bool* isPressed) {
-    glm::vec3 forwardDir = glm::vec3{0.0f, 0.0f, 1.0f};
-    glm::vec3 rightDir = glm::vec3{-1.0f, 0.0f, 0.0f};
-    glm::vec3 upDir = glm::vec3{0.0f, -1.0f, 0.0};
+    glm::vec3 a = glm::abs(glm::normalize(cameraRay.direction).x) > 0.9 ? glm::vec3(0.0f, 1.0f, 0.0f) : glm::vec3(1.0f, 0.0f, 0.0f);
+
+    glm::vec3 forwardDir = glm::normalize(cameraRay.direction);
+    glm::vec3 rightDir = glm::normalize(glm::cross(forwardDir, a));
+    glm::vec3 upDir = glm::cross(forwardDir, rightDir);
 
     glm::vec3 moveDir{0.0f};
     *isPressed = false;
