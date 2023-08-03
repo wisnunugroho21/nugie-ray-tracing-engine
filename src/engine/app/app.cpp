@@ -98,12 +98,14 @@ namespace nugiEngine {
 			float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
 
 			CameraTransformation cameraTransformation = this->camera->getCameraTransformation();
-			bool isCurrentCameraMoved = false;
 
-			cameraTransformation = this->mouseController->rotateInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isCurrentCameraMoved);
-			cameraTransformation = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isCurrentCameraMoved);
+			bool isMousePressed = false;
+			bool isKeyboardPressed = false;
 
-			if (isCurrentCameraMoved) {
+			cameraTransformation = this->mouseController->rotateInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isMousePressed);
+			cameraTransformation = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isKeyboardPressed);
+
+			if (isMousePressed || isKeyboardPressed) {
 				this->camera->setViewTransformation(cameraTransformation, 40.0f);
 				CameraRay cameraRay = this->camera->getCameraRay();
 

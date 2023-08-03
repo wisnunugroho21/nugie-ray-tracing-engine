@@ -23,7 +23,7 @@ namespace nugiEngine {
     CameraTransformation moveInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed);
 
     KeyMappings keymaps{};
-    float moveSpeed{1.0f};
+    float moveSpeed{10.0f};
   };
   
 } // namespace nugiEngine
