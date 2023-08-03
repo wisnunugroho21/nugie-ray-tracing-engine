@@ -15,7 +15,7 @@ namespace nugiEngine {
     CameraTransformation rotateInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed);
 
     KeyMappings keymaps{};
-    float lookSpeed{1.0f};
+    float lookSpeed{3.0f};
 
     double lastDragged_x = 0;
     double lastDragged_y = 0;

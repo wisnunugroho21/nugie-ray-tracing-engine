@@ -7,8 +7,8 @@ namespace nugiEngine {
 		this->setViewTarget(position, direction + position, vfov, vup);
   }
 
-	void EngineCamera::setViewTransformation(CameraTransformation cameraTransformation, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f}) {
-		this->setViewTarget(cameraTransformation.origin, cameraTransformation.origin + cameraTransformation.direction, vfov, vup);
+	void EngineCamera::setViewTransformation(CameraTransformation cameraTransf, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f}) {
+		this->setViewTarget(cameraTransf.origin, cameraTransf.origin + cameraTransf.direction, vfov, vup);
 	}
 
   void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 vup) {
