@@ -28,6 +28,8 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
+			auto oldTime = std::chrono::high_resolution_clock::now();
+
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
@@ -67,11 +69,16 @@ namespace nugiEngine {
 					}
 				}				
 			}
+
+			auto newTime = std::chrono::high_resolution_clock::now();
+			this->frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
+			oldTime = newTime;
 		}
 	}
 
 	void EngineApp::run() {
 		auto oldTime = std::chrono::high_resolution_clock::now();
+		uint32_t t = 0;
 
 		this->globalUbo = this->initUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
@@ -102,6 +109,15 @@ namespace nugiEngine {
 
 				this->randomSeed = 0;
 				this->isCameraMoved = false;
+			}
+
+			if (t == 10) {
+				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / this->frameTime));
+				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
+
+				t = 0;
+			} else {
+				t++;
 			}
 
 			oldTime = newTime;
