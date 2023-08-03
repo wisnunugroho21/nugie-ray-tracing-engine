@@ -61,9 +61,12 @@ namespace nugiEngine {
 
 				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
 					if (this->isCameraMoved) {
-						do {
-							this->randomSeed = 0;
-						} while (this->isCameraMoved);
+						this->isCameraMoved = false;
+						this->randomSeed = 0;
+
+						for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+							this->globalUniforms->writeGlobalData(i, this->globalUbo);
+						}
 					} else {
 						this->randomSeed++;
 					}
@@ -94,21 +97,18 @@ namespace nugiEngine {
 			float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
 
 			CameraRay cameraRay = this->camera->getCameraRay();
-			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraRay, &this->isCameraMoved);
+			bool isCurrentCameraMoved = false;
 
-			if (this->isCameraMoved) {
+			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraRay, &isCurrentCameraMoved);
+
+			if (isCurrentCameraMoved) {
 				this->globalUbo.origin = cameraRay.origin;
 				this->globalUbo.horizontal = cameraRay.horizontal;
 				this->globalUbo.vertical = cameraRay.vertical;
 				this->globalUbo.lowerLeftCorner = cameraRay.lowerLeftCorner;
 
 				this->camera->updateCameraRay(cameraRay);
-				for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-					this->globalUniforms->writeGlobalData(i, this->globalUbo);
-				}
-
-				this->randomSeed = 0;
-				this->isCameraMoved = false;
+				this->isCameraMoved = true;
 			}
 
 			if (t == 10) {
