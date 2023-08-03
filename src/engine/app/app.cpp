@@ -71,10 +71,9 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::run() {
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		uint32_t t = 0;
+		auto oldTime = std::chrono::high_resolution_clock::now();
 
-		this->globalUbo = this->updateUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+		this->globalUbo = this->initUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			this->globalUniforms->writeGlobalData(i, this->globalUbo);
 		}
@@ -85,21 +84,17 @@ namespace nugiEngine {
 			this->window.pollEvents();
 
 			auto newTime = std::chrono::high_resolution_clock::now();
-			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-
-			if (t == 10) {
-				// std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
-				// glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
-
-				t = 0;
-			} else {
-				t++;
-			}
+			float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
 
 			CameraRay cameraRay = this->camera->getCameraRay();
-			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay, &this->isCameraMoved);
+			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraRay, &this->isCameraMoved);
 
 			if (this->isCameraMoved) {
+				this->globalUbo.origin = cameraRay.origin;
+				this->globalUbo.horizontal = cameraRay.horizontal;
+				this->globalUbo.vertical = cameraRay.vertical;
+				this->globalUbo.lowerLeftCorner = cameraRay.lowerLeftCorner;
+
 				this->camera->updateCameraRay(cameraRay);
 				for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 					this->globalUniforms->writeGlobalData(i, this->globalUbo);
@@ -108,14 +103,8 @@ namespace nugiEngine {
 				this->randomSeed = 0;
 				this->isCameraMoved = false;
 			}
-		
-			this->globalUbo.origin = cameraRay.origin;
-			this->globalUbo.horizontal = cameraRay.horizontal;
-			this->globalUbo.vertical = cameraRay.vertical;
-			this->globalUbo.lowerLeftCorner = cameraRay.lowerLeftCorner;
-			this->globalUbo.numLights = this->numLights;
 
-			currentTime = newTime;
+			oldTime = newTime;
 		}
 
 		this->isRendering = false;
@@ -424,7 +413,7 @@ namespace nugiEngine {
 		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::updateUbo(uint32_t width, uint32_t height) {
+	RayTraceUbo EngineApp::initUbo(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
 		this->camera->setViewTarget(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{278.0f, 278.0f, 0.0f}, 40.0f);

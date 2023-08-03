@@ -50,7 +50,7 @@ namespace nugiEngine {
 			void loadSkyLight();
 			void loadQuadModels();
 
-			RayTraceUbo updateUbo(uint32_t width, uint32_t height);
+			RayTraceUbo initUbo(uint32_t width, uint32_t height);
 			void recreateSubRendererAndSubsystem();
 
 			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
