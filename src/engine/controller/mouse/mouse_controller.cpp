@@ -2,7 +2,7 @@
 
 namespace nugiEngine {
 
-  CameraRay EngineMouseController::rotateInPlaceXZ(GLFWwindow* window, float dt, CameraRay cameraRay, bool* isPressed) {
+  CameraTransformation EngineMouseController::rotateInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
     if (glfwGetMouseButton(window, this->keymaps.rightButton) == GLFW_PRESS) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -18,7 +18,7 @@ namespace nugiEngine {
       if (glm::dot(rotate, rotate) > std::numeric_limits<float>::epsilon()) {
         glm::vec3 a = glm::vec3(0.0f, 1.0f, 0.0f);
 
-        glm::vec3 forwardDir = glm::normalize(cameraRay.direction);
+        glm::vec3 forwardDir = glm::normalize(cameraTransformation.direction);
         glm::vec3 rightDir = glm::normalize(glm::cross(forwardDir, a));
         glm::vec3 upDir = glm::cross(forwardDir, rightDir);
 
@@ -29,7 +29,7 @@ namespace nugiEngine {
         float Y = glm::sin(theta) * glm::sin(phi);
         float Z = glm::cos(theta);
 
-        cameraRay.direction = forwardDir * Z + upDir * Y + rightDir * X;
+        cameraTransformation.direction = forwardDir * Z + upDir * Y + rightDir * X;
       }
     } else if (glfwGetMouseButton(window, this->keymaps.rightButton) == GLFW_RELEASE) {
       this->lastDragged_x = 0;
@@ -38,7 +38,7 @@ namespace nugiEngine {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
-    return cameraRay;
+    return cameraTransformation;
   }
 } // namespace nugiEngine
 

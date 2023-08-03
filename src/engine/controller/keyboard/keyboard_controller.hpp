@@ -20,7 +20,7 @@ namespace nugiEngine {
       int lookDown = GLFW_KEY_DOWN;
     };
 
-    CameraRay moveInPlaceXZ(GLFWwindow* window, float dt, CameraRay cameraRay, bool* isPressed);
+    CameraTransformation moveInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed);
 
     KeyMappings keymaps{};
     float moveSpeed{1.0f};

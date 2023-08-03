@@ -2,10 +2,10 @@
 
 namespace nugiEngine {
 
-  CameraRay EngineKeyboardController::moveInPlaceXZ(GLFWwindow* window, float dt, CameraRay cameraRay, bool* isPressed) {
+  CameraTransformation EngineKeyboardController::moveInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
     glm::vec3 a = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    glm::vec3 forwardDir = glm::normalize(cameraRay.direction);
+    glm::vec3 forwardDir = glm::normalize(cameraTransformation.direction);
     glm::vec3 rightDir = glm::normalize(glm::cross(forwardDir, a));
     glm::vec3 upDir = glm::cross(forwardDir, rightDir);
 
@@ -43,10 +43,10 @@ namespace nugiEngine {
     }
 
     if (glm::dot(moveDir, moveDir) > std::numeric_limits<float>::epsilon()) {
-      cameraRay.origin += moveSpeed * dt * glm::normalize(moveDir);
+      cameraTransformation.origin += moveSpeed * dt * glm::normalize(moveDir);
     }
 
-    return cameraRay;
+    return cameraTransformation;
   }
   
 } // namespace nugiEngin 

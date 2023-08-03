@@ -7,6 +7,10 @@ namespace nugiEngine {
 		this->setViewTarget(position, direction + position, vfov, vup);
   }
 
+	void EngineCamera::setViewTransformation(CameraTransformation cameraTransformation, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f}) {
+		this->setViewTarget(cameraTransformation.origin, cameraTransformation.origin + cameraTransformation.direction, vfov, vup);
+	}
+
   void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 vup) {
 		float aspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
 
@@ -20,14 +24,12 @@ namespace nugiEngine {
 		glm::vec3 v = glm::cross(w, u);
 
 		this->cameraRay.origin = position;
-		this->cameraRay.direction = target - position;
 		this->cameraRay.horizontal = glm::vec3(viewportWidth * u);
 		this->cameraRay.vertical = glm::vec3(viewportHeight * v);
 		this->cameraRay.lowerLeftCorner = glm::vec3(position - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
-  }
 
-	void EngineCamera::updateCameraRay(CameraRay cameraRay) {
-		this->cameraRay = cameraRay;
-	}
+		this->cameraTransformation.origin = position;
+		this->cameraTransformation.direction = target - position;
+  }
 } // namespace nugiEngine
 

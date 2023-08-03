@@ -12,7 +12,7 @@ namespace nugiEngine {
       int rightButton = GLFW_MOUSE_BUTTON_RIGHT;
     };
 
-    CameraRay rotateInPlaceXZ(GLFWwindow* window, float dt, CameraRay cameraRay, bool* isPressed);
+    CameraTransformation rotateInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed);
 
     KeyMappings keymaps{};
     float lookSpeed{1.0f};
