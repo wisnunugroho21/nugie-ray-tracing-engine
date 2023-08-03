@@ -19,6 +19,7 @@ namespace nugiEngine {
 
     double lastDragged_x = 0;
     double lastDragged_y = 0;
+    bool isFirstPressed = true;
   };
   
 } // namespace nugiEngine
