@@ -93,9 +93,10 @@ ShadeRecord indirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColor
   float VoH = max(dot(unitViewDirection, H), 0.001f);
 
   float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
+  float pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
 
-  scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
   scat.radiance = partialIntegrand(surfaceColor, brdf, NoL);
+  scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   
   return scat;
 }
@@ -112,9 +113,10 @@ ShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceN
 
   float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
+  float pdf = lambertPdfValue(NoL);
 
-  scat.pdf = lambertPdfValue(NoL);
   scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+  scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   
   return scat;
 }
@@ -157,8 +159,10 @@ ShadeRecord directGgxShade(uint lightIndex, vec3 rayDirection, vec3 hitPoint, ve
     float sqrDistance = dot(vectorDistance, vectorDistance);
     float area = triangleArea(lights[lightHit.hitIndex].indices);
 
-    scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
+    float pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
+
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   }  
 
   return scat;
@@ -197,9 +201,10 @@ ShadeRecord sunDirectGgxShade(vec3 rayDirection, vec3 hitPoint, vec3 surfaceColo
     float VoH = max(dot(unitViewDirection, H), 0.001f);
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
+    float pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
 
-    scat.pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / pdf;
+    scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   }  
 
   return scat;
@@ -234,8 +239,10 @@ ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor
     float sqrDistance = dot(vectorDistance, vectorDistance);
     float area = triangleArea(lights[lightHit.hitIndex].indices);
 
-    scat.pdf = lambertPdfValue(NoL);
+    float pdf = lambertPdfValue(NoL);
+
     scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   }
 
   return scat;
@@ -264,8 +271,10 @@ ShadeRecord sunDirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surface
     float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
     float brdf = lambertBrdfValue();
 
-    scat.pdf = lambertPdfValue(NoL);
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / scat.pdf;
+    float pdf = lambertPdfValue(NoL);
+
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / pdf;
+    scat.pdf = float(dot(scat.radiance, scat.radiance) > 0.01f) * pdf;
   }
 
   return scat;
