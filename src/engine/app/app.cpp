@@ -417,7 +417,7 @@ namespace nugiEngine {
 	RayTraceUbo EngineApp::updateUbo(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
-		this->camera->setViewDirection(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{278.0f, 278.0f, 0.0f}, 40.0f);
+		this->camera->setViewTarget(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{278.0f, 278.0f, 0.0f}, 40.0f);
 		CameraRay cameraRay = this->camera->getCameraRay();
 		
 		ubo.origin = cameraRay.origin;
