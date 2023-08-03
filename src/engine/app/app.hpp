@@ -23,6 +23,7 @@
 #include "../utils/load_model/load_model.hpp"
 #include "../utils/camera/camera.hpp"
 #include "../controller/keyboard/keyboard_controller.hpp"
+#include "../controller/mouse/mouse_controller.hpp"
 
 #include <memory>
 #include <vector>
@@ -81,6 +82,7 @@ namespace nugiEngine {
 
 			std::shared_ptr<EngineCamera> camera{};
 			std::shared_ptr<EngineKeyboardController> keyboardController{};
+			std::shared_ptr<EngineMouseController> mouseController{};
 
 			uint32_t randomSeed = 0, numLights = 0;
 			bool isRendering = true, isCameraMoved = false;

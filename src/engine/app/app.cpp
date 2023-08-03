@@ -18,6 +18,7 @@ namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
 		this->keyboardController = std::make_shared<EngineKeyboardController>();
+		this->mouseController = std::make_shared<EngineMouseController>();
 
 		this->loadCornellBox();
 		this->loadQuadModels();
@@ -99,6 +100,7 @@ namespace nugiEngine {
 			CameraRay cameraRay = this->camera->getCameraRay();
 			bool isCurrentCameraMoved = false;
 
+			cameraRay = this->mouseController->rotateInPlaceXZ(this->window.getWindow(), deltaTime, cameraRay, &isCurrentCameraMoved);
 			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraRay, &isCurrentCameraMoved);
 
 			if (isCurrentCameraMoved) {
