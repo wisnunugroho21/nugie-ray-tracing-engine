@@ -32,8 +32,6 @@ namespace nugiEngine {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
-				this->globalUniforms->writeGlobalData(frameIndex, this->globalUbo);
-
 				auto commandBuffer = this->renderer->beginCommand();
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
 
@@ -60,7 +58,13 @@ namespace nugiEngine {
 				}				
 
 				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
-					this->randomSeed++;
+					if (this->isCameraMoved) {
+						do {
+							this->randomSeed = 0;
+						} while (this->isCameraMoved);
+					} else {
+						this->randomSeed++;
+					}
 				}				
 			}
 		}
@@ -82,8 +86,8 @@ namespace nugiEngine {
 			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 
 			if (t == 10) {
-				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
-				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
+				// std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
+				// glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
 
 				t = 0;
 			} else {
@@ -91,12 +95,16 @@ namespace nugiEngine {
 			}
 
 			CameraRay cameraRay = this->camera->getCameraRay();
-			bool isKeyPressed = false;
+			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay, &this->isCameraMoved);
 
-			cameraRay = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), frameTime, cameraRay, &isKeyPressed);
-			if (isKeyPressed) {
+			if (this->isCameraMoved) {
 				this->camera->updateCameraRay(cameraRay);
+				for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+					this->globalUniforms->writeGlobalData(i, this->globalUbo);
+				}
+
 				this->randomSeed = 0;
+				this->isCameraMoved = false;
 			}
 		
 			this->globalUbo.origin = cameraRay.origin;

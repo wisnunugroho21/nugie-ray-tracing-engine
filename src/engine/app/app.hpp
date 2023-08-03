@@ -83,7 +83,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineKeyboardController> keyboardController{};
 
 			uint32_t randomSeed = 0, numLights = 0;
-			bool isRendering = true;
+			bool isRendering = true, isCameraMoved = false;
 
 			RayTraceUbo globalUbo;
 	};
