@@ -17,6 +17,8 @@
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
+		this->keyboardController = std::make_shared<EngineKeyboardController>();
+		this->mouseController = std::make_shared<EngineMouseController>();
 
 		this->loadCornellBox();
 		this->loadQuadModels();
@@ -27,11 +29,11 @@ namespace nugiEngine {
 
 	void EngineApp::renderLoop() {
 		while (this->isRendering) {
+			auto oldTime = std::chrono::high_resolution_clock::now();
+
 			if (this->renderer->acquireFrame()) {
 				uint32_t frameIndex = this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
-
-				this->globalUniforms->writeGlobalData(frameIndex, this->globalUbo);
 
 				auto commandBuffer = this->renderer->beginCommand();
 				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
@@ -59,27 +61,64 @@ namespace nugiEngine {
 				}				
 
 				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
-					this->randomSeed++;
+					if (this->isCameraMoved) {
+						this->isCameraMoved = false;
+						this->randomSeed = 0;
+
+						for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+							this->globalUniforms->writeGlobalData(i, this->globalUbo);
+						}
+					} else {
+						this->randomSeed++;
+					}
 				}				
 			}
+
+			auto newTime = std::chrono::high_resolution_clock::now();
+			this->frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
+			oldTime = newTime;
 		}
 	}
 
 	void EngineApp::run() {
-		auto currentTime = std::chrono::high_resolution_clock::now();
+		auto oldTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		// this->globalUniforms->writeGlobalData(0, this->globalUbo);
+		this->globalUbo = this->initUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			this->globalUniforms->writeGlobalData(i, this->globalUbo);
+		}
+
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
 		while (!this->window.shouldClose()) {
 			this->window.pollEvents();
 
-			/*auto newTime = std::chrono::high_resolution_clock::now();
-			float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			auto newTime = std::chrono::high_resolution_clock::now();
+			float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
+
+			CameraTransformation cameraTransformation = this->camera->getCameraTransformation();
+
+			bool isMousePressed = false;
+			bool isKeyboardPressed = false;
+
+			cameraTransformation = this->mouseController->rotateInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isMousePressed);
+			cameraTransformation = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isKeyboardPressed);
+
+			if (isMousePressed || isKeyboardPressed) {
+				this->camera->setViewTransformation(cameraTransformation, 40.0f);
+				CameraRay cameraRay = this->camera->getCameraRay();
+
+				this->globalUbo.origin = cameraRay.origin;
+				this->globalUbo.horizontal = cameraRay.horizontal;
+				this->globalUbo.vertical = cameraRay.vertical;
+				this->globalUbo.lowerLeftCorner = cameraRay.lowerLeftCorner;
+				
+				this->isCameraMoved = true;
+			}
 
 			if (t == 10) {
-				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / frameTime));
+				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / this->frameTime));
 				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
 
 				t = 0;
@@ -87,7 +126,7 @@ namespace nugiEngine {
 				t++;
 			}
 
-			currentTime = newTime;*/
+			oldTime = newTime;
 		}
 
 		this->isRendering = false;
@@ -396,33 +435,20 @@ namespace nugiEngine {
 		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::updateCamera(uint32_t width, uint32_t height) {
+	RayTraceUbo EngineApp::initUbo(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
-		glm::vec3 lookFrom = glm::vec3(278.0f, 278.0f, -800.0f);
-		glm::vec3 lookAt = glm::vec3(278.0f, 278.0f, 0.0f);
-		glm::vec3 vup = glm::vec3(0.0f, 1.0f, 0.0f);
+		this->camera->setViewDirection(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, 40.0f);
+		CameraRay cameraRay = this->camera->getCameraRay();
 		
-		float vfov = 40.0f;
-		float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-
-		float theta = glm::radians(vfov);
-		float h = glm::tan(theta / 2.0f);
-		float viewportHeight = 2.0f * h;
-		float viewportWidth = aspectRatio * viewportHeight;
-
-		glm::vec3 w = glm::normalize(lookFrom - lookAt);
-		glm::vec3 u = glm::normalize(glm::cross(vup, w));
-		glm::vec3 v = glm::cross(w, u);
-
-		ubo.origin = glm::vec3(lookFrom);
-		ubo.horizontal = glm::vec3(viewportWidth * u);
-		ubo.vertical = glm::vec3(viewportHeight * v);
-		ubo.lowerLeftCorner = glm::vec3(lookFrom - viewportWidth * u / 2.0f + viewportHeight * v / 2.0f - w);
+		ubo.origin = cameraRay.origin;
+		ubo.horizontal = cameraRay.horizontal;
+		ubo.vertical = cameraRay.vertical;
+		ubo.lowerLeftCorner = cameraRay.lowerLeftCorner;
 		ubo.numLights = this->numLights;
 
 		float phi = glm::radians(45.0f);
-		theta = glm::radians(45.0f);
+		float theta = glm::radians(45.0f);
 
 		float sunX = glm::sin(theta) * glm::cos(phi);
 		float sunY = glm::sin(theta) * glm::sin(phi);
@@ -437,8 +463,6 @@ namespace nugiEngine {
 	void EngineApp::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
-
-		this->globalUbo = this->updateCamera(width, height);
 
 		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
@@ -481,5 +505,7 @@ namespace nugiEngine {
 
 		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+
+		this->camera = std::make_shared<EngineCamera>(width, height);
 	}
 }

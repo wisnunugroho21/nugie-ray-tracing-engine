@@ -3,7 +3,7 @@
 #include <array>
 
 namespace nugiEngine {
-  EngineRenderPass::Builder::Builder(EngineDevice &appDevice, int width, int height) : 
+  EngineRenderPass::Builder::Builder(EngineDevice &appDevice, uint32_t width, uint32_t height) : 
     appDevice{appDevice}, width{width}, height{height} 
   {
 
@@ -42,7 +42,7 @@ namespace nugiEngine {
     return std::make_shared<EngineRenderPass>(this->appDevice, this->viewImages, renderPassInfo, this->width, this->height);
   }
 
-  EngineRenderPass::EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, int width, int height) : appDevice{appDevice} {
+  EngineRenderPass::EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height) : appDevice{appDevice} {
     this->createRenderPass(renderPassInfo);
     this->createFramebuffers(viewImages, width, height);
   }
@@ -61,7 +61,7 @@ namespace nugiEngine {
     }
   }
 
-  void EngineRenderPass::createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, int width, int height) {
+  void EngineRenderPass::createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, uint32_t width, uint32_t height) {
     this->framebuffers.resize(viewImages.size());
 
     for (size_t i = 0; i < viewImages.size(); i++) {
