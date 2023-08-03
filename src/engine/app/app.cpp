@@ -74,8 +74,10 @@ namespace nugiEngine {
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
-		this->globalUbo = this->updateUbo(this->renderer->getSwapChain()->width(), 
-			this->renderer->getSwapChain()->height());
+		this->globalUbo = this->updateUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+			this->globalUniforms->writeGlobalData(i, this->globalUbo);
+		}
 
 		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
 
