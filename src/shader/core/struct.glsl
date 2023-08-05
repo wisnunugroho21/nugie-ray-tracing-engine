@@ -63,6 +63,11 @@ struct Transformation {
   mat4 normalMatrix;
 };
 
+struct Pixel {
+  uint xCoord;
+  uint yCoord;
+};
+
 // ---------------------- internal struct ----------------------
 
 struct Ray {

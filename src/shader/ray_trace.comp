@@ -56,8 +56,12 @@ layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
   Transformation transformations[];
 };
 
-layout(set = 0, binding = 11) uniform sampler2D colorTextureSampler[1];
-layout(set = 0, binding = 12) uniform sampler2D normalTextureSampler[1];
+layout(set = 0, binding = 11) buffer readonly MortonPixelSsbo {
+  Pixel mortonPixels[];
+};
+
+layout(set = 0, binding = 12) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 13) uniform sampler2D normalTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -285,12 +289,13 @@ ShadeRecord sunDirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
 // ------------- Main -------------
 
 void main() {
-  uvec2 imgPosition = gl_GlobalInvocationID.xy;
+  Pixel mortonPixel = mortonPixels[imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x];
+  ivec2 pixelCoord = ivec2(mortonPixel.xCoord, mortonPixel.yCoord);
 
   float noiseX = randomFloat(0) * 2.0f - 1.0f;
   float noiseY = randomFloat(1) * 2.0f - 1.0f;
 
-  vec2 uv = (imgPosition + vec2(noiseX, noiseY)) / imgSize;
+  vec2 uv = (vec2(pixelCoord) + vec2(noiseX, noiseY)) / imgSize;
 
   vec3 totalRadiance = vec3(0.0f);
   vec3 totalIndirect = vec3(1.0f);
@@ -352,5 +357,5 @@ void main() {
     curRay = indirectShadeResult.nextRay;
   }
   
-  imageStore(targetImage, ivec2(imgPosition), vec4(totalRadiance, 1.0f));
+  imageStore(targetImage, ivec2(pixelCoord), vec4(totalRadiance, 1.0f));
 }

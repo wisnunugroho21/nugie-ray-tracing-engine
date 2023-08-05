@@ -408,6 +408,9 @@ namespace nugiEngine {
 		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 
 		this->numLights = 0u;
+
+		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+		this->mortonPixelModels = std::make_shared<EngineMortonModel>(this->device, mortonPixels);
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -474,7 +477,7 @@ namespace nugiEngine {
 		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
-		VkDescriptorBufferInfo buffersInfo[9] { 
+		VkDescriptorBufferInfo buffersInfo[10] { 
 			this->objectModel->getObjectInfo(), 
 			this->objectModel->getBvhInfo(),
 			this->primitiveModel->getPrimitiveInfo(), 
@@ -483,7 +486,8 @@ namespace nugiEngine {
 			this->lightModel->getLightInfo(),
 			this->lightModel->getBvhInfo(),
 			this->materialModel->getMaterialInfo(),
-			this->transformationModel->getTransformationInfo() 
+			this->transformationModel->getTransformationInfo(),
+			this->mortonPixelModels->getMortonPixelsInfo() 
 		};
 
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {

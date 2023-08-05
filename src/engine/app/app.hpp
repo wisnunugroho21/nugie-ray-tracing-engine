@@ -13,6 +13,7 @@
 #include "../data/model/material_model.hpp"
 #include "../data/model/transformation_model.hpp"
 #include "../data/model/vertex_ray_trace_model.hpp"
+#include "../data/model/morton_model.hpp"
 #include "../data/buffer/global_uniform.hpp"
 #include "../data/descSet/ray_trace_desc_set.hpp"
 #include "../data/descSet/sampling_desc_set.hpp"
@@ -22,6 +23,7 @@
 #include "../renderer_system/sampling_ray_raster_render_system.hpp"
 #include "../utils/load_model/load_model.hpp"
 #include "../utils/camera/camera.hpp"
+#include "../utils/sort/morton.hpp"
 #include "../controller/keyboard/keyboard_controller.hpp"
 #include "../controller/mouse/mouse_controller.hpp"
 
@@ -73,6 +75,7 @@ namespace nugiEngine {
 			std::unique_ptr<EngineTransformationModel> transformationModel{};
 			std::shared_ptr<EngineVertexModel> quadModels{};
 			std::shared_ptr<EngineRayTraceVertexModel> rayTraceVertexModels{};
+			std::shared_ptr<EngineMortonModel> mortonPixelModels{};
 
 			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};

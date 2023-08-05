@@ -66,6 +66,11 @@ namespace nugiEngine {
     alignas(16) glm::vec3 color;
   };
 
+  struct Pixel {
+    uint32_t xCoord;
+    uint32_t yCoord;
+  };
+
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin;
     alignas(16) glm::vec3 horizontal;

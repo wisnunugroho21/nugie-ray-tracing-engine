@@ -1,11 +1,11 @@
 #include "ray_trace_desc_set.hpp"
 
 namespace nugiEngine {
-  EngineRayTraceDescSet::EngineRayTraceDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[9], std::vector<VkDescriptorImageInfo> texturesInfo[2]) {
+  EngineRayTraceDescSet::EngineRayTraceDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[10], std::vector<VkDescriptorImageInfo> texturesInfo[2]) {
 		this->createDescriptor(device, descriptorPool, uniformBufferInfo, rayTraceImageInfo, buffersInfo, texturesInfo);
   }
 
-  void EngineRayTraceDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[9], std::vector<VkDescriptorImageInfo> texturesInfo[2]) {
+  void EngineRayTraceDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[10], std::vector<VkDescriptorImageInfo> texturesInfo[2]) {
     this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(device)
 				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
@@ -19,8 +19,9 @@ namespace nugiEngine {
 				.addBinding(8, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(9, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(10, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
-				.addBinding(11, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[0].size()))
-				.addBinding(12, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[1].size()))
+				.addBinding(11, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(12, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[0].size()))
+				.addBinding(13, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_COMPUTE_BIT, static_cast<uint32_t>(texturesInfo[1].size()))
 				.build();
 		
 	this->descriptorSets.clear();
@@ -39,8 +40,9 @@ namespace nugiEngine {
 				.writeBuffer(8, &buffersInfo[6])
 				.writeBuffer(9, &buffersInfo[7])
 				.writeBuffer(10, &buffersInfo[8])
-				.writeImage(11, texturesInfo[0].data(), static_cast<uint32_t>(texturesInfo[0].size()))
-				.writeImage(12, texturesInfo[1].data(), static_cast<uint32_t>(texturesInfo[1].size()))
+				.writeBuffer(11, &buffersInfo[9])
+				.writeImage(12, texturesInfo[0].data(), static_cast<uint32_t>(texturesInfo[0].size()))
+				.writeImage(13, texturesInfo[1].data(), static_cast<uint32_t>(texturesInfo[1].size()))
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
