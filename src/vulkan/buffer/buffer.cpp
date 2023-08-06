@@ -22,7 +22,7 @@ namespace nugiEngine {
    *
    * @return VkResult of the buffer mapping call
    */
-  VkDeviceSize EngineBuffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
+  VkDeviceSize EngineBuffer::getSizeAfterAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
     if (minOffsetAlignment > 0) {
       return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
     }
@@ -43,7 +43,7 @@ namespace nugiEngine {
         usageFlags{usageFlags},
         memoryPropertyFlags{memoryPropertyFlags} 
   {
-    this->alignmentSize = getAlignment(instanceSize, minOffsetAlignment);
+    this->alignmentSize = this->getSizeAfterAlignment(instanceSize, minOffsetAlignment);
     this->bufferSize = alignmentSize * instanceCount;
 
     this->createBuffer(bufferSize, usageFlags, memoryPropertyFlags);

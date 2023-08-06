@@ -36,6 +36,8 @@ class EngineBuffer {
   VkResult flushIndex(int index);
   VkDescriptorBufferInfo descriptorInfoForIndex(int index);
   VkResult invalidateIndex(int index);
+
+  static VkDeviceSize getSizeAfterAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
  
   VkBuffer getBuffer() const { return buffer; }
   void* getMappedMemory() const { return mapped; }
@@ -47,8 +49,6 @@ class EngineBuffer {
   VkDeviceSize getBufferSize() const { return bufferSize; }
  
  private:
-  static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);
- 
   EngineDevice& engineDevice;
 
   void* mapped = nullptr;

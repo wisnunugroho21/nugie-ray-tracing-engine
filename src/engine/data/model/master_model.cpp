@@ -96,16 +96,16 @@ namespace nugiEngine {
 	{
 		auto minOffsetAlign = device.getProperties().limits.minStorageBufferOffsetAlignment;
 
-		this->objectBufferSize = sizeof(Object) * objects->size();
-		this->objectBvhBufferSize = sizeof(BvhNode) * objectBvhNodes->size();
-		this->primitiveBufferSize = sizeof(Primitive) * primitives->size();
-		this->primitiveBvhBufferSize = sizeof(BvhNode) * primitiveBvhNodes->size();
-		this->verticeBufferSize = sizeof(RayTraceVertex) * vertices->size();
-		this->triangleLightBufferSize = sizeof(TriangleLight) * triangleLights->size();
-		this->triangleLightBvhBufferSize = sizeof(BvhNode) * triangleLightBvhNodes->size();
-		this->materialBufferSize = sizeof(Material) * materials->size();
-		this->transformationBufferSize = sizeof(Transformation) * transformation->size();
-		this->mortonPixelBufferSize = sizeof(Pixel) * mortonPixels->size();
+		this->objectBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(Object) * objects->size(), minOffsetAlign);
+		this->objectBvhBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(BvhNode) * objectBvhNodes->size(), minOffsetAlign);
+		this->primitiveBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(Primitive) * primitives->size(), minOffsetAlign);
+		this->primitiveBvhBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(BvhNode) * primitiveBvhNodes->size(), minOffsetAlign);
+		this->verticeBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(RayTraceVertex) * vertices->size(), minOffsetAlign);
+		this->triangleLightBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(TriangleLight) * triangleLights->size(), minOffsetAlign);
+		this->triangleLightBvhBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(BvhNode) * triangleLightBvhNodes->size(), minOffsetAlign);
+		this->materialBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(Material) * materials->size(), minOffsetAlign);
+		this->transformationBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(Transformation) * transformation->size(), minOffsetAlign);
+		this->mortonPixelBufferSize = EngineBuffer::getSizeAfterAlignment(sizeof(Pixel) * mortonPixels->size(), minOffsetAlign);
 
 		auto totalSize = this->objectBufferSize + this->objectBvhBufferSize + this->primitiveBufferSize + this->primitiveBvhBufferSize + 
 			this->verticeBufferSize + this->triangleLightBufferSize + this->triangleLightBvhBufferSize + this->materialBufferSize + 
