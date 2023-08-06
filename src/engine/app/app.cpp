@@ -409,8 +409,7 @@ namespace nugiEngine {
 
 		this->numLights = 0u;
 
-		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
-		this->mortonPixelModels = std::make_shared<EngineMortonModel>(this->device, mortonPixels);
+		
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -511,5 +510,8 @@ namespace nugiEngine {
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
 		this->camera = std::make_shared<EngineCamera>(width, height);
+
+		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+		this->mortonPixelModels = std::make_shared<EngineMortonModel>(this->device, mortonPixels);
 	}
 }

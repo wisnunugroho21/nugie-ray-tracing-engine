@@ -357,5 +357,5 @@ void main() {
     curRay = indirectShadeResult.nextRay;
   }
   
-  imageStore(targetImage, ivec2(pixelCoord), vec4(totalRadiance, 1.0f));
+  imageStore(targetImage, pixelCoord, vec4(totalRadiance, 1.0f));
 }
