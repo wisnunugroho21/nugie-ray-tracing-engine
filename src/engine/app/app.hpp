@@ -7,13 +7,8 @@
 #include "../utils/camera/camera.hpp"
 #include "../data/image/accumulate_image.hpp"
 #include "../data/image/ray_trace_image.hpp"
-#include "../data/model/primitive_model.hpp"
-#include "../data/model/object_model.hpp"
-#include "../data/model/light_model.hpp"
-#include "../data/model/material_model.hpp"
-#include "../data/model/transformation_model.hpp"
-#include "../data/model/vertex_ray_trace_model.hpp"
-#include "../data/model/morton_model.hpp"
+#include "../data/model/vertex_model.hpp"
+#include "../data/model/master_model.hpp"
 #include "../data/uniform/global_uniform.hpp"
 #include "../data/descSet/ray_trace_desc_set.hpp"
 #include "../data/descSet/sampling_desc_set.hpp"
@@ -68,14 +63,8 @@ namespace nugiEngine {
 			std::unique_ptr<EngineRayTraceImage> rayTraceImage{};
 			std::unique_ptr<EngineGlobalUniform> globalUniforms{};
 
-			std::unique_ptr<EnginePrimitiveModel> primitiveModel{};
-			std::unique_ptr<EngineObjectModel> objectModel{};
-			std::unique_ptr<EngineLightModel> lightModel{};
-			std::unique_ptr<EngineMaterialModel> materialModel{};
-			std::unique_ptr<EngineTransformationModel> transformationModel{};
 			std::shared_ptr<EngineVertexModel> quadModels{};
-			std::shared_ptr<EngineRayTraceVertexModel> rayTraceVertexModels{};
-			std::shared_ptr<EngineMortonModel> mortonPixelModels{};
+			std::shared_ptr<EngineMasterModel> masterModels{};
 
 			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};

@@ -136,7 +136,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadCornellBox() {
-		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
+		EngineMasterModel::Builder masterModelBuilder{this->device};
 
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
@@ -152,7 +152,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 		
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
@@ -164,7 +164,7 @@ namespace nugiEngine {
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
 		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
 
-		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(rightWallPrimitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], rightWallPrimitives, transforms[transformIndex], vertices }));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -178,7 +178,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
@@ -190,7 +190,7 @@ namespace nugiEngine {
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
 		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
 		
-		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(leftWallPrimitives, vertices);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], leftWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -204,14 +204,14 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 0u, 3u), 0u });
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(3u, 7u, 4u), 0u });
 		
-		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(bottomWallPrimitives, vertices);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -225,14 +225,14 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(5u, 1u, 2u), 0u });
 		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 6u, 5u), 0u });
 
-		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(topWallPrimitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], topWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -246,14 +246,14 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(7u, 6u, 2u), 0u });
 		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 7u), 0u });
 
-		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(frontWallPrimitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], frontWallPrimitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -284,7 +284,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
@@ -292,7 +292,7 @@ namespace nugiEngine {
 			vertices->emplace_back(vertex);
 		}
 
-		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
+		masterModelBuilder.addPrimitives(loadedModel.primitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], loadedModel.primitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -302,14 +302,17 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
+		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+
+		this->masterModels = masterModelBuilder.setObjects(objects, boundBoxes)
+			.setVertices(vertices)
+			.setLights(triangleLights, vertices)
+			.setMaterials(materials)
+			.setTransformations(transforms)
+			.setMortonPixels(mortonPixels)
+			.build();
 
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
-		this->primitiveModel->createBuffers();
 
 		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
@@ -318,7 +321,7 @@ namespace nugiEngine {
 	}
 
 	void EngineApp::loadSkyLight() {
-		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
+		EngineMasterModel::Builder masterModelBuilder{this->device};
 
 		auto objects = std::make_shared<std::vector<Object>>();
 		auto materials = std::make_shared<std::vector<Material>>();
@@ -334,7 +337,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
@@ -346,7 +349,7 @@ namespace nugiEngine {
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
 		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
 		
-		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
+		masterModelBuilder.addPrimitives(bottomWallPrimitives, vertices);
 		
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], bottomWallPrimitives, transforms[transformIndex], vertices }));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -377,7 +380,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
@@ -385,7 +388,7 @@ namespace nugiEngine {
 			vertices->emplace_back(vertex);
 		}
 
-		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
+		masterModelBuilder.addPrimitives(loadedModel.primitives, vertices);
 
 		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), (*objects)[objectIndex], loadedModel.primitives, transforms[transformIndex], vertices }));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
@@ -395,21 +398,22 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
+		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
+
+		this->masterModels = masterModelBuilder.setObjects(objects, boundBoxes)
+			.setVertices(vertices)
+			.setLights(triangleLights, vertices)
+			.setMaterials(materials)
+			.setTransformations(transforms)
+			.setMortonPixels(mortonPixels)
+			.build();
 
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
-		this->primitiveModel->createBuffers();
 
 		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 
 		this->numLights = 0u;
-
-		
 	}
 
 	void EngineApp::loadQuadModels() {
@@ -477,16 +481,16 @@ namespace nugiEngine {
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
 		VkDescriptorBufferInfo buffersInfo[10] { 
-			this->objectModel->getObjectInfo(), 
-			this->objectModel->getBvhInfo(),
-			this->primitiveModel->getPrimitiveInfo(), 
-			this->primitiveModel->getBvhInfo(),
-			this->rayTraceVertexModels->getVertexnfo(),
-			this->lightModel->getLightInfo(),
-			this->lightModel->getBvhInfo(),
-			this->materialModel->getMaterialInfo(),
-			this->transformationModel->getTransformationInfo(),
-			this->mortonPixelModels->getMortonPixelsInfo() 
+			this->masterModels->getObjectInfo(), 
+			this->masterModels->getObjectBvhInfo(),
+			this->masterModels->getPrimitiveInfo(), 
+			this->masterModels->getPrimitiveBvhInfo(),
+			this->masterModels->getVertexnfo(),
+			this->masterModels->getTriangleLightInfo(),
+			this->masterModels->getTriangleLightBvhInfo(),
+			this->masterModels->getMaterialInfo(),
+			this->masterModels->getTransformationInfo(),
+			this->masterModels->getMortonPixelInfo() 
 		};
 
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
@@ -510,8 +514,5 @@ namespace nugiEngine {
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
 		this->camera = std::make_shared<EngineCamera>(width, height);
-
-		auto mortonPixels = sortPixelByMorton(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
-		this->mortonPixelModels = std::make_shared<EngineMortonModel>(this->device, mortonPixels);
 	}
 }
