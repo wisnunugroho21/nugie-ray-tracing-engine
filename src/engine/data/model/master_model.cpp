@@ -8,7 +8,10 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-  EngineMasterModel::Builder::Builder(EngineDevice &engineDevice) : engineDevice{engineDevice} {}
+  EngineMasterModel::Builder::Builder(EngineDevice &engineDevice) : engineDevice{engineDevice} {
+		this->primitives = std::make_shared<std::vector<Primitive>>();
+		this->primitiveBvhNodes = std::make_shared<std::vector<BvhNode>>();
+	}
 
   EngineMasterModel::Builder EngineMasterModel::Builder::addPrimitives(std::shared_ptr<std::vector<Primitive>> curPrimitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices) {
     std::vector<std::shared_ptr<BoundBox>> boundBoxes;
@@ -91,6 +94,8 @@ namespace nugiEngine {
 		std::shared_ptr<std::vector<BvhNode>> triangleLightBvhNodes, std::shared_ptr<std::vector<Material>> materials, 
 		std::shared_ptr<std::vector<Transformation>> transformation, std::shared_ptr<std::vector<Pixel>> mortonPixels) 
 	{
+		auto minOffsetAlign = device.getProperties().limits.minStorageBufferOffsetAlignment;
+
 		this->objectBufferSize = sizeof(Object) * objects->size();
 		this->objectBvhBufferSize = sizeof(BvhNode) * objectBvhNodes->size();
 		this->primitiveBufferSize = sizeof(Primitive) * primitives->size();
@@ -111,7 +116,8 @@ namespace nugiEngine {
 			static_cast<VkDeviceSize>(totalSize),
 			1,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			minOffsetAlign
 		};
 
 		stagingBuffer.map();
@@ -142,7 +148,8 @@ namespace nugiEngine {
 			static_cast<VkDeviceSize>(totalSize),
 			1,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			minOffsetAlign
 		);
 
 		this->buffer->copyBuffer(stagingBuffer.getBuffer(), static_cast<VkDeviceSize>(totalSize));
