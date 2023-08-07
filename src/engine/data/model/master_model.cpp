@@ -120,28 +120,65 @@ namespace nugiEngine {
 			minOffsetAlign
 		};
 
-		stagingBuffer.map();
-
+		stagingBuffer.map(this->objectBufferSize, 0);
 		stagingBuffer.writeToBuffer(objects->data(), this->objectBufferSize, 0);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->objectBvhBufferSize, this->objectBufferSize);
 		stagingBuffer.writeToBuffer(objectBvhNodes->data(), this->objectBvhBufferSize, this->objectBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->primitiveBufferSize, this->objectBufferSize + this->objectBvhBufferSize);
 		stagingBuffer.writeToBuffer(primitives->data(), this->primitiveBufferSize, this->objectBufferSize + this->objectBvhBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->primitiveBvhBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize);
 		stagingBuffer.writeToBuffer(primitiveBvhNodes->data(), this->primitiveBvhBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->verticeBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize);
 		stagingBuffer.writeToBuffer(vertices->data(), this->verticeBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->triangleLightBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize);
 		stagingBuffer.writeToBuffer(triangleLights->data(), this->triangleLightBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->triangleLightBvhBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize);
 		stagingBuffer.writeToBuffer(triangleLightBvhNodes->data(), this->triangleLightBvhBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->materialBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
+			this->triangleLightBvhBufferSize);
 		stagingBuffer.writeToBuffer(materials->data(), this->materialBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
 			this->triangleLightBvhBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->transformationBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
+			this->triangleLightBvhBufferSize + this->materialBufferSize);
 		stagingBuffer.writeToBuffer(transformation->data(), this->transformationBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
 			this->triangleLightBvhBufferSize + this->materialBufferSize);
+		stagingBuffer.unmap();
+
+		stagingBuffer.map(this->mortonPixelBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
+			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
+			this->triangleLightBvhBufferSize + this->materialBufferSize + this->transformationBufferSize);
 		stagingBuffer.writeToBuffer(mortonPixels->data(), this->mortonPixelBufferSize, this->objectBufferSize + this->objectBvhBufferSize + 
 			this->primitiveBufferSize + this->primitiveBvhBufferSize + this->verticeBufferSize + this->triangleLightBufferSize + 
 			this->triangleLightBvhBufferSize + this->materialBufferSize + this->transformationBufferSize);
+		stagingBuffer.unmap();
 
 		this->buffer = std::make_shared<EngineBuffer>(
 			device,
