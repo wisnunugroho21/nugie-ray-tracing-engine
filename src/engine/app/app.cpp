@@ -152,17 +152,17 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 		
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 0.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 555.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 555.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 0.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
 
 		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
+		rightWallPrimitives->emplace_back(Primitive{ glm::uvec4(0u, 1u, 2u, 1u)  });
+		rightWallPrimitives->emplace_back(Primitive{ glm::uvec4(2u, 3u, 0u, 1u)  });
 
 		masterModelBuilder.addPrimitives(rightWallPrimitives, vertices);
 
@@ -178,17 +178,17 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 0.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 555.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 555.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 0.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
 		
 		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec4(4u, 5u, 6u, 2u) });
+		leftWallPrimitives->emplace_back(Primitive{ glm::uvec4(6u, 7u, 4u, 2u) });
 		
 		masterModelBuilder.addPrimitives(leftWallPrimitives, vertices);
 		
@@ -204,12 +204,12 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 0u, 3u), 0u });
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(3u, 7u, 4u), 0u });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec4(4u, 0u, 3u, 0u) });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec4(3u, 7u, 4u, 0u) });
 		
 		masterModelBuilder.addPrimitives(bottomWallPrimitives, vertices);
 		
@@ -225,12 +225,12 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(5u, 1u, 2u), 0u });
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 6u, 5u), 0u });
+		topWallPrimitives->emplace_back(Primitive{ glm::uvec4(5u, 1u, 2u, 0u) });
+		topWallPrimitives->emplace_back(Primitive{ glm::uvec4(2u, 6u, 5u, 0u) });
 
 		masterModelBuilder.addPrimitives(topWallPrimitives, vertices);
 
@@ -246,12 +246,12 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(7u, 6u, 2u), 0u });
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 7u), 0u });
+		frontWallPrimitives->emplace_back(Primitive{ glm::uvec4(7u, 6u, 2u, 0u) });
+		frontWallPrimitives->emplace_back(Primitive{ glm::uvec4(2u, 3u, 7u, 0u) });
 
 		masterModelBuilder.addPrimitives(frontWallPrimitives, vertices);
 
@@ -263,20 +263,20 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{213.0f, 554.0f, 227.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{343.0f, 554.0f, 227.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{343.0f, 554.0f, 332.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{213.0f, 554.0f, 332.0f, 0.0f}, glm::vec4{0.0f} });
 
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec4(8u, 9u, 10u, 0u), glm::vec4(100.0f, 100.0f, 100.0f, 0.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec4(10u, 11u, 8u, 0u), glm::vec4(100.0f, 100.0f, 100.0f, 0.0f) });
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
+		materials->emplace_back(Material{ glm::vec4(0.73f, 0.73f, 0.73f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.12f, 0.45f, 0.15f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.65f, 0.05f, 0.05f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(1u, 0u, 0u, 0u) });
 
 		// ----------------------------------------------------------------------------
 
@@ -284,7 +284,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
@@ -337,17 +337,17 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 0.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 0.0f, 0.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{555.0f, 0.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{0.0f, 0.0f, 555.0f, 0.0f}, glm::vec4{0.0f} });
 
 		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec4(0u, 1u, 2u, 0u) });
+		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec4(2u, 3u, 0u, 0u) });
 		
 		masterModelBuilder.addPrimitives(bottomWallPrimitives, vertices);
 		
@@ -359,20 +359,20 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
+		materials->emplace_back(Material{ glm::vec4(0.73f, 0.73f, 0.73f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.12f, 0.45f, 0.15f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.65f, 0.05f, 0.05f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(0u, 0u, 0u, 0u) });
+		materials->emplace_back(Material{ glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f), glm::vec4(0.0f, 0.1f, 0.5f, 0.0f), glm::uvec4(1u, 0u, 0u, 0u) });
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{21300.0f, 55400.0f, 22700.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{34300.0f, 55400.0f, 22700.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{34300.0f, 55400.0f, 33200.0f, 0.0f}, glm::vec4{0.0f} });
+		vertices->emplace_back(RayTraceVertex{ glm::vec4{21300.0f, 55400.0f, 33200.0f, 0.0f}, glm::vec4{0.0f} });
 
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(4u, 5u, 6u), glm::vec3(0.0f, 0.0f, 0.0f) });
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(6u, 7u, 4u), glm::vec3(0.0f, 0.0f, 0.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec4(4u, 5u, 6u, 0u), glm::vec4(0.0f) });
+		triangleLights->emplace_back(TriangleLight{ glm::uvec4(6u, 7u, 4u, 0u), glm::vec4(0.0f) });
 
 		// ----------------------------------------------------------------------------
 
@@ -380,7 +380,7 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex });
+		objects->emplace_back(Object{ glm::uvec4{masterModelBuilder.gePrimitiveBvhSize(), masterModelBuilder.getPrimitiveSize(), transformIndex, 0u} });
 		objectIndex = static_cast<uint32_t>(objects->size() - 1);
 
 		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));

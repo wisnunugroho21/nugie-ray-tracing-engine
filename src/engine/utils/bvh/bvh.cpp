@@ -24,15 +24,15 @@ namespace nugiEngine {
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) + eps
+      glm::min(glm::min((*this->vertices)[this->primitive.primitiveMaterialIndex.x].position, (*this->vertices)[this->primitive.primitiveMaterialIndex.y].position), (*this->vertices)[this->primitive.primitiveMaterialIndex.z].position) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max((*this->vertices)[this->primitive.primitiveMaterialIndex.x].position, (*this->vertices)[this->primitive.primitiveMaterialIndex.y].position), (*this->vertices)[this->primitive.primitiveMaterialIndex.z].position) + glm::vec4(eps, 0.0f)
     };
   }
 
   Aabb TriangleLightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + eps
+      glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - glm::vec4(eps, 0.0f),
+      glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + glm::vec4(eps, 0.0f)
     };
   }
 
@@ -83,9 +83,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
     for (auto &&primitive : *this->primitives) {
-      if ((*this->vertices)[primitive.indices.x].position[index] > max) max = (*this->vertices)[primitive.indices.x].position[index];
-      if ((*this->vertices)[primitive.indices.y].position[index] > max) max = (*this->vertices)[primitive.indices.y].position[index];
-      if ((*this->vertices)[primitive.indices.z].position[index] > max) max = (*this->vertices)[primitive.indices.z].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.x].position[index] > max) max = (*this->vertices)[primitive.primitiveMaterialIndex.x].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.y].position[index] > max) max = (*this->vertices)[primitive.primitiveMaterialIndex.y].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.z].position[index] > max) max = (*this->vertices)[primitive.primitiveMaterialIndex.z].position[index];
     }
 
     return max;
@@ -94,9 +94,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMin(uint32_t index) {
     float min = FLT_MAX;
     for (auto &&primitive : *this->primitives) {
-      if ((*this->vertices)[primitive.indices.x].position[index] < min) min = (*this->vertices)[primitive.indices.x].position[index];
-      if ((*this->vertices)[primitive.indices.y].position[index] < min) min = (*this->vertices)[primitive.indices.y].position[index];
-      if ((*this->vertices)[primitive.indices.z].position[index] < min) min = (*this->vertices)[primitive.indices.z].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.x].position[index] < min) min = (*this->vertices)[primitive.primitiveMaterialIndex.x].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.y].position[index] < min) min = (*this->vertices)[primitive.primitiveMaterialIndex.y].position[index];
+      if ((*this->vertices)[primitive.primitiveMaterialIndex.z].position[index] < min) min = (*this->vertices)[primitive.primitiveMaterialIndex.z].position[index];
     }
 
     return min;
@@ -106,22 +106,22 @@ namespace nugiEngine {
     bool leaf = leftNodeIndex == 0 && rightNodeIndex == 0;
 
     BvhNode node{};
-    node.minimum = box.min;
-    node.maximum = box.max;      
+    node.minimum = glm::vec4(box.min, 0.0f);
+    node.maximum = glm::vec4(box.max, 0.0f);
 
     if (leaf) {
       if (objects.empty()) {
         return node;
       }
       
-      node.leftObjIndex = objects[0]->index;
+      node.nodeObjIndex.z = objects[0]->index;
 
       if (objects.size() > 1) {
-        node.rightObjIndex = objects[1]->index;
+        node.nodeObjIndex.w = objects[1]->index;
       }
     } else {
-      node.leftNode = leftNodeIndex;
-      node.rightNode = rightNodeIndex;
+      node.nodeObjIndex.x = leftNodeIndex;
+      node.nodeObjIndex.y = rightNodeIndex;
     }
 
     return node;

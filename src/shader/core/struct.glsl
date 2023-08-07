@@ -3,24 +3,21 @@
 // ---------------------- buffer struct ----------------------
 
 struct Vertex {
-  vec3 position;
-  vec2 textCoord;
+  vec4 position;
+  vec4 textCoord;
 };
 
 struct Primitive {
-  uvec3 indices;
-  uint materialIndex;
+  uvec4 primitiveMaterialIndex;
 };
 
 struct Object {
-  uint firstBvhIndex;
-  uint firstPrimitiveIndex;
-  uint transformIndex;
+  uvec4 bvhPrimitiveTransformIndex;
 };
 
 struct TriangleLight {
-  uvec3 indices;
-  vec3 color;
+  uvec4 indices;
+  vec4 color;
 };
 
 struct PointLight {
@@ -34,25 +31,16 @@ struct SunLight {
 };
 
 struct BvhNode {
-  uint leftNode;
-  uint rightNode;
-  uint leftObjIndex;
-  uint rightObjIndex;
-
-  vec3 maximum;
-  vec3 minimum;
+  uvec4 nodeObjIndex;
+  vec4 maximum;
+  vec4 minimum;
 };
 
 struct Material {
-  vec3 baseColor;
-  vec3 baseNormal;
-
-	float metallicness;
-  float roughness;
-  float fresnelReflect;
-
-  uint colorTextureIndex;
-  uint normalTextureIndex;
+  vec4 baseColor;
+  vec4 baseNormal;
+  vec4 params;
+  uvec4 textureIndex;
 };
 
 struct Transformation {
@@ -64,8 +52,7 @@ struct Transformation {
 };
 
 struct Pixel {
-  uint xCoord;
-  uint yCoord;
+  uvec4 coord;
 };
 
 // ---------------------- internal struct ----------------------

@@ -138,7 +138,7 @@ ShadeRecord directGgxShade(uint lightIndex, vec3 rayDirection, vec3 hitPoint, ve
   scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
-  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
+  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices.xyz, shadowRay.origin, additionalRandomSeed);
 
   HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
   HitRecord lightHit = hitTriangleLightBvh(shadowRay, 0.001f, FLT_MAX);
@@ -162,10 +162,10 @@ ShadeRecord directGgxShade(uint lightIndex, vec3 rayDirection, vec3 hitPoint, ve
 
     float brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceRoughness);
     float sqrDistance = dot(vectorDistance, vectorDistance);
-    float area = triangleArea(lights[lightHit.hitIndex].indices);
+    float area = triangleArea(lights[lightHit.hitIndex].indices.xyz);
     float pdf = ggxPdfValue(NoH, VoH, surfaceRoughness);
 
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color.xyz;
     scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;  
   }
 
@@ -226,7 +226,7 @@ ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor
   scat.pdf = 0.01f;
 
   shadowRay.origin = hitPoint;
-  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, additionalRandomSeed);
+  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices.xyz, shadowRay.origin, additionalRandomSeed);
 
   HitRecord objectHit = hitObjectBvh(shadowRay, 0.001f, FLT_MAX);
   HitRecord lightHit = hitTriangleLightBvh(shadowRay, 0.001f, FLT_MAX);
@@ -241,10 +241,10 @@ ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor
 
     float brdf = lambertBrdfValue();
     float sqrDistance = dot(vectorDistance, vectorDistance);
-    float area = triangleArea(lights[lightHit.hitIndex].indices);
+    float area = triangleArea(lights[lightHit.hitIndex].indices.xyz);
     float pdf = lambertPdfValue(NoL);
 
-    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color.xyz;
     scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
   }
 
@@ -290,7 +290,7 @@ ShadeRecord sunDirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
 
 void main() {
   Pixel mortonPixel = mortonPixels[imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x];
-  ivec2 pixelCoord = ivec2(mortonPixel.xCoord, mortonPixel.yCoord);
+  ivec2 pixelCoord = ivec2(mortonPixel.coord.x, mortonPixel.coord.y);
 
   float noiseX = randomFloat(0) * 2.0f - 1.0f;
   float noiseY = randomFloat(1) * 2.0f - 1.0f;
@@ -313,7 +313,7 @@ void main() {
 
     if (lightHit.isHit && (!objectHit.isHit || length(lightHit.point - curRay.origin) < length(objectHit.point - curRay.origin))) {
       totalIndirect = mix(totalIndirect, totalIndirect * GfactorTriangleLight(curRay, lightHit), when_gt(i, 0u));
-      totalRadiance = totalRadiance + totalIndirect * lights[lightHit.hitIndex].color;
+      totalRadiance = totalRadiance + totalIndirect * lights[lightHit.hitIndex].color.xyz;
       break;
     }
 
