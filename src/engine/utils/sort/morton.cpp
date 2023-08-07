@@ -30,8 +30,8 @@ namespace nugiEngine {
   }
 
   bool mortonComparator(Pixel a, Pixel b) {
-    uint32_t aValue = encodeMorton(a.xCoord, a.yCoord);
-    uint32_t bValue = encodeMorton(b.xCoord, b.yCoord);
+    uint32_t aValue = encodeMorton(a.coord.x, a.coord.y);
+    uint32_t bValue = encodeMorton(b.coord.x, b.coord.y);
 
     return aValue < bValue;
   }
@@ -41,7 +41,7 @@ namespace nugiEngine {
 
     for (uint32_t i = 0; i < width; i++) {
       for (uint32_t j = 0; j < height; j++) {
-        Pixel pixel{ i, j };
+        Pixel pixel{ glm::uvec4{i, j, 0u, 0u} };
         pixels->emplace_back(pixel);
       }
     }

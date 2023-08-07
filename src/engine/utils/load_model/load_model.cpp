@@ -35,37 +35,46 @@ namespace nugiEngine
 				RayTraceVertex vertex1;
 				RayTraceVertex vertex2;
 				
-				vertex0.position = glm::vec3{
+				vertex0.position = glm::vec4{
 					attrib.vertices[3 * vertexIndex0 + 0],
 					attrib.vertices[3 * vertexIndex0 + 1],
-					attrib.vertices[3 * vertexIndex0 + 2]
+					attrib.vertices[3 * vertexIndex0 + 2],
+					0.0f
 				};
 
-				vertex1.position = glm::vec3{
+				vertex1.position = glm::vec4{
 					attrib.vertices[3 * vertexIndex1 + 0],
 					attrib.vertices[3 * vertexIndex1 + 1],
-					attrib.vertices[3 * vertexIndex1 + 2]
+					attrib.vertices[3 * vertexIndex1 + 2],
+					0.0f
 				};
 
-				vertex2.position = glm::vec3{
+				vertex2.position = glm::vec4{
 					attrib.vertices[3 * vertexIndex2 + 0],
 					attrib.vertices[3 * vertexIndex2 + 1],
-					attrib.vertices[3 * vertexIndex2 + 2]
+					attrib.vertices[3 * vertexIndex2 + 2],
+					0.0f
 				};
 
-				vertex0.textCoord = glm::vec2{
+				vertex0.textCoord = glm::vec4{
 					attrib.texcoords[2 * textCoordIndex0 + 0],
-					1.0f - attrib.texcoords[2 * textCoordIndex0 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex0 + 1],
+					0.0f,
+					0.0f
 				};
 
-				vertex1.textCoord = glm::vec2{
+				vertex1.textCoord = glm::vec4{
 					attrib.texcoords[2 * textCoordIndex1 + 0],
-					1.0f - attrib.texcoords[2 * textCoordIndex1 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex1 + 1],
+					0.0f,
+					0.0f
 				};
 
-				vertex2.textCoord = glm::vec2{
+				vertex2.textCoord = glm::vec4{
 					attrib.texcoords[2 * textCoordIndex2 + 0],
-					1.0f - attrib.texcoords[2 * textCoordIndex2 + 1]
+					1.0f - attrib.texcoords[2 * textCoordIndex2 + 1],
+					0.0f,
+					0.0f
 				};
 
 				/* if (uniqueVertices.count(vertex0) == 0) {
@@ -97,8 +106,7 @@ namespace nugiEngine
 				vertices->emplace_back(vertex2);
 
 				primitives->emplace_back(Primitive{
-					glm::uvec3{ index0, index1, index2 },
-					materialIndex
+					glm::uvec4{ index0, index1, index2, materialIndex }
 				});
 			}
 		}
