@@ -1,0 +1,63 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 64) in;
+
+layout(set = 0, binding = 0) buffer writeonly OutUbo {
+  HitRecord records[];
+} outUbo;
+
+layout(set = 0, binding = 1) buffer readonly InUbo {
+  TraceData traceDatas[];
+} inUbo;
+
+layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+  Object objects[];
+};
+
+layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
+  BvhNode objectBvhNodes[];
+};
+
+layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
+  Primitive primitives[];
+};
+
+layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
+  BvhNode primitiveBvhNodes[];
+};
+
+layout(set = 0, binding = 6) buffer readonly VertexSsbo {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 7) buffer readonly LightSsbo {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
+  BvhNode lightBvhNodes[];
+};
+
+layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+  Material materials[];
+};
+
+layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
+  Transformation transformations[];
+};
+
+layout(set = 0, binding = 11) uniform sampler2D normalTextureSampler[1];
+
+#include "core/basic.glsl"
+#include "trace/trace_object.glsl"
+
+void main() {
+  HitRecord hitRecord = hitObjectBvh(inUbo.traceDatas[gl_GlobalInvocationID.x].ray, inUbo.traceDatas[gl_GlobalInvocationID.x].dirMin, inUbo.traceDatas[gl_GlobalInvocationID.x].tMax);
+
+  outUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
+  outUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
+  outUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
+  outUbo.records[gl_GlobalInvocationID.x].t = hitRecord.t;
+  outUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
+}

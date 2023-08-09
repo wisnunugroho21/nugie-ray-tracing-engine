@@ -61,30 +61,32 @@ struct Transformation {
   mat4 normalMatrix;
 };
 
-// ---------------------- internal struct ----------------------
-
 struct Ray {
   vec3 origin;
   vec3 direction;
 };
 
-struct FaceNormal {
-  bool frontFace;
-  vec3 normal;
+struct TraceData {
+  Ray ray; 
+  float dirMin;
+  float tMax;
 };
 
 struct HitRecord {
   bool isHit;
   uint hitIndex;
-  vec3 point;
 
+  vec3 point;
   float t;
 
-  vec3 color;
   vec3 normal;
-  float metallicness;
-  float roughness;
-  float fresnelReflect;
+};
+
+// ---------------------- internal struct ----------------------
+
+struct FaceNormal {
+  bool frontFace;
+  vec3 normal;
 };
 
 struct ShadeRecord {
