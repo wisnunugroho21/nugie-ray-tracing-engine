@@ -38,7 +38,6 @@ namespace nugiEngine {
 
   struct Material {
     alignas(16) glm::vec3 baseColor;
-    alignas(16) glm::vec3 baseNormal;
 
     float metallicness;
     float roughness;

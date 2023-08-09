@@ -45,8 +45,6 @@ struct BvhNode {
 
 struct Material {
   vec3 baseColor;
-  vec3 baseNormal;
-
 	float metallicness;
   float roughness;
   float fresnelReflect;
