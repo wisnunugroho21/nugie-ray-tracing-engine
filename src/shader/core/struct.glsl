@@ -89,9 +89,11 @@ struct DiffuseData {
 };
 
 struct ShadeRecord {
-  vec3 radiance;  
+  vec3 indirectRadiance;
+  vec3 directRadiance;
+
   Ray nextRay;
-  float pdf;
+  float indirectPdf;
 };
 
 // ---------------------- internal struct ----------------------
