@@ -302,7 +302,7 @@ void main() {
   curRay.origin = ubo.origin;
   curRay.direction = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   
-  for(uint i = 0; i < 2; i++) {
+  for(uint i = 0; i < 10; i++) {
     HitRecord objectHit = hitObjectBvh(curRay, 0.001f, FLT_MAX);
     HitRecord lightHit = hitTriangleLightBvh(curRay, 0.001f, FLT_MAX);
 
@@ -346,7 +346,12 @@ void main() {
       cummulativeRadiance += directShadeResult[j].radiance * directShadeResult[j].pdf;
     }
 
-    totalRadiance += totalIndirect * cummulativeRadiance / totalPdf;
+    vec3 throughput = totalIndirect * cummulativeRadiance / totalPdf;
+    if (randomFloat(i) > max(throughput.x, max(throughput.y, throughput.z))) {
+      break;
+    }
+
+    totalRadiance += throughput;
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
     curRay = indirectShadeResult.nextRay;
