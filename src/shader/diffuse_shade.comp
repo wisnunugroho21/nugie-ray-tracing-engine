@@ -1,0 +1,24 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 64) in;
+
+layout(set = 0, binding = 0) buffer writeonly OutUbo {
+  ShadeRecord shadeRecords[];
+} outUbo;
+
+layout(set = 0, binding = 1) buffer readonly InUbo {
+  DiffuseData diffuseDatas[];
+} inUbo;
+
+layout(set = 0, binding = 2) buffer readonly MaterialSsbo {
+  Material materials[];
+};
+
+layout(set = 0, binding = 3) uniform sampler2D colorTextureSampler[1];
+
+void main() {
+  
+
+
+}

@@ -82,17 +82,23 @@ struct HitRecord {
   vec3 normal;
 };
 
-// ---------------------- internal struct ----------------------
-
-struct FaceNormal {
-  bool frontFace;
+struct DiffuseData {
+  vec3 hitPoint;
   vec3 normal;
+  uint materialIndex;
 };
 
 struct ShadeRecord {
   vec3 radiance;  
   Ray nextRay;
   float pdf;
+};
+
+// ---------------------- internal struct ----------------------
+
+struct FaceNormal {
+  bool frontFace;
+  vec3 normal;
 };
 
 float pi = 3.14159265359;
