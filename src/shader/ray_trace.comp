@@ -346,15 +346,17 @@ void main() {
       cummulativeRadiance += directShadeResult[j].radiance * directShadeResult[j].pdf;
     }
 
-    vec3 throughput = totalIndirect * cummulativeRadiance / totalPdf;
-    float p = max(throughput.x, max(throughput.y, throughput.z));
-
-    if (randomFloat(i) > p) {
-      break;
-    }
-
-    totalRadiance += throughput / p;
+    totalRadiance += totalIndirect * cummulativeRadiance / totalPdf;
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
+
+    if (i > 0u) {
+      float p = max(0.0f, 1.0f - max(totalIndirect.x, max(totalIndirect.y, totalIndirect.z)));
+      if (randomFloat(i) < p) {
+        break;
+      }
+
+      totalIndirect /= (1.0f - p);
+    }
 
     curRay = indirectShadeResult.nextRay;
   }
