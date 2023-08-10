@@ -2,7 +2,7 @@
 
 // ------------- layout -------------
 
-#define SHININESS 64
+#define RUSSIAN_ROULETTE
 #define KEPSILON 0.00001
 
 #include "core/struct.glsl"
@@ -349,6 +349,7 @@ void main() {
     totalRadiance += totalIndirect * cummulativeRadiance / totalPdf;
     totalIndirect = totalIndirect * indirectShadeResult.radiance * indirectShadeResult.pdf / totalPdf;
 
+#ifdef RUSSIAN_ROULETTE
     if (i > 0u) {
       float p = max(0.0f, 1.0f - max(totalIndirect.x, max(totalIndirect.y, totalIndirect.z)));
       if (randomFloat(i) < p) {
@@ -357,6 +358,7 @@ void main() {
 
       totalIndirect /= (1.0f - p);
     }
+#endif
 
     curRay = indirectShadeResult.nextRay;
   }
