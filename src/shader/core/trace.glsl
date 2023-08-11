@@ -11,9 +11,15 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float tMax, uint tr
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
+#ifdef BACKFACE_CULLING
+  if (det < KEPSILON) {
+    return hit;
+  }
+#else
   if (abs(det) < KEPSILON) {
     return hit;
   }
+#endif
 
   vec3 tvec = r.origin - vertices[triIndices.x].position;
   float u = dot(tvec, pvec) / det;
@@ -57,9 +63,15 @@ HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, float tMax) {
   vec3 pvec = cross(r.direction, v0v2);
   float det = dot(v0v1, pvec);
   
+#ifdef BACKFACE_CULLING
+  if (det < KEPSILON) {
+    return hit;
+  }
+#else
   if (abs(det) < KEPSILON) {
     return hit;
   }
+#endif
 
   vec3 tvec = r.origin - vertices[triIndices.x].position;
   float u = dot(tvec, pvec) / det;
