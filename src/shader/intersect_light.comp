@@ -32,6 +32,6 @@ void main() {
   resultUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
   resultUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
   resultUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
-  resultUbo.records[gl_GlobalInvocationID.x].t = hitRecord.t;
+  resultUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
   resultUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
 }
