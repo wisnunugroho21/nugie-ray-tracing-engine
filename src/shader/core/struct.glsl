@@ -66,7 +66,7 @@ struct Ray {
   vec3 direction;
 };
 
-struct TraceData {
+struct RayData {
   Ray ray; 
   float dirMin;
   float tMax;
@@ -82,21 +82,30 @@ struct HitRecord {
   vec3 normal;
 };
 
-struct DiffuseData {
+struct LambertData {
   vec3 hitPoint;
   vec3 normal;
   uint materialIndex;
 };
 
-struct ShadeRecord {
-  vec3 indirectRadiance;
-  vec3 directRadiance;
-
+struct IndirectShadeRecord {
+  vec3 radiance;
+  float pdf;
   Ray nextRay;
-  float indirectPdf;
+};
+
+struct DirectShadeRecord {
+  vec3 radiance;
+  float pdf;
 };
 
 // ---------------------- internal struct ----------------------
+
+struct ShadeRecord {
+  vec3 radiance;  
+  Ray nextRay;
+  float pdf;
+};
 
 struct FaceNormal {
   bool frontFace;

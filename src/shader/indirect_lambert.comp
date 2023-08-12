@@ -1,0 +1,50 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 64) in;
+
+layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+  IndirectShadeRecord indirectShadeRecord[];
+} resultUbo;
+
+layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+  HitRecord records[];
+} objectHitUbo;
+
+layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+  HitRecord records[];
+} lightHitUbo;
+
+layout(set = 0, binding = 3) buffer readonly MaterialSsbo {
+  Material materials[];
+};
+
+layout(set = 0, binding = 4) buffer readonly LightSsbo {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 5) uniform sampler2D colorTextureSampler[1];
+
+ShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
+  ShadeRecord scat;
+
+  scat.nextRay.origin = hitPoint;
+  scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
+
+  float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
+  float brdf = lambertBrdfValue();
+  float pdf = lambertPdfValue(NoL);
+
+  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+  scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
+  
+  return scat;
+}
+
+ShadeRecord indirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
+  return indirectLambertShade(hit.point, hit.color, hit.normal, additionalRandomSeed);
+}
+
+void main() {
+  indirectShadeResult = indirectLambertShade(objectHit[gl_GlobalInvocationID.x], i);
+}

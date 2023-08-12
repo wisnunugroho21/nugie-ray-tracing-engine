@@ -3,13 +3,13 @@
 #include "core/struct.glsl"
 layout(local_size_x = 64) in;
 
-layout(set = 0, binding = 0) buffer writeonly OutUbo {
+layout(set = 0, binding = 0) buffer writeonly ResultUbo {
   HitRecord records[];
-} outUbo;
+} resultUbo;
 
-layout(set = 0, binding = 1) buffer readonly InUbo {
-  TraceData traceDatas[];
-} inUbo;
+layout(set = 0, binding = 1) buffer readonly RayUbo {
+  RayData rayDatas[];
+} rayUbo;
 
 layout(set = 0, binding = 2) buffer readonly LightSsbo {
   TriangleLight lights[];
@@ -27,11 +27,11 @@ layout(set = 0, binding = 4) buffer readonly VertexSsbo {
 #include "trace/trace_light.glsl"
 
 void main() {
-  HitRecord hitRecord = hitTriangleLightBvh(inUbo.traceDatas[gl_GlobalInvocationID.x].ray, inUbo.traceDatas[gl_GlobalInvocationID.x].dirMin, inUbo.traceDatas[gl_GlobalInvocationID.x].tMax);
+  HitRecord hitRecord = hitTriangleLightBvh(rayUbo.rayDatas[gl_GlobalInvocationID.x].ray, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, rayUbo.rayDatas[gl_GlobalInvocationID.x].tMax);
 
-  outUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
-  outUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
-  outUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
-  outUbo.records[gl_GlobalInvocationID.x].t = hitRecord.t;
-  outUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
+  resultUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
+  resultUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
+  resultUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
+  resultUbo.records[gl_GlobalInvocationID.x].t = hitRecord.t;
+  resultUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
 }
