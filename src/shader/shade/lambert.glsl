@@ -1,3 +1,11 @@
+#include "../core/boolean.glsl"
+#include "../core/basic.glsl"
+#include "random.glsl"
+#include "../core/ggx.glsl"
+#include "../core/shape.glsl"
+#include "../core/material.glsl"
+#include "../core/render.glsl"
+
 ShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   ShadeRecord scat;
 
@@ -15,7 +23,16 @@ ShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceN
 }
 
 ShadeRecord indirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
-  return indirectLambertShade(hit.point, hit.color, hit.normal, additionalRandomSeed);
+  /* vec3 surfaceColor;
+  if (materials[materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[materialIndex].baseColor;
+  } else {
+    surfaceColor = texture(colorTextureSampler[materials[materialIndex].colorTextureIndex - 1u], uv).xyz;
+  } */
+
+  vec3 surfaceColor = materials[materialIndex].baseColor;
+
+  return indirectLambertShade(hit.point, surfaceColor, hit.normal, additionalRandomSeed);
 }
 
 ShadeRecord directLambertShade(uint lightIndex, vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {

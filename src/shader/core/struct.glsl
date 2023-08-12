@@ -80,6 +80,7 @@ struct HitRecord {
   float t;
 
   vec3 normal;
+  uint materialIndex;
 };
 
 struct LambertData {
