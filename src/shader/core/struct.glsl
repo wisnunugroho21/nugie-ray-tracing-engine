@@ -77,7 +77,7 @@ struct HitRecord {
   uint hitIndex;
 
   vec3 point;
-  float t;
+  float dir;
 
   vec3 normal;
   uint materialIndex;
@@ -101,11 +101,6 @@ struct DirectShadeRecord {
 };
 
 // ---------------------- internal struct ----------------------
-
-struct FaceNormal {
-  bool frontFace;
-  vec3 normal;
-};
 
 float pi = 3.14159265359;
 float FLT_MAX = 3.402823e+38;
