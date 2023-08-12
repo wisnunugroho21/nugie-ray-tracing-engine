@@ -94,5 +94,5 @@ struct ShadeRecord {
 };
 
 float pi = 3.14159265359;
-float FLT_MAX = 1.0e+10;
-float FLT_MIN = 1.0e-10;
+float FLT_MAX = 3.402823e+38;
+float FLT_MIN = 1.175494e-38;
