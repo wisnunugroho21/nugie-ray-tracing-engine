@@ -4,7 +4,7 @@
 layout(local_size_x = 64) in;
 
 layout(set = 0, binding = 0) buffer writeonly ResultUbo {
-  IndirectShadeRecord indirectShadeRecord[];
+  IndirectShadeRecord shadeRecord[];
 } resultUbo;
 
 layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
@@ -23,18 +23,18 @@ layout(set = 0, binding = 4) buffer readonly LightSsbo {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 5) buffer readonly VertexSsbo {
-  Vertex vertices[];
-};
-
 layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
-#include "shade/lambert.glsl"
+#include "indirect/lambert.glsl"
 
 void main() {
-  indirectShadeResult = indirectLambertShade(objectHit[gl_GlobalInvocationID.x], i);
+  IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHitUbo.records[gl_GlobalInvocationID.x], 0);
+  
+  resultUbo.shadeRecord[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance;
+  resultUbo.shadeRecord[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf;
+  resultUbo.shadeRecord[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
 }

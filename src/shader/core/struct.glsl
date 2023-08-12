@@ -102,12 +102,6 @@ struct DirectShadeRecord {
 
 // ---------------------- internal struct ----------------------
 
-struct ShadeRecord {
-  vec3 radiance;  
-  Ray nextRay;
-  float pdf;
-};
-
 struct FaceNormal {
   bool frontFace;
   vec3 normal;
