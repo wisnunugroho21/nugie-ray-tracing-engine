@@ -1,0 +1,58 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+  HitLightRecord records[];
+} resultUbo;
+
+layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+  HitRecord records[];
+} objectHitUbo;
+
+layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+  HitRecord records[];
+} lightHitUbo;
+
+layout(set = 0, binding = 3) buffer readonly LightSsbo {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 4) buffer readonly VertexSsbo {
+  Vertex vertices[];
+};
+
+#include "core/boolean.glsl"
+
+// ------------- Triangle -------------
+
+float triangleArea(uvec3 triIndices) {
+  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
+  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+
+  vec3 pvec = cross(v0v1, v0v2);
+  return 0.5 * sqrt(dot(pvec, pvec)); 
+}
+
+// ------------- Integrand ------------- 
+
+float Gfactor(float NloL, float squareDistance, float area) {
+  return NloL * area / squareDistance;
+}
+
+float GfactorTriangleLight(HitRecord hittedLight) {
+  float sqrDistance = dot(hittedLight.dir, hittedLight.dir);
+  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.001f);
+  float area = triangleArea(lights[hittedLight.hitIndex].indices);
+
+  return Gfactor(NloL, sqrDistance, area);
+}
+
+void main() {
+  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+
+  float isHitLight = when_and(float(lightHit.isHit), when_or(when_not(float(objectHit.isHit)), when_lt(length(lightHit.dir), length(objectHit.dir))));
+  resultUbo.records[gl_GlobalInvocationID.x].radiance = mix(1.0f, GfactorTriangleLight(lightHit), objectHit.isPrimary) * lights[lightHit.hitIndex].color * isHitLight;
+}

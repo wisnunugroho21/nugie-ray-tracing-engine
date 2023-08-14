@@ -1,10 +1,12 @@
 #version 460
 
 #include "core/struct.glsl"
-layout(local_size_x = 64) in;
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
 
 layout(set = 0, binding = 0) buffer writeonly ResultUbo {
-  IndirectShadeRecord shadeRecord[];
+  IndirectShadeRecord records[];
 } resultUbo;
 
 layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
@@ -23,18 +25,144 @@ layout(set = 0, binding = 4) buffer readonly LightSsbo {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 5) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
-#include "indirect/lambert.glsl"
+// ------------- Basic -------------
+
+vec3 rayAt(Ray r, float t) {
+  return r.origin + t * r.direction;
+}
+
+vec3[3] buildOnb(vec3 normal) {
+  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0f, 1.0f, 0.0f) : vec3(1.0f, 0.0f, 0.0f);
+
+  vec3 z = normalize(normal);
+  vec3 y = normalize(cross(z, a));
+  vec3 x = cross(z, y);
+
+  return vec3[3](x, y, z);
+}
+
+// ------------- Integrand ------------- 
+
+vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
+  return color * brdf * NoL / pdf; 
+}
+
+vec3 integrandOverArea(vec3 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
+  return color * brdf * NoL * NloL * area / squareDistance;
+}
+
+vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
+  return color * brdf * NoL;
+}
+
+float Gfactor(float NloL, float squareDistance, float area) {
+  return NloL * area / squareDistance;
+}
+
+// ------------- Random ------------- 
+
+// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
+uint stepRNG(uint rngState) {
+  return rngState * 747796405 + 1;
+}
+
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return float(word) / 4294967295.0f;
+}
+
+uint stepAndOutputRNGUint(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return word / 4294967295u;
+}
+
+float randomFloat(uint additionalRandomSeed) {
+  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
+  return stepAndOutputRNGFloat(rngState);
+}
+
+// ------------- Lambert ------------- 
+
+vec3 randomCosineDirection(uint additionalRandomSeed) {
+  float r1 = randomFloat(additionalRandomSeed);
+  float r2 = randomFloat(additionalRandomSeed + 1);
+
+  float cosTheta = sqrt(r1);
+  float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+  
+  float phi = 2 * pi * r2;
+
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
+
+  return vec3(x, y, z);
+}
+
+vec3 lambertRandomDirection(vec3[3] globalOnb, uint additionalRandomSeed) {
+  vec3 source = randomCosineDirection(additionalRandomSeed);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
+float lambertPdfValue(float NoL) {
+  return max(NoL / pi, 0.001f);
+}
+
+float lambertBrdfValue() {
+  return 1.0f / pi;
+}
+
+// ------------- Shade ------------- 
+
+IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
+  IndirectShadeRecord scat;
+
+  scat.nextRay.origin = hitPoint;
+  scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
+
+  float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
+  float brdf = lambertBrdfValue();
+  float pdf = lambertPdfValue(NoL);
+
+  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+  scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
+  
+  return scat;
+}
+
+IndirectShadeRecord indirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
+  /* vec3 surfaceColor;
+  if (materials[materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[materialIndex].baseColor;
+  } else {
+    surfaceColor = texture(colorTextureSampler[materials[materialIndex].colorTextureIndex - 1u], uv).xyz;
+  } */
+
+  vec3 surfaceColor = materials[hit.materialIndex].baseColor;
+  return indirectLambertShade(hit.point, surfaceColor, hit.normal, additionalRandomSeed);
+}
 
 void main() {
+  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+
+  float isHitObject = when_and(float(objectHit.isHit), when_or(when_not(float(lightHit.isHit)), when_gt(length(lightHit.dir), length(objectHit.dir))));
   IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHitUbo.records[gl_GlobalInvocationID.x], 0);
   
-  resultUbo.shadeRecord[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance;
-  resultUbo.shadeRecord[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf;
-  resultUbo.shadeRecord[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
+  resultUbo.records[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance * isHitObject;
+  resultUbo.records[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf * isHitObject;
+  resultUbo.records[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
 }

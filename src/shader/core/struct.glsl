@@ -69,7 +69,9 @@ struct Ray {
 struct RayData {
   Ray ray; 
   float dirMin;
-  float tMax;
+  vec3 dirMax;
+
+  float isPrimary;
 };
 
 struct HitRecord {
@@ -77,10 +79,12 @@ struct HitRecord {
   uint hitIndex;
 
   vec3 point;
-  float dir;
+  vec3 dir;
 
   vec3 normal;
   uint materialIndex;
+
+  float isPrimary;
 };
 
 struct LambertData {
@@ -100,8 +104,21 @@ struct DirectShadeRecord {
   float pdf;
 };
 
+struct HitLightRecord {
+  vec3 radiance;
+};
+
+struct MissRecord {
+  vec3 radiance;
+};
+
+struct Pixel {
+  uint xCoord;
+  uint yCoord;
+};
+
 // ---------------------- internal struct ----------------------
 
 float pi = 3.14159265359;
-float FLT_MAX = 3.402823e+38;
-float FLT_MIN = 1.175494e-38;
+float FLT_MAX = 1.0+12;
+float FLT_MIN = 1.0-12;

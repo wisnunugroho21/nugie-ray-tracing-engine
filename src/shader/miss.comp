@@ -1,0 +1,29 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+  MissRecord records[];
+} resultUbo;
+
+layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+  HitRecord records[];
+} objectHitUbo;
+
+layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+  HitRecord records[];
+} lightHitUbo;
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+#include "core/boolean.glsl"
+
+void main() {
+  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+
+  resultUbo.records[gl_GlobalInvocationID.x].radiance = when_and(when_not(float(objectHit.isHit)), when_not(float(lightHit.isHit))) * vec3(0.0f);
+}

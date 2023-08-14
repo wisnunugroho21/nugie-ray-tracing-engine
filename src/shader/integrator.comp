@@ -1,0 +1,36 @@
+#version 460
+
+#include "core/struct.glsl"
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0, rgba8) uniform image2D totalIndirectImage;
+
+layout(set = 0, binding = 1) buffer readonly MissUbo {
+  MissRecord records[];
+} missUbo;
+
+layout(set = 0, binding = 2) buffer readonly HitLightUbo {
+  HitLightRecord records[];
+} hitLightUbo;
+
+layout(set = 0, binding = 3) buffer readonly IndirectUbo {
+  IndirectShadeRecord records[];
+} indirectUbo;
+
+layout(set = 0, binding = 4) buffer readonly MortonOrderUbo {
+  Pixel pixels[];
+} mortonOrderUbo;
+
+uvec2 imgSize = uvec2(imageSize(totalIndirectImage));
+
+void main() {
+  Pixel mortonPixel = mortonOrderUbo.pixels[gl_GlobalInvocationID.x];
+  ivec2 pixelCoord = ivec2(mortonPixel.xCoord, mortonPixel.yCoord);
+
+  vec3 prevIndirect = imageLoad(totalIndirectImage, pixelCoord).xyz;
+
+  uint totalIndex = imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x;
+  vec3 curIndirect = missUbo.records[totalIndex].radiance + prevIndirect * hitLightUbo.records[totalIndex].radiance + indirectUbo.records[totalIndex].radiance;
+
+  imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, 1.0f));
+}
