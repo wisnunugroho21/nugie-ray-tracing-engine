@@ -14,11 +14,29 @@
 #include "../data/model/transformation_model.hpp"
 #include "../data/model/vertex_ray_trace_model.hpp"
 #include "../data/buffer/global_uniform.hpp"
-#include "../data/descSet/ray_trace_desc_set.hpp"
+#include "../data/buffer/storage/hit_record_storage_buffer.hpp"
+#include "../data/buffer/storage/indirect_shade_storage_buffer.hpp"
+#include "../data/buffer/storage/light_shade_storage_buffer.hpp"
+#include "../data/buffer/storage/miss_record_storage_buffer.hpp"
+#include "../data/buffer/storage/ray_data_storage_buffer.hpp"
+#include "../data/buffer/storage/sampler_data_storage_buffer.hpp"
+#include "../data/descSet/ray_tracing/indirect_lambert_desc_set.hpp"
+#include "../data/descSet/ray_tracing/integrator_desc_set.hpp"
+#include "../data/descSet/ray_tracing/intersect_light_desc_set.hpp"
+#include "../data/descSet/ray_tracing/intersect_object_desc_set.hpp"
+#include "../data/descSet/ray_tracing/light_shade_desc_set.hpp"
+#include "../data/descSet/ray_tracing/miss_desc_set.hpp"
+#include "../data/descSet/ray_tracing/sampler_desc_set.hpp"
 #include "../data/descSet/sampling_desc_set.hpp"
 #include "../renderer/hybrid_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
-#include "../renderer_system/trace_ray_render_system.hpp"
+#include "../renderer_system/ray_tracing/indirect_lambert_render_system.hpp"
+#include "../renderer_system/ray_tracing/integrator_render_system.hpp"
+#include "../renderer_system/ray_tracing/intersect_light_render_system.hpp"
+#include "../renderer_system/ray_tracing/intersect_object_render_system.hpp"
+#include "../renderer_system/ray_tracing/light_shade_render_system.hpp"
+#include "../renderer_system/ray_tracing/miss_render_system.hpp"
+#include "../renderer_system/ray_tracing/sampler_render_system.hpp"
 #include "../renderer_system/sampling_ray_raster_render_system.hpp"
 #include "../utils/load_model/load_model.hpp"
 #include "../utils/camera/camera.hpp"
@@ -59,11 +77,18 @@ namespace nugiEngine {
 			
 			std::unique_ptr<EngineHybridRenderer> renderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
-			std::unique_ptr<EngineTraceRayRenderSystem> traceRayRender{};
+
+			std::unique_ptr<EngineIndirectLambertRenderSystem> indirectLambertRender{};
+			std::unique_ptr<EngineIntegratorRenderSystem> integratorRender{};
+			std::unique_ptr<EngineIntersectObjectRenderSystem> intersectObjectRender{};
+			std::unique_ptr<EngineIntersectLightRenderSystem> intersectLightRender{};
+			std::unique_ptr<EngineLightShadeRenderSystem> lightShadeRender{};
+			std::unique_ptr<EngineMissRenderSystem> missRender{};
+			std::unique_ptr<EngineSamplerRenderSystem> samplerRender{};
 			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
 
 			std::unique_ptr<EngineAccumulateImage> accumulateImages{};
-			std::unique_ptr<EngineRayTraceImage> rayTraceImage{};
+			std::unique_ptr<EngineRayTraceImage> indirectImage{};
 			std::unique_ptr<EngineGlobalUniform> globalUniforms{};
 
 			std::unique_ptr<EnginePrimitiveModel> primitiveModel{};
@@ -74,7 +99,22 @@ namespace nugiEngine {
 			std::shared_ptr<EngineVertexModel> quadModels{};
 			std::shared_ptr<EngineRayTraceVertexModel> rayTraceVertexModels{};
 
-			std::unique_ptr<EngineRayTraceDescSet> rayTraceDescSet{};
+			std::shared_ptr<EngineRayDataStorageBuffer> objectRayDataBuffer{};
+			std::shared_ptr<EngineRayDataStorageBuffer> lightRayDataBuffer{};
+			std::shared_ptr<EngineHitRecordStorageBuffer> objectHitRecordBuffer{};
+			std::shared_ptr<EngineHitRecordStorageBuffer> lightHitRecordBuffer{};
+			std::shared_ptr<EngineIndirectShadeStorageBuffer> indirectLambertShadeBuffer{};
+			std::shared_ptr<EngineLightShadeStorageBuffer> lightShadeBuffer{};
+			std::shared_ptr<EngineMissRecordStorageBuffer> missBuffer{};
+			std::shared_ptr<EngineSamplerDataStorageBuffer> samplerBuffer{};
+
+			std::unique_ptr<EngineIndirectLambertDescSet> indirectLambertDescSet{};
+			std::unique_ptr<EngineIntegratorDescSet> integratorDescSet{};
+			std::unique_ptr<EngineIntersectObjectDescSet> intersectObjectDescSet{};
+			std::unique_ptr<EngineIntersectLightDescSet> intersectLightDescSet{};
+			std::unique_ptr<EngineLightShadeDescSet> lightShadeDescSet{};
+			std::unique_ptr<EngineMissDescSet> missDescSet{};
+			std::unique_ptr<EngineSamplerDescSet> samplerDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
 
 			std::vector<std::unique_ptr<EngineTexture>> colorTextures{};

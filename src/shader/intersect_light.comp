@@ -7,9 +7,9 @@ layout(set = 0, binding = 0) buffer writeonly LightHitUbo {
   HitRecord records[];
 } lightHitUbo;
 
-layout(set = 0, binding = 1) buffer readonly RayUbo {
+layout(set = 0, binding = 1) buffer readonly LightRayUbo {
   RayData rayDatas[];
-} rayUbo;
+} lightRayUbo;
 
 layout(set = 0, binding = 2) buffer readonly LightSsbo {
   TriangleLight lights[];
@@ -178,7 +178,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
-  HitRecord hitRecord = hitTriangleLightBvh(rayUbo.rayDatas[gl_GlobalInvocationID.x].ray, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
+  HitRecord hitRecord = hitTriangleLightBvh(lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
 
   lightHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
   lightHitUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;

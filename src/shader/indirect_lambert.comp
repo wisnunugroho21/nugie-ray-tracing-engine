@@ -5,9 +5,9 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+layout(set = 0, binding = 0) buffer writeonly IndirectUbo {
   IndirectShadeRecord records[];
-} resultUbo;
+} indirectUbo;
 
 layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
   HitRecord records[];
@@ -21,11 +21,7 @@ layout(set = 0, binding = 3) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 4) buffer readonly LightSsbo {
-  TriangleLight lights[];
-};
-
-layout(set = 0, binding = 5) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 4) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -154,7 +150,7 @@ void main() {
   float isHitObject = when_and(float(objectHit.isHit), when_or(when_not(float(lightHit.isHit)), when_gt(length(lightHit.dir), length(objectHit.dir))));
   IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHitUbo.records[gl_GlobalInvocationID.x], 0);
   
-  resultUbo.records[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance * isHitObject;
-  resultUbo.records[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf * isHitObject;
-  resultUbo.records[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
+  indirectUbo.records[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance * isHitObject;
+  indirectUbo.records[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf * isHitObject;
+  indirectUbo.records[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
 }

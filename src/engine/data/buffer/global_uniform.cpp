@@ -31,7 +31,7 @@ namespace nugiEngine {
 			auto uniformBuffer = std::make_shared<EngineBuffer>(
 				this->appDevice,
 				sizeof(RayTraceUbo),
-				1,
+				1u,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
 			);

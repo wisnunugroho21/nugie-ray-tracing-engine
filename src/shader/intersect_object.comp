@@ -7,9 +7,9 @@ layout(set = 0, binding = 0) buffer writeonly ObjectHitUbo {
   HitRecord records[];
 } objectHitUbo;
 
-layout(set = 0, binding = 1) buffer readonly RayUbo {
+layout(set = 0, binding = 1) buffer readonly ObjectRayUbo {
   RayData rayDatas[];
-} rayUbo;
+} objectRayUbo;
 
 layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
   Object objects[];
@@ -241,7 +241,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
-  HitRecord hitRecord = hitObjectBvh(rayUbo.rayDatas[gl_GlobalInvocationID.x].ray, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
+  HitRecord hitRecord = hitObjectBvh(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
 
   objectHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
   objectHitUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;

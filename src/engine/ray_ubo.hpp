@@ -125,8 +125,7 @@ namespace nugiEngine {
     alignas(16) glm::vec3 horizontal{0.0f};
     alignas(16) glm::vec3 vertical{0.0f};
     alignas(16) glm::vec3 lowerLeftCorner{0.0f};
-    uint32_t numLights = 0u;
-    SunLight sunLight;
+    alignas(16) glm::uvec2 imgSize{0u};
   };
 
   struct RayTracePushConstant {

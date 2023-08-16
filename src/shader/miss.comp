@@ -3,9 +3,9 @@
 #include "core/struct.glsl"
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+layout(set = 0, binding = 0) buffer writeonly MissUbo {
   MissRecord records[];
-} resultUbo;
+} missUbo;
 
 layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
   HitRecord records[];
@@ -25,5 +25,5 @@ void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
-  resultUbo.records[gl_GlobalInvocationID.x].radiance = when_and(when_not(float(objectHit.isHit)), when_not(float(lightHit.isHit))) * vec3(0.52f, 0.8f, 0.92f);
+  missUbo.records[gl_GlobalInvocationID.x].radiance = when_and(when_not(float(objectHit.isHit)), when_not(float(lightHit.isHit))) * vec3(0.52f, 0.8f, 0.92f);
 }

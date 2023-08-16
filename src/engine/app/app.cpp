@@ -445,7 +445,7 @@ namespace nugiEngine {
 		ubo.horizontal = cameraRay.horizontal;
 		ubo.vertical = cameraRay.vertical;
 		ubo.lowerLeftCorner = cameraRay.lowerLeftCorner;
-		ubo.numLights = this->numLights;
+		ubo.imgSize = glm::uvec2{width, height};
 
 		float phi = glm::radians(45.0f);
 		float theta = glm::radians(45.0f);
@@ -453,9 +453,6 @@ namespace nugiEngine {
 		float sunX = glm::sin(theta) * glm::cos(phi);
 		float sunY = glm::sin(theta) * glm::sin(phi);
 		float sunZ = glm::cos(theta);
-
-		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
-		ubo.sunLight.color = glm::vec3(0.52f, 0.8f, 0.92f);
 
 		return ubo;
 	}
@@ -471,40 +468,117 @@ namespace nugiEngine {
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
 
-		this->rayTraceImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->indirectImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
-		VkDescriptorBufferInfo buffersInfo[9] { 
-			this->objectModel->getObjectInfo(), 
-			this->objectModel->getBvhInfo(),
-			this->primitiveModel->getPrimitiveInfo(), 
-			this->primitiveModel->getBvhInfo(),
-			this->rayTraceVertexModels->getVertexnfo(),
-			this->lightModel->getLightInfo(),
-			this->lightModel->getBvhInfo(),
-			this->materialModel->getMaterialInfo(),
-			this->transformationModel->getTransformationInfo() 
+		this->objectRayDataBuffer = std::make_shared<EngineRayDataStorageBuffer>(this->device, width * height);
+		this->lightRayDataBuffer = std::make_shared<EngineRayDataStorageBuffer>(this->device, width * height);
+		this->objectHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
+		this->lightHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
+		this->indirectLambertShadeBuffer = std::make_shared<EngineIndirectShadeStorageBuffer>(this->device, width * height);
+		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
+		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
+		this->samplerBuffer = std::make_shared<EngineSamplerDataStorageBuffer>(this->device, width * height);
+
+		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
+			this->indirectLambertShadeBuffer->getBuffersInfo(),
+			this->objectHitRecordBuffer->getBuffersInfo(),
+			this->lightHitRecordBuffer->getBuffersInfo()
 		};
 
+		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[4] {
+			this->samplerBuffer->getBuffersInfo(),
+			this->missBuffer->getBuffersInfo(),
+			this->lightShadeBuffer->getBuffersInfo(),
+			this->indirectLambertShadeBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> intersectLightBufferInfos[2] {
+			this->lightHitRecordBuffer->getBuffersInfo(),
+			this->lightRayDataBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> intersectObjectBufferInfos[2] {
+			this->objectHitRecordBuffer->getBuffersInfo(),
+			this->objectRayDataBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> lightShadeBufferInfos[3] {
+			this->lightShadeBuffer->getBuffersInfo(),
+			this->objectHitRecordBuffer->getBuffersInfo(),
+			this->lightHitRecordBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> missBufferInfos[3] {
+			this->missBuffer->getBuffersInfo(),
+			this->objectHitRecordBuffer->getBuffersInfo(),
+			this->lightHitRecordBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> samplerBufferInfos[3] {
+			this->objectRayDataBuffer->getBuffersInfo(),
+			this->lightRayDataBuffer->getBuffersInfo(),
+			this->samplerBuffer->getBuffersInfo()
+		};
+
+		VkDescriptorBufferInfo indirectModelInfos[1] {
+			this->materialModel->getMaterialInfo()
+		};
+
+		VkDescriptorBufferInfo intersectLightModelInfos[3] {
+			this->lightModel->getLightInfo(),
+			this->lightModel->getBvhInfo(),
+			this->rayTraceVertexModels->getVertexnfo()
+		};
+
+		VkDescriptorBufferInfo intersectObjectModelInfos[7] {
+			this->objectModel->getObjectInfo(),
+			this->objectModel->getBvhInfo(),
+			this->primitiveModel->getPrimitiveInfo(),
+			this->primitiveModel->getBvhInfo(),
+			this->rayTraceVertexModels->getVertexnfo(),
+			this->materialModel->getMaterialInfo(),
+			this->transformationModel->getTransformationInfo()
+		};
+
+		VkDescriptorBufferInfo lightShadeModelInfos[2] {
+			this->lightModel->getLightInfo(),
+			this->rayTraceVertexModels->getVertexnfo()
+		};
+
+		std::vector<VkDescriptorImageInfo> indirectLambertTexturesInfo[1];
+		for (int i = 0; i < this->colorTextures.size(); i++) {
+			indirectLambertTexturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
+		}
+
+		std::vector<VkDescriptorImageInfo> intersectObjectTexturesInfo[1];
+		for (int i = 0; i < this->normalTextures.size(); i++) {
+			intersectObjectTexturesInfo[0].emplace_back(this->normalTextures[i]->getDescriptorInfo());
+		}
+
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
-			this->rayTraceImage->getImagesInfo(),
+			this->indirectImage->getImagesInfo(),
 			this->accumulateImages->getImagesInfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> texturesInfo[2];
-		for (int i = 0; i < this->colorTextures.size(); i++) {
-			texturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
-		}
-
-		for (int i = 0; i < this->normalTextures.size(); i++) {
-			texturesInfo[1].emplace_back(this->normalTextures[i]->getDescriptorInfo());
-		}
-
-		this->rayTraceDescSet = std::make_unique<EngineRayTraceDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), this->rayTraceImage->getImagesInfo(), buffersInfo, texturesInfo);
+		this->indirectLambertDescSet = std::make_unique<EngineIndirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), indirectLambertBufferInfos, indirectModelInfos, indirectLambertTexturesInfo);
+		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
+		this->intersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), intersectLightBufferInfos, intersectLightModelInfos);
+		this->intersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), intersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
+		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
+		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), missBufferInfos);
+		this->samplerDescSet = std::make_unique<EngineSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), globalUniforms->getBuffersInfo(), samplerBufferInfos);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
-		this->traceRayRender = std::make_unique<EngineTraceRayRenderSystem>(this->device, this->rayTraceDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1);
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), this->swapChainSubRenderer->getRenderPass()->getRenderPass());
+		this->indirectLambertRender = std::make_unique<EngineIndirectLambertRenderSystem>(this->device, this->indirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->integratorRender = std::make_unique<EngineIntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectLightRender = std::make_unique<EngineIntersectLightRenderSystem>(this->device, this->intersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectObjectRender = std::make_unique<EngineIntersectObjectRenderSystem>(this->device, this->intersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->lightShadeRender = std::make_unique<EngineLightShadeRenderSystem>(this->device, this->lightShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->missRender = std::make_unique<EngineMissRenderSystem>(this->device, this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->samplerRender = std::make_unique<EngineSamplerRenderSystem>(this->device, this->samplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
+			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
 		this->camera = std::make_shared<EngineCamera>(width, height);
 	}
