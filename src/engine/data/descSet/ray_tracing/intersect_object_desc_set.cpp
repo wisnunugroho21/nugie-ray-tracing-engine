@@ -1,4 +1,4 @@
-#include "ray_trace_desc_set.hpp"
+#include "intersect_object_desc_set.hpp"
 
 namespace nugiEngine {
   EngineRayTraceDescSet::EngineRayTraceDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorImageInfo> rayTraceImageInfo, VkDescriptorBufferInfo buffersInfo[9], std::vector<VkDescriptorImageInfo> texturesInfo[2]) {

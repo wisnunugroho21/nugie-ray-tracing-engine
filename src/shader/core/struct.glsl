@@ -87,12 +87,6 @@ struct HitRecord {
   float isPrimary;
 };
 
-struct LambertData {
-  vec3 hitPoint;
-  vec3 normal;
-  uint materialIndex;
-};
-
 struct IndirectShadeRecord {
   vec3 radiance;
   float pdf;
@@ -121,5 +115,5 @@ struct SamplerData {
 // ---------------------- internal struct ----------------------
 
 float pi = 3.14159265359;
-float FLT_MAX = 1.0+12;
-float FLT_MIN = 1.0-12;
+float FLT_MAX = 1.0e+12;
+float FLT_MIN = 1.0e-12;
