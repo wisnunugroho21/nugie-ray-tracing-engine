@@ -17,9 +17,6 @@ class EngineBuffer {
       VkMemoryPropertyFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment = 1);
   ~EngineBuffer();
- 
-  EngineBuffer(const EngineBuffer&) = delete;
-  EngineBuffer& operator=(const EngineBuffer&) = delete;
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
   void copyBuffer(VkBuffer srcBuffer, VkDeviceSize size);

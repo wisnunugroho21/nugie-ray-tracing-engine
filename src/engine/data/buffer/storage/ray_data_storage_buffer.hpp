@@ -18,9 +18,6 @@ namespace nugiEngine {
 		public:
 			EngineRayDataStorageBuffer(EngineDevice &device, uint32_t dataCount);
 
-			EngineRayDataStorageBuffer(const EngineRayDataStorageBuffer&) = delete;
-			EngineRayDataStorageBuffer& operator = (const EngineRayDataStorageBuffer&) = delete;
-
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
 			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);

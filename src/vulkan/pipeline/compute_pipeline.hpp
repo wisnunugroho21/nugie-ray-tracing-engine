@@ -36,9 +36,6 @@ namespace nugiEngine {
 			EngineComputePipeline(EngineDevice& device, const ComputePipelineConfigInfo& configInfo);
 			~EngineComputePipeline();
 
-			EngineComputePipeline(const EngineComputePipeline&) = delete;
-			EngineComputePipeline& operator = (const EngineDevice&) = delete;
-
 			void bind(VkCommandBuffer commandBuffer);
 			void dispatch(VkCommandBuffer commandBuffer, uint32_t xSize, uint32_t ySize, uint32_t zSize);
 

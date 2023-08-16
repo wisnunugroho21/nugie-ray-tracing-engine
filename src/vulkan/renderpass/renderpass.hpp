@@ -33,9 +33,6 @@ namespace nugiEngine {
       EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height);
       ~EngineRenderPass();
 
-      EngineRenderPass(const EngineRenderPass &) = delete;
-      EngineRenderPass& operator=(const EngineRenderPass &) = delete;
-
       VkFramebuffer getFramebuffers(int index) { return this->framebuffers[index]; }
       VkRenderPass getRenderPass() { return this->renderPass; }
 

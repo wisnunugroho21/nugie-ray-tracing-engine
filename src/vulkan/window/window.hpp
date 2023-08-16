@@ -13,9 +13,6 @@ namespace nugiEngine {
 			EngineWindow(int w, int h, std::string name);
 			~EngineWindow();
 
-			EngineWindow(const EngineWindow&) = delete;
-			EngineWindow& operator = (const EngineWindow&) = delete;
-
 			bool shouldClose();
 			void pollEvents();
 

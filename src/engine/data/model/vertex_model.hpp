@@ -33,9 +33,6 @@ namespace nugiEngine {
 	public:
 		EngineVertexModel(EngineDevice &device, const VertexModelData &data);
 
-		EngineVertexModel(const EngineVertexModel&) = delete;
-		EngineVertexModel& operator = (const EngineVertexModel&) = delete;
-
 		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);
 		

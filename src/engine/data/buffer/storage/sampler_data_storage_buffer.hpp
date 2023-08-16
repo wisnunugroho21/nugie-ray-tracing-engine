@@ -18,9 +18,6 @@ namespace nugiEngine {
 		public:
 			EngineSamplerDataStorageBuffer(EngineDevice &device, uint32_t dataCount);
 
-			EngineSamplerDataStorageBuffer(const EngineSamplerDataStorageBuffer&) = delete;
-			EngineSamplerDataStorageBuffer& operator = (const EngineSamplerDataStorageBuffer&) = delete;
-
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
 			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);

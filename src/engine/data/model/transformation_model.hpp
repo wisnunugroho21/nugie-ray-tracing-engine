@@ -19,9 +19,6 @@ namespace nugiEngine {
 			EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations);
 			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents);
 
-			EngineTransformationModel(const EngineTransformationModel&) = delete;
-			EngineTransformationModel& operator = (const EngineTransformationModel&) = delete;
-
 			VkDescriptorBufferInfo getTransformationInfo() { return this->transformationBuffer->descriptorInfo();  }
 			
 		private:

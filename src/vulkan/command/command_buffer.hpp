@@ -14,9 +14,6 @@ namespace nugiEngine
 
       ~EngineCommandBuffer();
 
-      EngineCommandBuffer(const EngineCommandBuffer&) = delete;
-      EngineCommandBuffer& operator=(const EngineCommandBuffer&) = delete;
-
       static std::vector<std::shared_ptr<EngineCommandBuffer>> createCommandBuffers(EngineDevice &appDevice, uint32_t size);
 
       void beginSingleTimeCommand();

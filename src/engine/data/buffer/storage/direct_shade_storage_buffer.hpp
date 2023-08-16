@@ -18,9 +18,6 @@ namespace nugiEngine {
 		public:
 			EngineDirectShadeStorageBuffer(EngineDevice &device, uint32_t dataCount);
 
-			EngineDirectShadeStorageBuffer(const EngineDirectShadeStorageBuffer&) = delete;
-			EngineDirectShadeStorageBuffer& operator = (const EngineDirectShadeStorageBuffer&) = delete;
-
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
 			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);

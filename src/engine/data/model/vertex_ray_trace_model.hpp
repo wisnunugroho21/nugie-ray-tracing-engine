@@ -17,9 +17,6 @@ namespace nugiEngine {
 		public:
 			EngineRayTraceVertexModel(EngineDevice &device, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
 
-			EngineRayTraceVertexModel(const EngineRayTraceVertexModel&) = delete;
-			EngineRayTraceVertexModel& operator = (const EngineRayTraceVertexModel&) = delete;
-
 			VkDescriptorBufferInfo getVertexnfo() { return this->vertexBuffer->descriptorInfo(); }
 			
 		private:

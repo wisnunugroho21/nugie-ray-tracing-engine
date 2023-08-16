@@ -21,9 +21,6 @@ namespace nugiEngine {
 
     ~EngineSwapChain();
 
-    EngineSwapChain(const EngineSwapChain &) = delete;
-    EngineSwapChain& operator=(const EngineSwapChain &) = delete;
-
     std::vector<std::shared_ptr<EngineImage>> getswapChainImages() const { return this->swapChainImages; }
     VkFormat getSwapChainImageFormat() const { return this->swapChainImageFormat; }
     VkExtent2D getSwapChainExtent() { return this->swapChainExtent; }

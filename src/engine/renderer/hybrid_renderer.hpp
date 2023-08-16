@@ -19,9 +19,6 @@ namespace nugiEngine {
 			EngineHybridRenderer(EngineWindow& window, EngineDevice& device);
 			~EngineHybridRenderer();
 
-			EngineHybridRenderer(const EngineHybridRenderer&) = delete;
-			EngineHybridRenderer& operator = (const EngineHybridRenderer&) = delete;
-
 			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
 			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
 			bool isFrameInProgress() const { return this->isFrameStarted; }

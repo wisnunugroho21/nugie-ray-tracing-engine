@@ -58,9 +58,6 @@ namespace nugiEngine {
 			EngineApp();
 			~EngineApp();
 
-			EngineApp(const EngineApp&) = delete;
-			EngineApp& operator = (const EngineApp&) = delete;
-
 			void run();
 			void renderLoop();
 
