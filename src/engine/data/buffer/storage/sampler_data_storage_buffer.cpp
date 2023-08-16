@@ -33,7 +33,7 @@ namespace nugiEngine {
 		auto instanceCount = static_cast<uint32_t>(datas->size());
 		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 		
-		this->buffers->clear();
+		this->buffers = std::make_shared<std::vector<EngineBuffer>>();
 
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
 			EngineBuffer stagingBuffer {
