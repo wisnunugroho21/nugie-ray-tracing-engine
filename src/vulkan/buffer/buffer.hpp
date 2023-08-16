@@ -1,6 +1,9 @@
 #pragma once
 
 #include "../device/device.hpp"
+#include "../command/command_buffer.hpp"
+
+#include <memory>
  
 namespace nugiEngine {
  

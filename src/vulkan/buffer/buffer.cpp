@@ -6,12 +6,10 @@
  */
  
 #include "buffer.hpp"
-#include "../command/command_buffer.hpp"
  
 // std
 #include <cassert>
 #include <cstring>
-#include <memory>
  
 namespace nugiEngine {
   /**
@@ -237,9 +235,9 @@ namespace nugiEngine {
   }
 
   void EngineBuffer::transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
-    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
-    uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, 
-    EngineDevice *appDevice = nullptr)
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, 
+    uint32_t dstQueueFamilyIndex, std::shared_ptr<EngineCommandBuffer> commandBuffer, 
+    EngineDevice *appDevice)
   {
     bool isCommandBufferCreatedHere = false;
     

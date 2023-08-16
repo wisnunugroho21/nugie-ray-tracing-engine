@@ -47,15 +47,15 @@ namespace nugiEngine {
 			stagingBuffer.map();
 			stagingBuffer.writeToBuffer(datas->data());
 
-			auto buffer = std::make_shared<EngineBuffer>(
+			EngineBuffer buffer {
 				this->engineDevice,
 				bufferSize,
 				instanceCount,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-			);
+			};
 
-			buffer->copyBuffer(stagingBuffer.getBuffer(), totalSize);
+			buffer.copyBuffer(stagingBuffer.getBuffer(), totalSize);
 			this->buffers->emplace_back(buffer);
 		}
 	}
