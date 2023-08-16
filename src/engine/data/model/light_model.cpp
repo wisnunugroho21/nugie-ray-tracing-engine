@@ -18,12 +18,14 @@ namespace nugiEngine {
 	}
 
 	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
-		auto lightBufferSize = sizeof(TriangleLight) * triangleLights->size();
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(TriangleLight));
+		auto instanceCount = static_cast<uint32_t>(triangleLights->size());
+		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 		
 		EngineBuffer lightStagingBuffer {
 			this->engineDevice,
-			static_cast<VkDeviceSize>(lightBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
@@ -33,22 +35,24 @@ namespace nugiEngine {
 
 		this->lightBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			static_cast<VkDeviceSize>(lightBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(lightBufferSize));
+		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), totalSize);
 
 		// -------------------------------------------------
 
-		auto bvhBufferSize = sizeof(BvhNode) * bvhNodes->size();
+		bufferSize = static_cast<VkDeviceSize>(sizeof(BvhNode));
+		instanceCount = static_cast<uint32_t>(bvhNodes->size());
+		totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 
 		EngineBuffer bvhStagingBuffer {
 			this->engineDevice,
-			static_cast<VkDeviceSize>(bvhBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
@@ -58,13 +62,13 @@ namespace nugiEngine {
 
 		this->bvhBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			static_cast<VkDeviceSize>(bvhBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(bvhBufferSize));
+		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), totalSize);
 	}
     
 } // namespace nugiEngine

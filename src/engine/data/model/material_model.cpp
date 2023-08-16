@@ -13,12 +13,14 @@ namespace nugiEngine {
 	}
 
 	void EngineMaterialModel::createBuffers(std::shared_ptr<std::vector<Material>> materials) {
-		auto materialBufferSize = sizeof(Material) * materials->size();
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Material));
+		auto instanceCount = static_cast<uint32_t>(materials->size());
+		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 
 		EngineBuffer materialStagingBuffer {
 			this->engineDevice,
-			static_cast<VkDeviceSize>(materialBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
@@ -28,13 +30,13 @@ namespace nugiEngine {
 
 		this->materialBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			static_cast<VkDeviceSize>(materialBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(materialBufferSize));
+		this->materialBuffer->copyBuffer(materialStagingBuffer.getBuffer(), totalSize);
 	} 
 } // namespace nugiEngine
 

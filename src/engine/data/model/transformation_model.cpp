@@ -32,12 +32,14 @@ namespace nugiEngine {
 	}
 
 	void EngineTransformationModel::createBuffers(std::shared_ptr<std::vector<Transformation>> transformations) {
-		auto transformationBufferSize = sizeof(Transformation) * transformations->size();
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Transformation));
+		auto instanceCount = static_cast<uint32_t>(transformations->size());
+		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 
 		EngineBuffer transformationStagingBuffer {
 			this->engineDevice,
-			static_cast<VkDeviceSize>(transformationBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 		};
@@ -47,13 +49,13 @@ namespace nugiEngine {
 
 		this->transformationBuffer = std::make_shared<EngineBuffer>(
 			this->engineDevice,
-			static_cast<VkDeviceSize>(transformationBufferSize),
-			1,
+			bufferSize,
+			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), static_cast<VkDeviceSize>(transformationBufferSize));
+		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), totalSize);
 	} 
 } // namespace nugiEngine
 
