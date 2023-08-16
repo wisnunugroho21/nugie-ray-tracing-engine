@@ -25,5 +25,5 @@ void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
-  resultUbo.records[gl_GlobalInvocationID.x].radiance = when_and(when_not(float(objectHit.isHit)), when_not(float(lightHit.isHit))) * vec3(0.0f);
+  resultUbo.records[gl_GlobalInvocationID.x].radiance = when_and(when_not(float(objectHit.isHit)), when_not(float(lightHit.isHit))) * vec3(0.52f, 0.8f, 0.92f);
 }
