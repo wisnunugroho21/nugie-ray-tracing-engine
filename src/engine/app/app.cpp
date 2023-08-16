@@ -36,18 +36,24 @@ namespace nugiEngine {
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
 				auto commandBuffer = this->renderer->beginCommand();
-				this->rayTraceImage->prepareFrame(commandBuffer, frameIndex);
+				this->indirectImage->prepareFrame(commandBuffer, frameIndex);
+				
+				this->samplerRender->render(commandBuffer, this->samplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->intersectObjectRender->render(commandBuffer, this->intersectObjectDescSet->getDescriptorSets(frameIndex));
+				this->intersectLightRender->render(commandBuffer, this->intersectLightDescSet->getDescriptorSets(frameIndex));
+				this->indirectLambertRender->render(commandBuffer, this->indirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->lightShadeRender->render(commandBuffer, this->lightShadeDescSet->getDescriptorSets(frameIndex));
+				this->missRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex));
+				this->integratorRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
-				this->traceRayRender->render(commandBuffer, this->rayTraceDescSet->getDescriptorSets(frameIndex), this->randomSeed);
-
-				this->rayTraceImage->transferFrame(commandBuffer, frameIndex);
+				this->indirectImage->transferFrame(commandBuffer, frameIndex);
 				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
-				this->rayTraceImage->finishFrame(commandBuffer, frameIndex);
+				this->indirectImage->finishFrame(commandBuffer, frameIndex);
 				this->accumulateImages->finishFrame(commandBuffer, frameIndex);
 
 				this->renderer->endCommand(commandBuffer);
