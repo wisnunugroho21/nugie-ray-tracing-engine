@@ -112,9 +112,10 @@ struct MissRecord {
   vec3 radiance;
 };
 
-struct Pixel {
+struct SamplerData {
   uint xCoord;
   uint yCoord;
+  Ray nextRay;
 };
 
 // ---------------------- internal struct ----------------------

@@ -1,36 +1,45 @@
 #version 460
 
 #include "core/struct.glsl"
+#include "core/boolean.glsl"
+
 layout(local_size_x = 32) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D totalIndirectImage;
 
-layout(set = 0, binding = 1) buffer readonly MissUbo {
+layout(set = 0, binding = 1) buffer SamplerDataUbo {
+  SamplerData samplerDatas[];
+} samplerDataUbo;
+
+layout(set = 0, binding = 2) buffer readonly MissUbo {
   MissRecord records[];
 } missUbo;
 
-layout(set = 0, binding = 2) buffer readonly HitLightUbo {
+layout(set = 0, binding = 3) buffer readonly HitLightUbo {
   HitLightRecord records[];
 } hitLightUbo;
 
-layout(set = 0, binding = 3) buffer readonly IndirectUbo {
+layout(set = 0, binding = 4) buffer readonly IndirectUbo {
   IndirectShadeRecord records[];
 } indirectUbo;
-
-layout(set = 0, binding = 4) buffer readonly MortonOrderUbo {
-  Pixel pixels[];
-} mortonOrderUbo;
 
 uvec2 imgSize = uvec2(imageSize(totalIndirectImage));
 
 void main() {
-  Pixel mortonPixel = mortonOrderUbo.pixels[gl_GlobalInvocationID.x];
-  ivec2 pixelCoord = ivec2(mortonPixel.xCoord, mortonPixel.yCoord);
-
-  vec3 prevIndirect = imageLoad(totalIndirectImage, pixelCoord).xyz;
+  SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
 
   uint totalIndex = imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x;
-  vec3 curIndirect = missUbo.records[totalIndex].radiance + prevIndirect * hitLightUbo.records[totalIndex].radiance + indirectUbo.records[totalIndex].radiance;
+  ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
+  
+  vec3 prevIndirect = imageLoad(totalIndirectImage, pixelCoord).xyz;
+  IndirectShadeRecord indirectRecord = indirectUbo.records[totalIndex];
+  
+  vec3 curIndirect = missUbo.records[totalIndex].radiance + 
+    prevIndirect * hitLightUbo.records[totalIndex].radiance + 
+    indirectRecord.radiance;
 
   imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, 1.0f));
+
+  samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
+  samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
 }

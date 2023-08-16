@@ -1,0 +1,80 @@
+#version 460
+
+#include "core/struct.glsl"
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 2) uniform readonly GlobalUbo {
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  uvec2 imgSize;
+} ubo;
+
+layout(set = 0, binding = 0) buffer writeonly ObjectRayUbo {
+  RayData rayDatas[];
+} objectRayUbo;
+
+layout(set = 0, binding = 1) buffer writeonly LightRayUbo {
+  RayData rayDatas[];
+} lightRayUbo;
+
+layout(set = 0, binding = 3) buffer readonly SamplerDataUbo {
+  SamplerData samplerDatas[];
+} samplerDataUbo;
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- Random ------------- 
+
+// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
+uint stepRNG(uint rngState) {
+  return rngState * 747796405 + 1;
+}
+
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return float(word) / 4294967295.0f;
+}
+
+float randomFloat(uint additionalRandomSeed) {
+  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
+  return stepAndOutputRNGFloat(rngState);
+}
+
+void main() {
+  SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
+  ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
+
+  float noiseX = randomFloat(0) * 2.0f - 1.0f;
+  float noiseY = randomFloat(1) * 2.0f - 1.0f;
+
+  vec2 uv = (vec2(pixelCoord) + vec2(noiseX, noiseY)) / ubo.imgSize;
+  vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
+  float isPrimary = when_le(length(samplerData.nextRay.direction), 0.001f);
+
+  Ray curRay;
+  curRay.origin = mix(samplerData.nextRay.origin, ubo.origin, isPrimary);
+  curRay.origin = mix(samplerData.nextRay.direction, rayDirection, isPrimary);
+
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1.0+12);
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
+
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1.0+12);
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
+}
+
+
+
