@@ -58,6 +58,16 @@ namespace nugiEngine {
 			buffer->copyBuffer(stagingBuffer.getBuffer(), totalSize);
 			this->buffers->emplace_back(buffer);
 		}
+	}
+
+	void EngineLightShadeStorageBuffer::transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+		this->buffers->at(static_cast<size_t>(frameIndex)).transitionBuffer(VK_SHADER_STAGE_COMPUTE_BIT, VK_SHADER_STAGE_COMPUTE_BIT, 
+			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
+	}
+
+	void EngineLightShadeStorageBuffer::transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+		this->buffers->at(static_cast<size_t>(frameIndex)).transitionBuffer(VK_SHADER_STAGE_COMPUTE_BIT, VK_SHADER_STAGE_COMPUTE_BIT, 
+			VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 	} 
 } // namespace nugiEngine
 

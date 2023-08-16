@@ -39,12 +39,39 @@ namespace nugiEngine {
 				this->indirectImage->prepareFrame(commandBuffer, frameIndex);
 				
 				this->samplerRender->render(commandBuffer, this->samplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+
+				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
+				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
+				this->samplerBuffer->transferFromReadToWriteRead(commandBuffer, frameIndex);
+
 				this->intersectObjectRender->render(commandBuffer, this->intersectObjectDescSet->getDescriptorSets(frameIndex));
+
+				this->objectHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
+				this->objectRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
+
 				this->intersectLightRender->render(commandBuffer, this->intersectLightDescSet->getDescriptorSets(frameIndex));
+
+				this->lightHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
+				this->lightRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
+
 				this->indirectLambertRender->render(commandBuffer, this->indirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->indirectLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+
 				this->lightShadeRender->render(commandBuffer, this->lightShadeDescSet->getDescriptorSets(frameIndex));
+				this->lightShadeBuffer->transferToRead(commandBuffer, frameIndex);
+
 				this->missRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex));
+				this->missBuffer->transferToRead(commandBuffer, frameIndex);
+
+				this->objectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->lightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
+
 				this->integratorRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+
+				this->samplerBuffer->transferFromWriteReadToRead(commandBuffer, frameIndex);
+				this->missBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->lightShadeBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->indirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 
 				this->indirectImage->transferFrame(commandBuffer, frameIndex);
 				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
