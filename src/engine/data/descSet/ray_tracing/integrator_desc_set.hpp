@@ -7,11 +7,10 @@
 #include <memory>
 
 namespace nugiEngine {
-	class EngineIntersectObjectDescSet {
+	class EngineIntegratorDescSet {
 		public:
-			EngineIntersectObjectDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-				std::vector<VkDescriptorBufferInfo> buffersInfo[2], VkDescriptorBufferInfo modelsInfo[7], 
-				std::vector<VkDescriptorImageInfo> texturesInfo[1]);
+			EngineIntegratorDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+				std::vector<VkDescriptorImageInfo> indirectImageInfos, std::vector<VkDescriptorBufferInfo> buffersInfo[4]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
 			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
@@ -21,8 +20,7 @@ namespace nugiEngine {
 			std::vector<VkDescriptorSet> descriptorSets;
 
 			void createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-				std::vector<VkDescriptorBufferInfo> buffersInfo[2], VkDescriptorBufferInfo modelsInfo[7], 
-				std::vector<VkDescriptorImageInfo> texturesInfo[1]);
+				std::vector<VkDescriptorImageInfo> indirectImageInfos, std::vector<VkDescriptorBufferInfo> buffersInfo[4]);
 	};
 	
 }

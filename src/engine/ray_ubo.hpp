@@ -106,7 +106,7 @@ namespace nugiEngine {
     float pdf = 0.0f;
   };
 
-  struct HitLightRecord {
+  struct LightShadeRecord {
     alignas(16) glm::vec3 radiance{0.0f};
   };
 

@@ -14,12 +14,12 @@
 #include <memory>
 
 namespace nugiEngine {
-	class EngineHitLightStorageBuffer {
+	class EngineLightShadeStorageBuffer {
 		public:
-			EngineHitLightStorageBuffer(EngineDevice &device, uint32_t dataCount);
+			EngineLightShadeStorageBuffer(EngineDevice &device, uint32_t dataCount);
 
-			EngineHitLightStorageBuffer(const EngineHitLightStorageBuffer&) = delete;
-			EngineHitLightStorageBuffer& operator = (const EngineHitLightStorageBuffer&) = delete;
+			EngineLightShadeStorageBuffer(const EngineLightShadeStorageBuffer&) = delete;
+			EngineLightShadeStorageBuffer& operator = (const EngineLightShadeStorageBuffer&) = delete;
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 			
@@ -27,6 +27,6 @@ namespace nugiEngine {
 			EngineDevice &engineDevice;
 			std::shared_ptr<std::vector<EngineBuffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<HitLightRecord>> datas);
+			void createBuffers(std::shared_ptr<std::vector<LightShadeRecord>> datas);
 	};
 } // namespace nugiEngine

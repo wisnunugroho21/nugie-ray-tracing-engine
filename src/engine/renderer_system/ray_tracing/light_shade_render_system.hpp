@@ -13,10 +13,10 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineHitLightRenderSystem {
+	class EngineLightShadeRenderSystem {
 		public:
-			EngineHitLightRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
-			~EngineHitLightRenderSystem();
+			EngineLightShadeRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
+			~EngineLightShadeRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets);
 

@@ -5,7 +5,7 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 2) uniform readonly GlobalUbo {
+layout(set = 0, binding = 0) uniform readonly GlobalUbo {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
@@ -13,11 +13,11 @@ layout(set = 0, binding = 2) uniform readonly GlobalUbo {
   uvec2 imgSize;
 } ubo;
 
-layout(set = 0, binding = 0) buffer writeonly ObjectRayUbo {
+layout(set = 0, binding = 1) buffer writeonly ObjectRayUbo {
   RayData rayDatas[];
 } objectRayUbo;
 
-layout(set = 0, binding = 1) buffer writeonly LightRayUbo {
+layout(set = 0, binding = 2) buffer writeonly LightRayUbo {
   RayData rayDatas[];
 } lightRayUbo;
 

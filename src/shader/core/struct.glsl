@@ -98,7 +98,7 @@ struct DirectShadeRecord {
   float pdf;
 };
 
-struct HitLightRecord {
+struct LightShadeRecord {
   vec3 radiance;
 };
 

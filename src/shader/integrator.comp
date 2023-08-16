@@ -15,9 +15,9 @@ layout(set = 0, binding = 2) buffer readonly MissUbo {
   MissRecord records[];
 } missUbo;
 
-layout(set = 0, binding = 3) buffer readonly HitLightUbo {
-  HitLightRecord records[];
-} hitLightUbo;
+layout(set = 0, binding = 3) buffer readonly LightShadeUbo {
+  LightShadeRecord records[];
+} lightShadeUbo;
 
 layout(set = 0, binding = 4) buffer readonly IndirectUbo {
   IndirectShadeRecord records[];
@@ -35,7 +35,7 @@ void main() {
   IndirectShadeRecord indirectRecord = indirectUbo.records[totalIndex];
   
   vec3 curIndirect = missUbo.records[totalIndex].radiance + 
-    prevIndirect * hitLightUbo.records[totalIndex].radiance + 
+    prevIndirect * lightShadeUbo.records[totalIndex].radiance + 
     indirectRecord.radiance;
 
   imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, 1.0f));

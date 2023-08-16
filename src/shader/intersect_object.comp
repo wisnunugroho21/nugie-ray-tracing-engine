@@ -3,9 +3,9 @@
 #include "core/struct.glsl"
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly ResultUbo {
+layout(set = 0, binding = 0) buffer writeonly ObjectHitUbo {
   HitRecord records[];
-} resultUbo;
+} objectHitUbo;
 
 layout(set = 0, binding = 1) buffer readonly RayUbo {
   RayData rayDatas[];
@@ -243,10 +243,10 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 void main() {
   HitRecord hitRecord = hitObjectBvh(rayUbo.rayDatas[gl_GlobalInvocationID.x].ray, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, rayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
 
-  resultUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
-  resultUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
-  resultUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
-  resultUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
-  resultUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
-  resultUbo.records[gl_GlobalInvocationID.x].isPrimary = hitRecord.isPrimary;
+  objectHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
+  objectHitUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
+  objectHitUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
+  objectHitUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
+  objectHitUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
+  objectHitUbo.records[gl_GlobalInvocationID.x].isPrimary = hitRecord.isPrimary;
 }

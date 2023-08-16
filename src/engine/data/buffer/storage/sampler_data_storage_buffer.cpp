@@ -1,4 +1,4 @@
-#include "hit_light_storage_buffer.hpp"
+#include "sampler_data_storage_buffer.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -8,17 +8,17 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineHitLightStorageBuffer::EngineHitLightStorageBuffer(EngineDevice &device, uint32_t dataCount) : engineDevice{device} {
-		auto datas = std::make_shared<std::vector<HitLightRecord>>();
+	EngineSamplerDataStorageBuffer::EngineSamplerDataStorageBuffer(EngineDevice &device, uint32_t dataCount) : engineDevice{device} {
+		auto datas = std::make_shared<std::vector<SamplerData>>();
 		for (uint32_t i = 0; i < dataCount; i++) {
-			HitLightRecord data{};
+			SamplerData data{};
 			datas->emplace_back(data);
 		}
 
 		this->createBuffers(datas);
 	}
 
-	std::vector<VkDescriptorBufferInfo> EngineHitLightStorageBuffer::getBuffersInfo() {
+	std::vector<VkDescriptorBufferInfo> EngineSamplerDataStorageBuffer::getBuffersInfo() {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->buffers->size(); i++) {
@@ -28,11 +28,11 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineHitLightStorageBuffer::createBuffers(std::shared_ptr<std::vector<HitLightRecord>> datas) {
-		auto bufferSize = static_cast<VkDeviceSize>(sizeof(HitLightRecord));
+	void EngineSamplerDataStorageBuffer::createBuffers(std::shared_ptr<std::vector<SamplerData>> datas) {
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(SamplerData));
 		auto instanceCount = static_cast<uint32_t>(datas->size());
 		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
-
+		
 		this->buffers->clear();
 
 		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
