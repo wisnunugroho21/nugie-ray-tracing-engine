@@ -35,7 +35,7 @@ void main() {
   vec3 curIndirect = missUbo.records[gl_GlobalInvocationID.x].radiance + 
     lightShadeRecord.radiance + indirectRecord.radiance;
 
-  imageStore(totalIndirectImage, pixelCoord, vec4(mix(prevIndirect, 1.0f, lightShadeRecord.isPrimary) * curIndirect, 1.0f));
+  imageStore(totalIndirectImage, pixelCoord, vec4(mix(prevIndirect, vec3(1.0f), lightShadeRecord.isPrimary) * curIndirect, 1.0f));
 
   samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
   samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
