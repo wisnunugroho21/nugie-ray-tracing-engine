@@ -86,12 +86,13 @@ namespace nugiEngine {
     bool isHit;
     float isPrimary;
 
-    uint32_t hitIndex;
-    uint32_t materialIndex;
+    uint hitIndex;
+    uint materialIndex;
 
     alignas(16) glm::vec3 point;
     alignas(16) glm::vec3 dir;
     alignas(16) glm::vec3 normal;
+    alignas(16) glm::vec2 uv;
   };
 
   struct IndirectShadeRecord {
