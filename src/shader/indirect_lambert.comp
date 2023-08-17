@@ -132,14 +132,13 @@ IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 
 }
 
 IndirectShadeRecord indirectLambertShade(HitRecord hit, uint additionalRandomSeed) {
-  /* vec3 surfaceColor;
-  if (materials[materialIndex].colorTextureIndex == 0u) {
-    surfaceColor = materials[materialIndex].baseColor;
+  vec3 surfaceColor;
+  if (materials[hit.materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[hit.materialIndex].baseColor;
   } else {
-    surfaceColor = texture(colorTextureSampler[materials[materialIndex].colorTextureIndex - 1u], uv).xyz;
-  } */
+    surfaceColor = texture(colorTextureSampler[materials[hit.materialIndex].colorTextureIndex - 1u], hit.uv).xyz;
+  }
 
-  vec3 surfaceColor = materials[hit.materialIndex].baseColor;
   return indirectLambertShade(hit.point, surfaceColor, hit.normal, additionalRandomSeed);
 }
 

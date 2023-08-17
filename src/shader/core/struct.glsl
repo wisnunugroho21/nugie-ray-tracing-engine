@@ -76,15 +76,15 @@ struct RayData {
 
 struct HitRecord {
   bool isHit;
+  float isPrimary;
+
   uint hitIndex;
+  uint materialIndex;
 
   vec3 point;
   vec3 dir;
-
   vec3 normal;
-  uint materialIndex;
-
-  float isPrimary;
+  vec2 uv;
 };
 
 struct IndirectShadeRecord {

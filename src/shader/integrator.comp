@@ -26,16 +26,18 @@ layout(set = 0, binding = 4) buffer readonly IndirectUbo {
 void main() {
   SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
-  
-  vec3 prevIndirect = imageLoad(totalIndirectImage, pixelCoord).xyz;
 
   IndirectShadeRecord indirectRecord = indirectUbo.records[gl_GlobalInvocationID.x];
   LightShadeRecord lightShadeRecord = lightShadeUbo.records[gl_GlobalInvocationID.x];
-  
-  vec3 curIndirect = missUbo.records[gl_GlobalInvocationID.x].radiance + 
-    lightShadeRecord.radiance + indirectRecord.radiance;
 
-  imageStore(totalIndirectImage, pixelCoord, vec4(mix(prevIndirect, vec3(1.0f), lightShadeRecord.isPrimary) * curIndirect, 1.0f));
+  vec4 prevIndirectData = imageLoad(totalIndirectImage, pixelCoord);
+  vec3 prevIndirectAttent = mix(prevIndirectData.xyz, vec3(1.0f), lightShadeRecord.isPrimary);
+  float prevIndirectPdf = mix(prevIndirectData.w, 1.0f, lightShadeRecord.isPrimary);
+  
+  vec3 curIndirect = (missUbo.records[gl_GlobalInvocationID.x].radiance + indirectRecord.radiance) / prevIndirectPdf + 
+    lightShadeRecord.radiance;
+
+  imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, indirectRecord.pdf));
 
   samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
   samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
