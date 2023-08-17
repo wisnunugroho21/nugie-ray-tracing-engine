@@ -29,13 +29,16 @@ void main() {
 
   IndirectShadeRecord indirectRecord = indirectUbo.records[gl_GlobalInvocationID.x];
   LightShadeRecord lightShadeRecord = lightShadeUbo.records[gl_GlobalInvocationID.x];
+  MissRecord missRecord = missUbo.records[gl_GlobalInvocationID.x];
 
   vec4 prevIndirectData = imageLoad(totalIndirectImage, pixelCoord);
   vec3 prevIndirectAttent = mix(prevIndirectData.xyz, vec3(1.0f), lightShadeRecord.isPrimary);
   float prevIndirectPdf = mix(prevIndirectData.w, 1.0f, lightShadeRecord.isPrimary);
+
+  vec3 totalPrevIndirect = prevIndirectAttent / prevIndirectPdf;
   
-  vec3 curIndirect = (missUbo.records[gl_GlobalInvocationID.x].radiance + indirectRecord.radiance) / prevIndirectPdf + 
-    lightShadeRecord.radiance;
+  vec3 curIndirect = (missRecord.radiance + indirectRecord.radiance) * totalPrevIndirect + 
+    lightShadeRecord.radiance * prevIndirectAttent;
 
   imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, indirectRecord.pdf));
 
