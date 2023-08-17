@@ -66,7 +66,7 @@ namespace nugiEngine {
 				this->objectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 
-				this->integratorRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->integratorRender->render(commandBuffer, this->integratorDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
 				this->samplerBuffer->transferFromWriteReadToRead(commandBuffer, frameIndex);
 				this->missBuffer->transferToWrite(commandBuffer, frameIndex);
