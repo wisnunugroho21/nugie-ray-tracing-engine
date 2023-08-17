@@ -52,12 +52,11 @@ float randomFloat(uint additionalRandomSeed) {
 
 void main() {
   SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
-  ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
 
   float noiseX = randomFloat(0) * 2.0f - 1.0f;
   float noiseY = randomFloat(1) * 2.0f - 1.0f;
 
-  vec2 uv = (vec2(pixelCoord) + vec2(noiseX, noiseY)) / ubo.imgSize;
+  vec2 uv = (vec2(samplerData.xCoord, samplerData.yCoord) + vec2(noiseX, noiseY)) / ubo.imgSize;
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
   float isPrimary = when_le(length(samplerData.nextRay.direction), 0.001f);
 
