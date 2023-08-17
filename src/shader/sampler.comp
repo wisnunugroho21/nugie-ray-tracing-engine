@@ -63,7 +63,7 @@ void main() {
 
   Ray curRay;
   curRay.origin = mix(samplerData.nextRay.origin, ubo.origin, isPrimary);
-  curRay.origin = mix(samplerData.nextRay.direction, rayDirection, isPrimary);
+  curRay.direction = mix(samplerData.nextRay.direction, rayDirection, isPrimary);
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;

@@ -23,19 +23,15 @@ layout(set = 0, binding = 4) buffer readonly IndirectUbo {
   IndirectShadeRecord records[];
 } indirectUbo;
 
-uvec2 imgSize = uvec2(imageSize(totalIndirectImage));
-
 void main() {
   SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
-
-  uint totalIndex = imgSize.x * gl_GlobalInvocationID.y + gl_GlobalInvocationID.x;
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   
   vec3 prevIndirect = imageLoad(totalIndirectImage, pixelCoord).xyz;
-  IndirectShadeRecord indirectRecord = indirectUbo.records[totalIndex];
+  IndirectShadeRecord indirectRecord = indirectUbo.records[gl_GlobalInvocationID.x];
   
-  vec3 curIndirect = missUbo.records[totalIndex].radiance + 
-    prevIndirect * lightShadeUbo.records[totalIndex].radiance + 
+  vec3 curIndirect = missUbo.records[gl_GlobalInvocationID.x].radiance + 
+    prevIndirect * lightShadeUbo.records[gl_GlobalInvocationID.x].radiance + 
     indirectRecord.radiance;
 
   imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, 1.0f));
