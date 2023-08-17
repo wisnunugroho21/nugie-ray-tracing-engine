@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace nugiEngine {
   uint32_t part1By1(uint32_t x);
