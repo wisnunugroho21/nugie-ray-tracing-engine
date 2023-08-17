@@ -8,13 +8,7 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineSamplerDataStorageBuffer::EngineSamplerDataStorageBuffer(EngineDevice &device, uint32_t dataCount) : engineDevice{device} {
-		auto datas = std::make_shared<std::vector<SamplerData>>();
-		for (uint32_t i = 0; i < dataCount; i++) {
-			SamplerData data{};
-			datas->emplace_back(data);
-		}
-
+	EngineSamplerDataStorageBuffer::EngineSamplerDataStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<SamplerData>> datas) : engineDevice{device} {
 		this->createBuffers(datas);
 	}
 

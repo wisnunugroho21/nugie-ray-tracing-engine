@@ -16,7 +16,7 @@
 namespace nugiEngine {
 	class EngineSamplerDataStorageBuffer {
 		public:
-			EngineSamplerDataStorageBuffer(EngineDevice &device, uint32_t dataCount);
+			EngineSamplerDataStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<SamplerData>> datas);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 

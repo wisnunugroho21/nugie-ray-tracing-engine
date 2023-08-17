@@ -14,6 +14,8 @@
 
 #include <thread>
 
+#include "../utils/sort/morton.hpp"
+
 namespace nugiEngine {
 	EngineApp::EngineApp() {
 		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
@@ -511,7 +513,7 @@ namespace nugiEngine {
 		this->indirectLambertShadeBuffer = std::make_shared<EngineIndirectShadeStorageBuffer>(this->device, width * height);
 		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
 		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
-		this->samplerBuffer = std::make_shared<EngineSamplerDataStorageBuffer>(this->device, width * height);
+		this->samplerBuffer = std::make_shared<EngineSamplerDataStorageBuffer>(this->device, sortPixelByMorton(width, height));
 
 		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
 			this->indirectLambertShadeBuffer->getBuffersInfo(),
