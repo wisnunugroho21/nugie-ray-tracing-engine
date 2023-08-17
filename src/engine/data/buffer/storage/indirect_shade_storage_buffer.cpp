@@ -22,7 +22,7 @@ namespace nugiEngine {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->buffers->size(); i++) {
-			buffersInfo.emplace_back((*this->buffers)[i].descriptorInfo());
+			buffersInfo.emplace_back(this->buffers->at(i).descriptorInfo());
 		}
 
 		return buffersInfo;
