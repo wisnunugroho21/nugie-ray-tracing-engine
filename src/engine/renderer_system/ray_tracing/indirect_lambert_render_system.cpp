@@ -73,6 +73,6 @@ namespace nugiEngine {
 			&pushConstant
 		);
 
-		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 8, this->nSample / 1);
+		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), (this->width * this->height * this->nSample) / 32u, 1u, 1u);
 	}
 }
