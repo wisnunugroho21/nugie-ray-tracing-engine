@@ -24,15 +24,15 @@ namespace nugiEngine {
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->primitive.indices.x].position, (*this->vertices)[this->primitive.indices.y].position), (*this->vertices)[this->primitive.indices.z].position) + eps
+      glm::min(glm::min(this->vertices->at(this->primitive.indices.x).position, this->vertices->at(this->primitive.indices.y).position), this->vertices->at(this->primitive.indices.z).position) - eps,
+      glm::max(glm::max(this->vertices->at(this->primitive.indices.x).position, this->vertices->at(this->primitive.indices.y).position), this->vertices->at(this->primitive.indices.z).position) + eps
     };
   }
 
   Aabb TriangleLightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) - eps,
-      glm::max(glm::max((*this->vertices)[this->light.indices.x].position, (*this->vertices)[this->light.indices.y].position), (*this->vertices)[this->light.indices.z].position) + eps
+      glm::min(glm::min(this->vertices->at(this->light.indices.x).position, this->vertices->at(this->light.indices.y).position), this->vertices->at(this->light.indices.z).position) - eps,
+      glm::max(glm::max(this->vertices->at(this->light.indices.x).position, this->vertices->at(this->light.indices.y).position), this->vertices->at(this->light.indices.z).position) + eps
     };
   }
 
@@ -83,9 +83,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
     for (auto &&primitive : *this->primitives) {
-      if ((*this->vertices)[primitive.indices.x].position[index] > max) max = (*this->vertices)[primitive.indices.x].position[index];
-      if ((*this->vertices)[primitive.indices.y].position[index] > max) max = (*this->vertices)[primitive.indices.y].position[index];
-      if ((*this->vertices)[primitive.indices.z].position[index] > max) max = (*this->vertices)[primitive.indices.z].position[index];
+      if (this->vertices->at(primitive.indices.x).position[index] > max) max = this->vertices->at(primitive.indices.x).position[index];
+      if (this->vertices->at(primitive.indices.y).position[index] > max) max = this->vertices->at(primitive.indices.y).position[index];
+      if (this->vertices->at(primitive.indices.z).position[index] > max) max = this->vertices->at(primitive.indices.z).position[index];
     }
 
     return max;
@@ -94,9 +94,9 @@ namespace nugiEngine {
   float ObjectBoundBox::findMin(uint32_t index) {
     float min = FLT_MAX;
     for (auto &&primitive : *this->primitives) {
-      if ((*this->vertices)[primitive.indices.x].position[index] < min) min = (*this->vertices)[primitive.indices.x].position[index];
-      if ((*this->vertices)[primitive.indices.y].position[index] < min) min = (*this->vertices)[primitive.indices.y].position[index];
-      if ((*this->vertices)[primitive.indices.z].position[index] < min) min = (*this->vertices)[primitive.indices.z].position[index];
+      if (this->vertices->at(primitive.indices.x).position[index] < min) min = this->vertices->at(primitive.indices.x).position[index];
+      if (this->vertices->at(primitive.indices.y).position[index] < min) min = this->vertices->at(primitive.indices.y).position[index];
+      if (this->vertices->at(primitive.indices.z).position[index] < min) min = this->vertices->at(primitive.indices.z).position[index];
     }
 
     return min;
