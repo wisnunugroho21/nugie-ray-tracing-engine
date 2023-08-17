@@ -108,6 +108,7 @@ namespace nugiEngine {
 
   struct LightShadeRecord {
     alignas(16) glm::vec3 radiance{0.0f};
+    float isPrimary = 0.0f;
   };
 
   struct MissRecord {

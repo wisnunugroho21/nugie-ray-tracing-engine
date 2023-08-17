@@ -100,6 +100,7 @@ struct DirectShadeRecord {
 
 struct LightShadeRecord {
   vec3 radiance;
+  float isPrimary;
 };
 
 struct MissRecord {
