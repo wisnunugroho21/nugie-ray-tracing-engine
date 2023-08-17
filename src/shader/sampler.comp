@@ -66,12 +66,12 @@ void main() {
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1.0+12);
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
 
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1.0+12);
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
 }
 
