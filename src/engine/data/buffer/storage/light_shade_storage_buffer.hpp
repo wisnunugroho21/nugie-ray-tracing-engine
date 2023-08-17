@@ -25,7 +25,7 @@ namespace nugiEngine {
 			
 		private:
 			EngineDevice &engineDevice;
-			std::shared_ptr<std::vector<EngineBuffer>> buffers;
+			std::vector<std::shared_ptr<EngineBuffer>> buffers;
 
 			void createBuffers(std::shared_ptr<std::vector<LightShadeRecord>> datas);
 	};
