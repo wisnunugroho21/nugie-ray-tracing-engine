@@ -86,8 +86,8 @@ namespace nugiEngine {
     bool isHit;
     float isPrimary;
 
-    uint hitIndex;
-    uint materialIndex;
+    uint32_t hitIndex;
+    uint32_t materialIndex;
 
     alignas(16) glm::vec3 point;
     alignas(16) glm::vec3 dir;
