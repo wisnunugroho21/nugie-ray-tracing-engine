@@ -5,43 +5,41 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0, rgba8) uniform image2D totalIndirectImage;
+layout(set = 0, binding = 0, rgba8) uniform image2D totalRadianceImage;
 
-layout(set = 0, binding = 1) buffer SamplerDataUbo {
-  SamplerData samplerDatas[];
+layout(set = 0, binding = 1) buffer writeonly SamplerDataUbo {
+  SamplerData datas[];
 } samplerDataUbo;
 
-layout(set = 0, binding = 2) buffer readonly MissUbo {
+layout(set = 0, binding = 2) buffer IndirectDataUbo {
+  IndirectData datas[];
+} indirectDataUbo;
+
+layout(set = 0, binding = 3) buffer readonly MissUbo {
   MissRecord records[];
 } missUbo;
 
-layout(set = 0, binding = 3) buffer readonly LightShadeUbo {
+layout(set = 0, binding = 4) buffer readonly LightShadeUbo {
   LightShadeRecord records[];
 } lightShadeUbo;
 
-layout(set = 0, binding = 4) buffer readonly IndirectUbo {
+layout(set = 0, binding = 5) buffer readonly IndirectShadeUbo {
   IndirectShadeRecord records[];
-} indirectUbo;
+} indirectShadeUbo;
 
 void main() {
-  SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
-  ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
-
-  IndirectShadeRecord indirectRecord = indirectUbo.records[gl_GlobalInvocationID.x];
+  IndirectShadeRecord indirectRecord = indirectShadeUbo.records[gl_GlobalInvocationID.x];
   LightShadeRecord lightShadeRecord = lightShadeUbo.records[gl_GlobalInvocationID.x];
   MissRecord missRecord = missUbo.records[gl_GlobalInvocationID.x];
 
-  vec4 prevIndirectData = imageLoad(totalIndirectImage, pixelCoord);
-  vec3 prevIndirectAttent = mix(prevIndirectData.xyz, vec3(1.0f), lightShadeRecord.isPrimary);
-  float prevIndirectPdf = mix(prevIndirectData.w, 1.0f, lightShadeRecord.isPrimary);
-
-  vec3 totalPrevIndirect = prevIndirectAttent / prevIndirectPdf;
+  IndirectData prevIndirectData = indirectDataUbo.indirectDatas[gl_GlobalInvocationID.x];
+  vec3 totalPrevIndirect = prevIndirectData.attenuation / prevIndirectData.pdf;
   
-  vec3 curIndirect = (missRecord.radiance + indirectRecord.radiance) * totalPrevIndirect + 
-    lightShadeRecord.radiance * prevIndirectAttent;
+  vec3 curRadiance = missRecord.radiance * totalPrevIndirect + lightShadeRecord.radiance * prevIndirectData.attenuation;
+  imageStore(totalRadianceImage, pixelCoord, vec4(curIndirect, indirectRecord.pdf));
 
-  imageStore(totalIndirectImage, pixelCoord, vec4(curIndirect, indirectRecord.pdf));
+  indirectDataUbo.indirectDatas[gl_GlobalInvocationID.x].attenuation = prevIndirectData.attenuation * indirectRecord.radiance;
 
-  samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
-  samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x].nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
+  indirectRecord.nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
+  samplerDataUbo.datas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
 }

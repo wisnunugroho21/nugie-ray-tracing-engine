@@ -20,6 +20,7 @@
 #include "../data/buffer/storage/miss_record_storage_buffer.hpp"
 #include "../data/buffer/storage/ray_data_storage_buffer.hpp"
 #include "../data/buffer/storage/sampler_data_storage_buffer.hpp"
+#include "../data/buffer/storage/indirect_data_storage_buffer.hpp"
 #include "../data/descSet/ray_tracing/indirect_lambert_desc_set.hpp"
 #include "../data/descSet/ray_tracing/integrator_desc_set.hpp"
 #include "../data/descSet/ray_tracing/intersect_light_desc_set.hpp"
@@ -104,6 +105,7 @@ namespace nugiEngine {
 			std::shared_ptr<EngineLightShadeStorageBuffer> lightShadeBuffer{};
 			std::shared_ptr<EngineMissRecordStorageBuffer> missBuffer{};
 			std::shared_ptr<EngineSamplerDataStorageBuffer> samplerBuffer{};
+			std::shared_ptr<EngineIndirectDataStorageBuffer> indirectDataBuffer{};
 
 			std::unique_ptr<EngineIndirectLambertDescSet> indirectLambertDescSet{};
 			std::unique_ptr<EngineIntegratorDescSet> integratorDescSet{};

@@ -113,6 +113,11 @@ struct SamplerData {
   Ray nextRay;
 };
 
+struct IndirectData {
+  vec3 attenuation;
+  float pdf;
+};
+
 // ---------------------- internal struct ----------------------
 
 float pi = 3.14159265359;

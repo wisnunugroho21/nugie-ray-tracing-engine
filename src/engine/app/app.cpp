@@ -514,6 +514,7 @@ namespace nugiEngine {
 		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
 		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
 		this->samplerBuffer = std::make_shared<EngineSamplerDataStorageBuffer>(this->device, sortPixelByMorton(width, height));
+		this->indirectDataBuffer = std::make_shared<EngineIndirectDataStorageBuffer>(this->device, width * height);
 
 		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
 			this->indirectLambertShadeBuffer->getBuffersInfo(),
@@ -521,8 +522,9 @@ namespace nugiEngine {
 			this->lightHitRecordBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[4] {
+		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[5] {
 			this->samplerBuffer->getBuffersInfo(),
+			this->indirectDataBuffer->getBuffersInfo(),
 			this->missBuffer->getBuffersInfo(),
 			this->lightShadeBuffer->getBuffersInfo(),
 			this->indirectLambertShadeBuffer->getBuffersInfo()

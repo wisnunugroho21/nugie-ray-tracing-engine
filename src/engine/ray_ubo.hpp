@@ -121,6 +121,11 @@ namespace nugiEngine {
     Ray nextRay;
   };
 
+  struct IndirectData {
+    alignas(16) glm::vec3 attenuation{1.0f};
+    float pdf = 1.0f;
+  };
+
   struct RayTraceUbo {
     alignas(16) glm::vec3 origin{0.0f};
     alignas(16) glm::vec3 horizontal{0.0f};
