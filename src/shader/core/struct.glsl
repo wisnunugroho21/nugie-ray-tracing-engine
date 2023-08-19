@@ -113,7 +113,7 @@ struct SamplerData {
   Ray nextRay;
 };
 
-struct IndirectData {
+struct TotalIndirectData {
   vec3 attenuation;
   float pdf;
 };

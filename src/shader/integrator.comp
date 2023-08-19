@@ -11,8 +11,8 @@ layout(set = 0, binding = 1) buffer SamplerDataUbo {
   SamplerData datas[];
 } samplerDataUbo;
 
-layout(set = 0, binding = 2) buffer IndirectDataUbo {
-  IndirectData datas[];
+layout(set = 0, binding = 2) buffer TotalIndirectDataUbo {
+  TotalIndirectData datas[];
 } indirectDataUbo;
 
 layout(set = 0, binding = 3) buffer readonly MissUbo {
@@ -40,7 +40,7 @@ void main() {
   LightShadeRecord lightShadeRecord = lightShadeUbo.records[gl_GlobalInvocationID.x];
   MissRecord missRecord = missUbo.records[gl_GlobalInvocationID.x];
 
-  IndirectData prevIndirectData = indirectDataUbo.datas[gl_GlobalInvocationID.x];
+  TotalIndirectData prevIndirectData = indirectDataUbo.datas[gl_GlobalInvocationID.x];
   vec3 prevIndirectAttenuation = mix(prevIndirectData.attenuation, vec3(1.0f), lightShadeRecord.isPrimary);
   float prevIndirectPdf = mix(prevIndirectData.pdf, 1.0f, lightShadeRecord.isPrimary);
 
