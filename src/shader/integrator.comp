@@ -7,9 +7,9 @@ layout(local_size_x = 32) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D totalRadianceImage;
 
-layout(set = 0, binding = 1) buffer SamplerDataUbo {
-  SamplerData datas[];
-} samplerDataUbo;
+layout(set = 0, binding = 1) buffer IndirectSamplerDataUbo {
+  IndirectSamplerData datas[];
+} indirectSamplerDataUbo;
 
 layout(set = 0, binding = 2) buffer TotalIndirectDataUbo {
   TotalIndirectData datas[];
@@ -32,7 +32,7 @@ layout(set = 0, binding = 6) buffer readonly DirectShadeUbo {
 } directShadeUbo;
 
 void main() {
-  SamplerData samplerData = samplerDataUbo.datas[gl_GlobalInvocationID.x];
+  IndirectSamplerData samplerData = indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x];
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
 
   DirectShadeRecord directRecord = directShadeUbo.records[gl_GlobalInvocationID.x];
@@ -62,5 +62,5 @@ void main() {
   indirectDataUbo.datas[gl_GlobalInvocationID.x].pdf = prevIndirectPdf;
 
   indirectRecord.nextRay.direction *= when_gt(length(indirectRecord.radiance), 0.001f);
-  samplerDataUbo.datas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
+  indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x].nextRay = indirectRecord.nextRay;
 }

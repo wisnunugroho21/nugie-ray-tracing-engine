@@ -17,19 +17,23 @@ layout(set = 0, binding = 2) buffer readonly LightHitUbo {
   HitRecord records[];
 } lightHitUbo;
 
-layout(set = 0, binding = 3) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 3) buffer readonly DirectDataUbo {
+  DirectData datas[];
+} directDataUbo;
+
+layout(set = 0, binding = 4) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 4) buffer readonly LightSsbo {
+layout(set = 0, binding = 5) buffer readonly LightSsbo {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 5) buffer readonly VertexSsbo {
+layout(set = 0, binding = 6) buffer readonly VertexSsbo {
   Vertex vertices[];
 };
 
-layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 7) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -133,12 +137,12 @@ float triangleArea(uvec3 triIndices) {
 
 // ------------- Shade ------------- 
 
-DirectShadeRecord directLambertShade(HitRecord objectHit, HitRecord lightHit, vec3 surfaceColor, uint additionalRandomSeed) {
+DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   vec3 unitLightDirection = normalize(lightHit.dir);
   DirectShadeRecord scat;
 
   float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
-  float NoL = max(dot(objectHit.normal, unitLightDirection), 0.001f);
+  float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
 
   float brdf = lambertBrdfValue();
   float sqrDistance = dot(lightHit.dir, lightHit.dir);
@@ -151,15 +155,15 @@ DirectShadeRecord directLambertShade(HitRecord objectHit, HitRecord lightHit, ve
   return scat;
 }
 
-DirectShadeRecord directLambertShade(HitRecord objectHit, HitRecord lightHit, uint additionalRandomSeed) {
+DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData, uint additionalRandomSeed) {
   vec3 surfaceColor;
-  if (materials[objectHit.materialIndex].colorTextureIndex == 0u) {
-    surfaceColor = materials[objectHit.materialIndex].baseColor;
+  if (materials[directData.materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[directData.materialIndex].baseColor;
   } else {
-    surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
+    surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
   }
 
-  return directLambertShade(objectHit, lightHit, surfaceColor, 0u);
+  return directLambertShade(lightHit, surfaceColor, directData.normal, additionalRandomSeed);
 }
 
 void main() {
@@ -167,7 +171,7 @@ void main() {
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
   float isHitLight = when_and(float(lightHit.isHit), when_or(when_not(float(objectHit.isHit)), when_lt(length(lightHit.dir), length(objectHit.dir))));
-  DirectShadeRecord directShadeResult = directLambertShade(objectHit, lightHit, 0u);
+  DirectShadeRecord directShadeResult = directLambertShade(lightHit, directDataUbo.datas[gl_GlobalInvocationID.x], 0u);
   
   directUbo.records[gl_GlobalInvocationID.x].radiance = directShadeResult.radiance * isHitLight;
   directUbo.records[gl_GlobalInvocationID.x].pdf = directShadeResult.pdf * isHitLight;

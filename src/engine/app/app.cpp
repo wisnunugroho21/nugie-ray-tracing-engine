@@ -46,7 +46,7 @@ namespace nugiEngine {
 
 				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
-				this->samplerBuffer->transferFromReadToWriteRead(commandBuffer, frameIndex);
+				this->indirectSamplerBuffer->transferFromReadToWriteRead(commandBuffer, frameIndex);
 
 				// ----------- Intersect Object -----------
 
@@ -87,6 +87,8 @@ namespace nugiEngine {
 				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
 
+				this->directDataBuffer->transferToRead(commandBuffer, frameIndex);
+
 				// ----------- Intersect Object -----------
 
 				this->intersectObjectRender->render(commandBuffer, this->intersectObjectDescSet->getDescriptorSets(frameIndex));
@@ -108,12 +110,13 @@ namespace nugiEngine {
 				this->objectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+				this->directDataBuffer->transferToRead(commandBuffer, frameIndex);
 
 				// ----------- Integrator -----------
 
 				this->integratorRender->render(commandBuffer, this->integratorDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
-				this->samplerBuffer->transferFromWriteReadToRead(commandBuffer, frameIndex);
+				this->indirectSamplerBuffer->transferFromWriteReadToRead(commandBuffer, frameIndex);
 				this->missBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->indirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
@@ -559,8 +562,9 @@ namespace nugiEngine {
 		this->directLambertShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
 		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
 		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
-		this->samplerBuffer = std::make_shared<EngineSamplerDataStorageBuffer>(this->device, sortPixelByMorton(width, height));
+		this->indirectSamplerBuffer = std::make_shared<EngineIndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
 		this->indirectDataBuffer = std::make_shared<EngineIndirectDataStorageBuffer>(this->device, width * height);
+		this->directDataBuffer = std::make_shared<EngineDirectDataStorageBuffer>(this->device, width * height);
 
 		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
 			this->indirectLambertShadeBuffer->getBuffersInfo(),
@@ -568,14 +572,15 @@ namespace nugiEngine {
 			this->lightHitRecordBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> directLambertBufferInfos[3] {
+		std::vector<VkDescriptorBufferInfo> directLambertBufferInfos[4] {
 			this->directLambertShadeBuffer->getBuffersInfo(),
 			this->objectHitRecordBuffer->getBuffersInfo(),
-			this->lightHitRecordBuffer->getBuffersInfo()
+			this->lightHitRecordBuffer->getBuffersInfo(),
+			this->directDataBuffer->getBuffersInfo()
 		};
 
 		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[6] {
-			this->samplerBuffer->getBuffersInfo(),
+			this->indirectSamplerBuffer->getBuffersInfo(),
 			this->indirectDataBuffer->getBuffersInfo(),
 			this->missBuffer->getBuffersInfo(),
 			this->lightShadeBuffer->getBuffersInfo(),
@@ -608,12 +613,13 @@ namespace nugiEngine {
 		std::vector<VkDescriptorBufferInfo> indirectSamplerBufferInfos[3] {
 			this->objectRayDataBuffer->getBuffersInfo(),
 			this->lightRayDataBuffer->getBuffersInfo(),
-			this->samplerBuffer->getBuffersInfo()
+			this->indirectSamplerBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> directSamplerBufferInfos[4] {
+		std::vector<VkDescriptorBufferInfo> directSamplerBufferInfos[5] {
 			this->objectRayDataBuffer->getBuffersInfo(),
 			this->lightRayDataBuffer->getBuffersInfo(),
+			this->directDataBuffer->getBuffersInfo(),
 			this->objectHitRecordBuffer->getBuffersInfo(),
 			this->lightHitRecordBuffer->getBuffersInfo()
 		};

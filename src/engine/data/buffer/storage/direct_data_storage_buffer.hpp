@@ -14,21 +14,19 @@
 #include <memory>
 
 namespace nugiEngine {
-	class EngineSamplerDataStorageBuffer {
+	class EngineDirectDataStorageBuffer {
 		public:
-			EngineSamplerDataStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<SamplerData>> datas);
+			EngineDirectDataStorageBuffer(EngineDevice &device, uint32_t dataCount);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
 			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 			void transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
-			void transferFromReadToWriteRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
-			void transferFromWriteReadToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
 			
 		private:
 			EngineDevice &engineDevice;
 			std::vector<std::shared_ptr<EngineBuffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<SamplerData>> datas);
+			void createBuffers(std::shared_ptr<std::vector<DirectData>> datas);
 	};
 } // namespace nugiEngine

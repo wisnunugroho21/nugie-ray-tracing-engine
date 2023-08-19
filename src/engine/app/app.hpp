@@ -19,9 +19,10 @@
 #include "../data/buffer/storage/light_shade_storage_buffer.hpp"
 #include "../data/buffer/storage/miss_record_storage_buffer.hpp"
 #include "../data/buffer/storage/ray_data_storage_buffer.hpp"
-#include "../data/buffer/storage/sampler_data_storage_buffer.hpp"
+#include "../data/buffer/storage/indirect_sampler_storage_buffer.hpp"
 #include "../data/buffer/storage/indirect_data_storage_buffer.hpp"
 #include "../data/buffer/storage/direct_shade_storage_buffer.hpp"
+#include "../data/buffer/storage/direct_data_storage_buffer.hpp"
 #include "../data/descSet/ray_tracing/indirect_lambert_desc_set.hpp"
 #include "../data/descSet/ray_tracing/direct_lambert_desc_set.hpp"
 #include "../data/descSet/ray_tracing/integrator_desc_set.hpp"
@@ -112,8 +113,9 @@ namespace nugiEngine {
 			std::shared_ptr<EngineDirectShadeStorageBuffer> directLambertShadeBuffer{};
 			std::shared_ptr<EngineLightShadeStorageBuffer> lightShadeBuffer{};
 			std::shared_ptr<EngineMissRecordStorageBuffer> missBuffer{};
-			std::shared_ptr<EngineSamplerDataStorageBuffer> samplerBuffer{};
+			std::shared_ptr<EngineIndirectSamplerStorageBuffer> indirectSamplerBuffer{};
 			std::shared_ptr<EngineIndirectDataStorageBuffer> indirectDataBuffer{};
+			std::shared_ptr<EngineDirectDataStorageBuffer> directDataBuffer{};
 
 			std::unique_ptr<EngineIndirectLambertDescSet> indirectLambertDescSet{};
 			std::unique_ptr<EngineDirectLambertDescSet> directLambertDescSet{};

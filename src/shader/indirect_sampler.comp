@@ -23,7 +23,7 @@ layout(set = 0, binding = 2) buffer writeonly LightRayUbo {
 } lightRayUbo;
 
 layout(set = 0, binding = 3) buffer readonly SamplerDataUbo {
-  SamplerData samplerDatas[];
+  IndirectSamplerData samplerDatas[];
 } samplerDataUbo;
 
 layout(push_constant) uniform Push {
@@ -52,7 +52,7 @@ float randomFloat(uint additionalRandomSeed) {
 }
 
 void main() {
-  SamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
+  IndirectSamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
 
   float noiseX = randomFloat(0) * 2.0f - 1.0f;
   float noiseY = randomFloat(1) * 2.0f - 1.0f;

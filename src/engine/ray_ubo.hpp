@@ -62,11 +62,11 @@ namespace nugiEngine {
   };
 
   struct Transformation {
-    glm::mat4 pointMatrix{1.0f};
-    glm::mat4 dirMatrix{1.0f};
-    glm::mat4 pointInverseMatrix{1.0f};
-    glm::mat4 dirInverseMatrix{1.0f};
-    glm::mat4 normalMatrix{1.0f};
+    alignas(16) glm::mat4 pointMatrix{1.0f};
+    alignas(16) glm::mat4 dirMatrix{1.0f};
+    alignas(16) glm::mat4 pointInverseMatrix{1.0f};
+    alignas(16) glm::mat4 dirInverseMatrix{1.0f};
+    alignas(16) glm::mat4 normalMatrix{1.0f};
   };
 
   struct Ray {
@@ -77,22 +77,22 @@ namespace nugiEngine {
   struct RayData {
     Ray ray; 
     float dirMin = 0.001f;
-    alignas(16) glm::vec3 dirMax{1.0e+12};
+    alignas(16) glm::vec3 dirMax{1000000.0f};
 
-    float isPrimary = 0.0f;
+    float isPrimary = 1.0f;
   };
 
   struct HitRecord {
-    bool isHit;
-    float isPrimary;
+    bool isHit = false;
+    float isPrimary = 1.0f;
 
-    uint32_t hitIndex;
-    uint32_t materialIndex;
+    uint32_t hitIndex = 0u;
+    uint32_t materialIndex = 0u;
 
-    alignas(16) glm::vec3 point;
-    alignas(16) glm::vec3 dir;
-    alignas(16) glm::vec3 normal;
-    alignas(16) glm::vec2 uv;
+    alignas(16) glm::vec3 point{0.0f};
+    alignas(16) glm::vec3 dir{0.0f};
+    alignas(16) glm::vec3 normal{0.0f};
+    alignas(16) glm::vec2 uv{0.0f};
   };
 
   struct IndirectShadeRecord {
@@ -115,10 +115,16 @@ namespace nugiEngine {
     alignas(16) glm::vec3 radiance{0.0f};
   };
 
-  struct SamplerData {
+  struct IndirectSamplerData {
     uint32_t xCoord = 0u;
     uint32_t yCoord = 0u;
     Ray nextRay;
+  };
+
+  struct DirectData {
+    uint32_t materialIndex = 0u;
+    alignas(16) glm::vec3 normal{0.0f};
+    alignas(16) glm::vec2 uv{0.0f};
   };
 
   struct TotalIndirectData {

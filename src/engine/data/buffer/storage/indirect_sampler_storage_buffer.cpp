@@ -1,4 +1,4 @@
-#include "sampler_data_storage_buffer.hpp"
+#include "indirect_sampler_storage_buffer.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -8,11 +8,11 @@
 #include <glm/gtx/hash.hpp>
 
 namespace nugiEngine {
-	EngineSamplerDataStorageBuffer::EngineSamplerDataStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<SamplerData>> datas) : engineDevice{device} {
+	EngineIndirectSamplerStorageBuffer::EngineIndirectSamplerStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<IndirectSamplerData>> datas) : engineDevice{device} {
 		this->createBuffers(datas);
 	}
 
-	std::vector<VkDescriptorBufferInfo> EngineSamplerDataStorageBuffer::getBuffersInfo() {
+	std::vector<VkDescriptorBufferInfo> EngineIndirectSamplerStorageBuffer::getBuffersInfo() {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->buffers.size(); i++) {
@@ -22,8 +22,8 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineSamplerDataStorageBuffer::createBuffers(std::shared_ptr<std::vector<SamplerData>> datas) {
-		auto bufferSize = static_cast<VkDeviceSize>(sizeof(SamplerData));
+	void EngineIndirectSamplerStorageBuffer::createBuffers(std::shared_ptr<std::vector<IndirectSamplerData>> datas) {
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(IndirectSamplerData));
 		auto instanceCount = static_cast<uint32_t>(datas->size());
 		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 		
@@ -54,22 +54,22 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplerDataStorageBuffer::transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+	void EngineIndirectSamplerStorageBuffer::transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
 		this->buffers.at(static_cast<size_t>(frameIndex))->transitionBuffer(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
 			VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 	}
 
-	void EngineSamplerDataStorageBuffer::transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+	void EngineIndirectSamplerStorageBuffer::transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
 		this->buffers.at(static_cast<size_t>(frameIndex))->transitionBuffer(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
 			VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 	} 
 
-	void EngineSamplerDataStorageBuffer::transferFromReadToWriteRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+	void EngineIndirectSamplerStorageBuffer::transferFromReadToWriteRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
 		this->buffers.at(static_cast<size_t>(frameIndex))->transitionBuffer(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
 			VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 	}
 
-	void EngineSamplerDataStorageBuffer::transferFromWriteReadToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
+	void EngineIndirectSamplerStorageBuffer::transferFromWriteReadToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex) {
 		this->buffers.at(static_cast<size_t>(frameIndex))->transitionBuffer(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 
 			VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_READ_BIT, VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED, commandBuffer);
 	}

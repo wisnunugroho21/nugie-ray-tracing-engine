@@ -9,9 +9,9 @@
 
 namespace nugiEngine {
 	EngineIndirectDataStorageBuffer::EngineIndirectDataStorageBuffer(EngineDevice &device, uint32_t dataCount) : engineDevice{device} {
-		auto datas = std::make_shared<std::vector<IndirectData>>();
+		auto datas = std::make_shared<std::vector<TotalIndirectData>>();
 		for (uint32_t i = 0; i < dataCount; i++) {
-			IndirectData data{};
+			TotalIndirectData data{};
 			datas->emplace_back(data);
 		}
 
@@ -28,8 +28,8 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineIndirectDataStorageBuffer::createBuffers(std::shared_ptr<std::vector<IndirectData>> datas) {
-		auto bufferSize = static_cast<VkDeviceSize>(sizeof(IndirectData));
+	void EngineIndirectDataStorageBuffer::createBuffers(std::shared_ptr<std::vector<TotalIndirectData>> datas) {
+		auto bufferSize = static_cast<VkDeviceSize>(sizeof(TotalIndirectData));
 		auto instanceCount = static_cast<uint32_t>(datas->size());
 		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
 		

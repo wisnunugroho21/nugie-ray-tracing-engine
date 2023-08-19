@@ -29,21 +29,21 @@ namespace nugiEngine {
     return (part1By2(z) << 2) + (part1By2(y) << 1) + part1By2(x);
   }
 
-  bool mortonComparator(SamplerData a, SamplerData b) {
+  bool mortonComparator(IndirectSamplerData a, IndirectSamplerData b) {
     uint32_t aValue = encodeMorton(a.xCoord, a.yCoord);
     uint32_t bValue = encodeMorton(b.xCoord, b.yCoord);
 
     return aValue < bValue;
   }
 
-  std::shared_ptr<std::vector<SamplerData>> sortPixelByMorton(uint32_t width, uint32_t height) {
-    auto pixels = std::make_shared<std::vector<SamplerData>>();
+  std::shared_ptr<std::vector<IndirectSamplerData>> sortPixelByMorton(uint32_t width, uint32_t height) {
+    auto pixels = std::make_shared<std::vector<IndirectSamplerData>>();
 
     for (uint32_t i = 0; i < width; i++) {
       for (uint32_t j = 0; j < height; j++) {
         Ray nextRay{};
 
-        SamplerData pixel{ i, j, nextRay };
+        IndirectSamplerData pixel{ i, j, nextRay };
         pixels->emplace_back(pixel);
       }
     }

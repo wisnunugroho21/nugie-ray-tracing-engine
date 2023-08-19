@@ -107,10 +107,16 @@ struct MissRecord {
   vec3 radiance;
 };
 
-struct SamplerData {
+struct IndirectSamplerData {
   uint xCoord;
   uint yCoord;
   Ray nextRay;
+};
+
+struct DirectData {
+  uint materialIndex;
+  vec3 normal;
+  vec2 uv;
 };
 
 struct TotalIndirectData {
