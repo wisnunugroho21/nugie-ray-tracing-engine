@@ -13,10 +13,10 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineSamplerRenderSystem {
+	class EngineDirectLambertRenderSystem {
 		public:
-			EngineSamplerRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
-			~EngineSamplerRenderSystem();
+			EngineDirectLambertRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
+			~EngineDirectLambertRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed = 1);
 

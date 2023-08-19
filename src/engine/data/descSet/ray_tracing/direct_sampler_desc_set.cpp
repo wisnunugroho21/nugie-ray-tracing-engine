@@ -1,18 +1,20 @@
-#include "integrator_desc_set.hpp"
+#include "direct_sampler_desc_set.hpp"
 
 namespace nugiEngine {
-  EngineIntegratorDescSet::EngineIntegratorDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-		std::vector<VkDescriptorImageInfo> indirectImageInfos, std::vector<VkDescriptorBufferInfo> buffersInfo[6]) 
+  EngineDirectSamplerDescSet::EngineDirectSamplerDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4],
+		VkDescriptorBufferInfo modelsInfo[2]) 
 	{
-		this->createDescriptor(device, descriptorPool, indirectImageInfos, buffersInfo);
+		this->createDescriptor(device, descriptorPool, uniformBufferInfo, buffersInfo, modelsInfo);
   }
 
-  void EngineIntegratorDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-		std::vector<VkDescriptorImageInfo> indirectImageInfos, std::vector<VkDescriptorBufferInfo> buffersInfo[6]) 
+  void EngineDirectSamplerDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4],
+		VkDescriptorBufferInfo modelsInfo[2])
 	{
     this->descSetLayout = 
 			EngineDescriptorSetLayout::Builder(device)
-				.addBinding(0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(2, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(3, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
@@ -26,13 +28,13 @@ namespace nugiEngine {
 			VkDescriptorSet descSet{};
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
-				.writeImage(0, &indirectImageInfos[i])
+				.writeBuffer(0, &uniformBufferInfo[i])
 				.writeBuffer(1, &buffersInfo[0][i])
 				.writeBuffer(2, &buffersInfo[1][i])
 				.writeBuffer(3, &buffersInfo[2][i])
 				.writeBuffer(4, &buffersInfo[3][i])
-				.writeBuffer(5, &buffersInfo[4][i])
-				.writeBuffer(6, &buffersInfo[5][i])
+				.writeBuffer(5, &modelsInfo[0])
+				.writeBuffer(6, &modelsInfo[1])
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);

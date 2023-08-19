@@ -1,4 +1,4 @@
-#include "sampler_render_system.hpp"
+#include "direct_sampler_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,18 +10,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineSamplerRenderSystem::EngineSamplerRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
+	EngineDirectSamplerRenderSystem::EngineDirectSamplerRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
 		: appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline();
 	}
 
-	EngineSamplerRenderSystem::~EngineSamplerRenderSystem() {
+	EngineDirectSamplerRenderSystem::~EngineDirectSamplerRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineSamplerRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void EngineDirectSamplerRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -39,15 +39,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineSamplerRenderSystem::createPipeline() {
+	void EngineDirectSamplerRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/sampler.comp.spv")
+			.setDefault("shader/direct_sampler.comp.spv")
 			.build();
 	}
 
-	void EngineSamplerRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void EngineDirectSamplerRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

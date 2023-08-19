@@ -1,4 +1,6 @@
-glslc src/shader/sampler.comp -o bin/shader/sampler.comp.spv
+glslc src/shader/direct_lambert.comp -o bin/shader/direct_lambert.comp.spv
+glslc src/shader/direct_sampler.comp -o bin/shader/direct_sampler.comp.spv
+glslc src/shader/indirect_sampler.comp -o bin/shader/indirect_sampler.comp.spv
 glslc src/shader/integrator.comp -o bin/shader/integrator.comp.spv
 glslc src/shader/miss.comp -o bin/shader/miss.comp.spv
 glslc src/shader/light_shade.comp -o bin/shader/light_shade.comp.spv

@@ -1,13 +1,13 @@
-#include "sampler_desc_set.hpp"
+#include "indirect_sampler_desc_set.hpp"
 
 namespace nugiEngine {
-  EngineSamplerDescSet::EngineSamplerDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+  EngineIndirectSamplerDescSet::EngineIndirectSamplerDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 		std::vector<VkDescriptorBufferInfo> uniformBufferInfo,  std::vector<VkDescriptorBufferInfo> buffersInfo[3]) 
 	{
 		this->createDescriptor(device, descriptorPool, uniformBufferInfo, buffersInfo);
   }
 
-  void EngineSamplerDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
+  void EngineIndirectSamplerDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
 		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[3]) 
 	{
     this->descSetLayout = 

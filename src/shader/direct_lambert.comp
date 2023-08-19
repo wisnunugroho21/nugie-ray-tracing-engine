@@ -5,9 +5,9 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly IndirectUbo {
-  IndirectShadeRecord records[];
-} indirectUbo;
+layout(set = 0, binding = 0) buffer writeonly DirectUbo {
+  DirectShadeRecord records[];
+} directUbo;
 
 layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
   HitRecord records[];
@@ -21,7 +21,15 @@ layout(set = 0, binding = 3) buffer readonly MaterialSsbo {
   Material materials[];
 };
 
-layout(set = 0, binding = 4) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 4) buffer readonly LightSsbo {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 5) buffer readonly VertexSsbo {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -113,25 +121,37 @@ float lambertBrdfValue() {
   return 1.0f / pi;
 }
 
+// ------------- Triangle -------------
+
+float triangleArea(uvec3 triIndices) {
+  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
+  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+
+  vec3 pvec = cross(v0v1, v0v2);
+  return 0.5 * sqrt(dot(pvec, pvec)); 
+}
+
 // ------------- Shade ------------- 
 
-IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
-  IndirectShadeRecord scat;
+DirectShadeRecord directLambertShade(HitRecord objectHit, HitRecord lightHit, vec3 surfaceColor, uint additionalRandomSeed) {
+  vec3 unitLightDirection = normalize(lightHit.dir);
+  DirectShadeRecord scat;
 
-  scat.nextRay.origin = hitPoint;
-  scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
+  float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
+  float NoL = max(dot(objectHit.normal, unitLightDirection), 0.001f);
 
-  float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
+  float sqrDistance = dot(lightHit.dir, lightHit.dir);
+  float area = triangleArea(lights[lightHit.hitIndex].indices);
   float pdf = lambertPdfValue(NoL);
 
-  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
   scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
-  
+
   return scat;
 }
 
-IndirectShadeRecord indirectLambertShade(HitRecord objectHit, uint additionalRandomSeed) {
+DirectShadeRecord directLambertShade(HitRecord objectHit, HitRecord lightHit, uint additionalRandomSeed) {
   vec3 surfaceColor;
   if (materials[objectHit.materialIndex].colorTextureIndex == 0u) {
     surfaceColor = materials[objectHit.materialIndex].baseColor;
@@ -139,17 +159,16 @@ IndirectShadeRecord indirectLambertShade(HitRecord objectHit, uint additionalRan
     surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
   }
 
-  return indirectLambertShade(objectHit.point, surfaceColor, objectHit.normal, additionalRandomSeed);
+  return directLambertShade(objectHit, lightHit, surfaceColor, 0u);
 }
 
 void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
-  float isHitObject = when_and(float(objectHit.isHit), when_or(when_not(float(lightHit.isHit)), when_gt(length(lightHit.dir), length(objectHit.dir))));
-  IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHitUbo.records[gl_GlobalInvocationID.x], 0);
+  float isHitLight = when_and(float(lightHit.isHit), when_or(when_not(float(objectHit.isHit)), when_lt(length(lightHit.dir), length(objectHit.dir))));
+  DirectShadeRecord directShadeResult = directLambertShade(objectHit, lightHit, 0u);
   
-  indirectUbo.records[gl_GlobalInvocationID.x].radiance = indirectShadeResult.radiance * isHitObject;
-  indirectUbo.records[gl_GlobalInvocationID.x].pdf = indirectShadeResult.pdf * isHitObject;
-  indirectUbo.records[gl_GlobalInvocationID.x].nextRay = indirectShadeResult.nextRay;
+  directUbo.records[gl_GlobalInvocationID.x].radiance = directShadeResult.radiance * isHitLight;
+  directUbo.records[gl_GlobalInvocationID.x].pdf = directShadeResult.pdf * isHitLight;
 }
