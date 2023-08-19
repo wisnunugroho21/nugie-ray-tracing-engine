@@ -89,7 +89,7 @@ namespace nugiEngine {
 			std::unique_ptr<EngineLightShadeRenderSystem> lightShadeRender{};
 			std::unique_ptr<EngineMissRenderSystem> missRender{};
 			std::unique_ptr<EngineIndirectSamplerRenderSystem> indirectSamplerRender{};
-			std::unique_ptr<EngineDirectLambertRenderSystem> directSamplerRender{};
+			std::unique_ptr<EngineDirectSamplerRenderSystem> directSamplerRender{};
 			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
 
 			std::unique_ptr<EngineAccumulateImage> accumulateImages{};

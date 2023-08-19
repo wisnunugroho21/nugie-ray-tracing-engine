@@ -185,5 +185,5 @@ void main() {
   lightHitUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
   lightHitUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
   lightHitUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
-  lightHitUbo.records[gl_GlobalInvocationID.x].isPrimary = hitRecord.isPrimary;
+  lightHitUbo.records[gl_GlobalInvocationID.x].isPrimary = objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary;
 }
