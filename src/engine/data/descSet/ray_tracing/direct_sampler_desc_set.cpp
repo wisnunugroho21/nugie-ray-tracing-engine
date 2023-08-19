@@ -2,14 +2,14 @@
 
 namespace nugiEngine {
   EngineDirectSamplerDescSet::EngineDirectSamplerDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
-		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4],
+		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[5],
 		VkDescriptorBufferInfo modelsInfo[2]) 
 	{
 		this->createDescriptor(device, descriptorPool, uniformBufferInfo, buffersInfo, modelsInfo);
   }
 
   void EngineDirectSamplerDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4],
+		std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[5],
 		VkDescriptorBufferInfo modelsInfo[2])
 	{
     this->descSetLayout = 
@@ -21,6 +21,7 @@ namespace nugiEngine {
 				.addBinding(4, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(5, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.addBinding(6, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
+				.addBinding(7, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VK_SHADER_STAGE_COMPUTE_BIT)
 				.build();
 		
 	this->descriptorSets.clear();
@@ -33,8 +34,9 @@ namespace nugiEngine {
 				.writeBuffer(2, &buffersInfo[1][i])
 				.writeBuffer(3, &buffersInfo[2][i])
 				.writeBuffer(4, &buffersInfo[3][i])
-				.writeBuffer(5, &modelsInfo[0])
-				.writeBuffer(6, &modelsInfo[1])
+				.writeBuffer(5, &buffersInfo[4][i])
+				.writeBuffer(6, &modelsInfo[0])
+				.writeBuffer(7, &modelsInfo[1])
 				.build(&descSet);
 
 			this->descriptorSets.emplace_back(descSet);
