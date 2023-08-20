@@ -62,6 +62,14 @@ namespace nugiEngine {
 				this->lightHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
 
+				// ----------- Direct Sampler -----------
+
+				this->directSamplerRender->render(commandBuffer, this->directSamplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				
+				this->directDataBuffer->transferToRead(commandBuffer, frameIndex);
+				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
+				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
+
 				// ----------- Indirect Lambert -----------
 
 				this->indirectLambertRender->render(commandBuffer, this->indirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
@@ -77,17 +85,8 @@ namespace nugiEngine {
 				this->missRender->render(commandBuffer, this->missDescSet->getDescriptorSets(frameIndex));
 				this->missBuffer->transferToRead(commandBuffer, frameIndex);
 
-				// ----------- Direct Sampler -----------
-
-				this->directSamplerRender->render(commandBuffer, this->directSamplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
-
 				this->objectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
-
-				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
-				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
-
-				this->directDataBuffer->transferToRead(commandBuffer, frameIndex);
 
 				// ----------- Intersect Object -----------
 
@@ -107,10 +106,10 @@ namespace nugiEngine {
 
 				this->directLambertRender->render(commandBuffer, this->directLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
+				this->directLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
 				this->objectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
-				this->directLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
-				this->directDataBuffer->transferToRead(commandBuffer, frameIndex);
+				this->directDataBuffer->transferToWrite(commandBuffer, frameIndex);
 
 				// ----------- Integrator -----------
 
@@ -121,10 +120,10 @@ namespace nugiEngine {
 				this->lightShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->indirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 
+				// ----------- Final Sampling -----------
+
 				this->indirectImage->transferFrame(commandBuffer, frameIndex);
 				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
-
-				// ----------- Final Sampling -----------
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
 				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);
