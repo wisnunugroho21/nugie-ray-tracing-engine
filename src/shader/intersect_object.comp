@@ -242,13 +242,17 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
-  HitRecord hitRecord = hitObjectBvh(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
+  objectHitUbo.records[gl_GlobalInvocationID.x].isHit = 0.0f;
+  
+  if (length(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray.direction) > 0.1f) {
+    HitRecord hitRecord = hitObjectBvh(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
 
-  objectHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
-  objectHitUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
-  objectHitUbo.records[gl_GlobalInvocationID.x].materialIndex = hitRecord.materialIndex;
-  objectHitUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
-  objectHitUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
-  objectHitUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
-  objectHitUbo.records[gl_GlobalInvocationID.x].isPrimary = objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary;
+    objectHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
+    objectHitUbo.records[gl_GlobalInvocationID.x].hitIndex = hitRecord.hitIndex;
+    objectHitUbo.records[gl_GlobalInvocationID.x].materialIndex = hitRecord.materialIndex;
+    objectHitUbo.records[gl_GlobalInvocationID.x].point = hitRecord.point;
+    objectHitUbo.records[gl_GlobalInvocationID.x].dir = hitRecord.dir;
+    objectHitUbo.records[gl_GlobalInvocationID.x].normal = hitRecord.normal;
+    objectHitUbo.records[gl_GlobalInvocationID.x].isPrimary = objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary;
+  }
 }
