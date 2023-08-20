@@ -170,7 +170,7 @@ void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
-  float isHitLight = when_and(float(lightHit.isHit), when_or(when_not(float(objectHit.isHit)), when_lt(length(lightHit.dir), length(objectHit.dir))));
+  float isHitLight = when_and(lightHit.isHit, when_or(when_not(objectHit.isHit), when_lt(length(lightHit.dir), length(objectHit.dir))));
   DirectShadeRecord directShadeResult = directLambertShade(lightHit, directDataUbo.datas[gl_GlobalInvocationID.x], 0u);
   
   directUbo.records[gl_GlobalInvocationID.x].radiance = directShadeResult.radiance * isHitLight;

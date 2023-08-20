@@ -83,7 +83,7 @@ namespace nugiEngine {
   };
 
   struct HitRecord {
-    bool isHit = false;
+    float isHit = 0.0f;
     float isPrimary = 1.0f;
 
     uint32_t hitIndex = 0u;

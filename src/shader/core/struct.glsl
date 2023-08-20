@@ -75,7 +75,7 @@ struct RayData {
 };
 
 struct HitRecord {
-  bool isHit;
+  float isHit;
   float isPrimary;
 
   uint hitIndex;
