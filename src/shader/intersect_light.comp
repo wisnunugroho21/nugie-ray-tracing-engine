@@ -180,7 +180,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
 void main() {
   lightHitUbo.records[gl_GlobalInvocationID.x].isHit = 0.0f;
 
-  if (lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray.direction > 0.1f) {
+  if (length(lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray.direction) > 0.1f) {
     HitRecord hitRecord = hitTriangleLightBvh(lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
 
     lightHitUbo.records[gl_GlobalInvocationID.x].isHit = hitRecord.isHit;
