@@ -528,6 +528,7 @@ namespace nugiEngine {
 		ubo.vertical = cameraRay.vertical;
 		ubo.lowerLeftCorner = cameraRay.lowerLeftCorner;
 		ubo.imgSize = glm::uvec2{width, height};
+		ubo.numLights = this->numLights;
 
 		float phi = glm::radians(45.0f);
 		float theta = glm::radians(45.0f);
@@ -682,7 +683,7 @@ namespace nugiEngine {
 		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
 		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), missBufferInfos);
 		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
-		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directLambertModelInfos);
+		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
 		this->indirectLambertRender = std::make_unique<EngineIndirectLambertRenderSystem>(this->device, this->indirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);

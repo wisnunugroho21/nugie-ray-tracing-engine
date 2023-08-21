@@ -62,11 +62,11 @@ namespace nugiEngine {
   };
 
   struct Transformation {
-    alignas(16) glm::mat4 pointMatrix{1.0f};
-    alignas(16) glm::mat4 dirMatrix{1.0f};
-    alignas(16) glm::mat4 pointInverseMatrix{1.0f};
-    alignas(16) glm::mat4 dirInverseMatrix{1.0f};
-    alignas(16) glm::mat4 normalMatrix{1.0f};
+    glm::mat4 pointMatrix{1.0f};
+    glm::mat4 dirMatrix{1.0f};
+    glm::mat4 pointInverseMatrix{1.0f};
+    glm::mat4 dirInverseMatrix{1.0f};
+    glm::mat4 normalMatrix{1.0f};
   };
 
   struct Ray {
