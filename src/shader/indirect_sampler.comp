@@ -62,15 +62,14 @@ void main() {
   curRay.origin = mix(samplerData.nextRay.origin, ubo.origin, isPrimary);
   curRay.direction = mix(samplerData.nextRay.direction, rayDirection, isPrimary);
 
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
+  RayData rayData;
+  rayData.ray = curRay;
+  rayData.dirMin = 0.01f;
+  rayData.dirMax = vec3(1000000000.0f);
+  rayData.isPrimary = isPrimary;
 
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = curRay;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary = isPrimary;
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
 }
 
 

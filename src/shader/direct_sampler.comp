@@ -104,17 +104,20 @@ void main() {
   shadowRay.origin = objectHit.point;
   shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, 0) * isHitObject;
 
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = shadowRay;
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
+  RayData rayData;
+  rayData.ray = shadowRay;
+  rayData.dirMin = 0.01f;
+  rayData.dirMax = vec3(1000000000.0f);
 
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray = shadowRay;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin = 0.01f;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax = vec3(1000000.0f);
+  objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
 
-  directDataUbo.datas[gl_GlobalInvocationID.x].materialIndex = objectHit.materialIndex;
-  directDataUbo.datas[gl_GlobalInvocationID.x].normal = objectHit.normal;
-  directDataUbo.datas[gl_GlobalInvocationID.x].uv = objectHit.uv;
+  DirectData directData;
+  directData.materialIndex = objectHit.materialIndex;
+  directData.normal = objectHit.normal;
+  directData.uv = objectHit.uv;
+
+  directDataUbo.datas[gl_GlobalInvocationID.x] = directData;
 }
 
 
