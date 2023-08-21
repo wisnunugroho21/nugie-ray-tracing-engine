@@ -49,23 +49,18 @@ void main() {
 
   vec3 curRadiance = lightShadeRecord.radiance * prevIndirectAttenuation;
   vec3 totalPrevIndirect = prevIndirectAttenuation / prevIndirectPdf;
-
-  float totalPdf = indirectRecord.pdf + directRecord.pdf;
-  vec3 directRadiance = directRecord.radiance * directRecord.pdf / totalPdf;
-  vec3 indirectRadiance = indirectRecord.radiance * indirectRecord.pdf / totalPdf;
   
-  curRadiance += (missRecord.radiance + directRadiance) * totalPrevIndirect;
+  curRadiance += (missRecord.radiance + directRecord.radiance) * totalPrevIndirect;
   imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance + curRadiance, 1.0f));
 
   TotalIndirectData totalIndirectData;
-  totalIndirectData.attenuation = totalPrevIndirect * indirectRadiance;
+  totalIndirectData.attenuation = totalPrevIndirect * indirectRecord.radiance;
   totalIndirectData.pdf = indirectRecord.pdf;
 
   indirectDataUbo.datas[gl_GlobalInvocationID.x] = totalIndirectData;
 
-  IndirectSamplerData indirectSamplerData;
-  indirectSamplerData.nextRay = indirectRecord.nextRay;
-  indirectSamplerData.nextRay.direction *= when_gt(length(totalIndirectData.attenuation), 0.001f);
+  Ray nextRay = indirectRecord.nextRay;
+  nextRay.direction *= when_gt(length(totalIndirectData.attenuation), 0.1f);
   
-  indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = indirectSamplerData;
+  indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x].nextRay = nextRay;
 }

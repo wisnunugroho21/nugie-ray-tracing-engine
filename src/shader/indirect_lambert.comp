@@ -152,6 +152,7 @@ void main() {
   indirectShadeResult.radiance *= isHitObject;
   indirectShadeResult.pdf *= isHitObject;
   indirectShadeResult.nextRay = indirectShadeResult.nextRay;
+  indirectShadeResult.nextRay.direction *= isHitObject;
   
   indirectUbo.records[gl_GlobalInvocationID.x] = indirectShadeResult;
 }
