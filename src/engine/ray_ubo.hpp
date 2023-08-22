@@ -96,32 +96,39 @@ namespace nugiEngine {
   };
 
   struct IndirectShadeRecord {
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
     float pdf = 0.0f;
     Ray nextRay;
   };
 
   struct DirectShadeRecord {
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
     float pdf = 0.0f;
   };
 
   struct LightShadeRecord {
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
     float isPrimary = 0.0f;
   };
 
   struct MissRecord {
+    float isMiss = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
   };
 
   struct IndirectSamplerData {
     uint32_t xCoord = 0u;
     uint32_t yCoord = 0u;
+
+    float isRayContinue = 0.0f;
     Ray nextRay;
   };
 
   struct DirectData {
+    float isIlluminate = 0.0f;
     uint32_t materialIndex = 0u;
     alignas(16) glm::vec3 normal{0.0f};
     alignas(16) glm::vec2 uv{0.0f};
