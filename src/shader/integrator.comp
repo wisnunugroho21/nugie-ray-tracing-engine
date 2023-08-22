@@ -48,15 +48,15 @@ void main() {
   vec3 totalRadiance = imageLoad(totalRadianceImage, pixelCoord).xyz;
   totalRadiance = mix(totalRadiance, vec3(0.0f), lightShadeRecord.isPrimary);
 
-  vec3 curRadiance = lightShadeRecord.radiance * prevIndirectAttenuation * lightShadeRecord.isIlluminate * when_not(indirectRecord.isIlluminate) * when_not(missRecord.isMiss);
-  curRadiance += missRecord.radiance * totalPrevIndirect * missRecord.isMiss * when_not(lightShadeRecord.isIlluminate) * when_not(indirectRecord.isIlluminate);
-  curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate * when_not(lightShadeRecord.isIlluminate) * when_not(missRecord.isMiss);
+  vec3 curRadiance = lightShadeRecord.radiance * prevIndirectAttenuation * lightShadeRecord.isIlluminate;
+  curRadiance += missRecord.radiance * totalPrevIndirect * missRecord.isMiss;
+  curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate;
 
   imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance + curRadiance, 1.0f));
 
   TotalIndirectData totalIndirectData;
-  totalIndirectData.attenuation = totalPrevIndirect * indirectRecord.radiance;
-  totalIndirectData.pdf = indirectRecord.pdf;
+  totalIndirectData.attenuation = totalPrevIndirect * indirectRecord.radiance * indirectRecord.isIlluminate;
+  totalIndirectData.pdf = indirectRecord.pdf * indirectRecord.isIlluminate;
 
   indirectDataUbo.datas[gl_GlobalInvocationID.x] = totalIndirectData;
 

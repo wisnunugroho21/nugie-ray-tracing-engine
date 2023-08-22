@@ -187,11 +187,11 @@ void main() {
   hitRecord.point = vec3(0.0f);
   hitRecord.dir = vec3(0.0f);
   hitRecord.normal = vec3(0.0f);
-  hitRecord.isPrimary = rayData.isPrimary;
 
   if (length(rayData.ray.direction) > 0.1f) {
     hitRecord = hitTriangleLightBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
+  hitRecord.isPrimary = rayData.isPrimary;
   lightHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;
 }

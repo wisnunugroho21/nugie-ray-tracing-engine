@@ -108,6 +108,7 @@ void main() {
   rayData.ray = shadowRay;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000.0f);
+  rayData.isPrimary = objectHit.isPrimary;
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
