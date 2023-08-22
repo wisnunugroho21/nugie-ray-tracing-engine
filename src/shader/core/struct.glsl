@@ -88,32 +88,39 @@ struct HitRecord {
 };
 
 struct IndirectShadeRecord {
+  float isIlluminate;
   vec3 radiance;
   float pdf;
   Ray nextRay;
 };
 
 struct DirectShadeRecord {
+  float isIlluminate;
   vec3 radiance;
   float pdf;
 };
 
 struct LightShadeRecord {
+  float isIlluminate;
   vec3 radiance;
   float isPrimary;
 };
 
 struct MissRecord {
+  float isMiss;
   vec3 radiance;
 };
 
 struct IndirectSamplerData {
   uint xCoord;
   uint yCoord;
+
+  float isRayContinue;
   Ray nextRay;
 };
 
 struct DirectData {
+  float isIlluminate;
   uint materialIndex;
   vec3 normal;
   vec2 uv;

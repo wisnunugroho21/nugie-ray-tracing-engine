@@ -26,7 +26,8 @@ void main() {
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
   MissRecord missRecord;
-  missRecord.radiance = when_and(when_not(objectHit.isHit), when_not(lightHit.isHit)) * vec3(0.0f);
+  missRecord.isMiss = when_and(when_not(objectHit.isHit), when_not(lightHit.isHit));
+  missRecord.radiance = vec3(0.0f);
 
   missUbo.records[gl_GlobalInvocationID.x] = missRecord;
 }

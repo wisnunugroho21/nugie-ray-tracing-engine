@@ -56,7 +56,8 @@ void main() {
 
   vec2 uv = vec2(samplerData.xCoord, samplerData.yCoord) / ubo.imgSize;
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
-  float isPrimary = when_le(length(samplerData.nextRay.direction), 0.001f);
+
+  float isPrimary = when_not(samplerData.isRayContinue);
 
   Ray curRay;
   curRay.origin = mix(samplerData.nextRay.origin, ubo.origin, isPrimary);

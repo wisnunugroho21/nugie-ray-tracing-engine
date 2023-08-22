@@ -172,10 +172,9 @@ void main() {
   DirectData directData = directDataUbo.datas[gl_GlobalInvocationID.x];
 
   float isHitLight = when_and(lightHit.isHit, when_or(when_not(objectHit.isHit), when_lt(length(lightHit.dir), length(objectHit.dir))));
+  
   DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData, 0u);
-
-  directShadeResult.radiance *= isHitLight;
-  directShadeResult.pdf *= isHitLight;
+  directShadeResult.isIlluminate = directData.isIlluminate * isHitLight;
   
   directUbo.records[gl_GlobalInvocationID.x] = directShadeResult;
 }

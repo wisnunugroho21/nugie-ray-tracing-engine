@@ -178,6 +178,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
+  RayData rayData = lightRayUbo.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
   hitRecord.isHit = 0.0f;
@@ -186,11 +187,10 @@ void main() {
   hitRecord.point = vec3(0.0f);
   hitRecord.dir = vec3(0.0f);
   hitRecord.normal = vec3(0.0f);
-  hitRecord.isPrimary = 0.0f;
+  hitRecord.isPrimary = rayData.isPrimary;
 
-  if (length(lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray.direction) > 0.1f) {
-    hitRecord = hitTriangleLightBvh(lightRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, lightRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
-    hitRecord.isPrimary = lightRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary;
+  if (length(rayData.ray.direction) > 0.1f) {
+    hitRecord = hitTriangleLightBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
   lightHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;

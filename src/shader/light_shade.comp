@@ -56,7 +56,8 @@ void main() {
   float isHitLight = when_and(lightHit.isHit, when_or(when_not(objectHit.isHit), when_lt(length(lightHit.dir), length(objectHit.dir))));
 
   LightShadeRecord lightShadeRecord;
-  lightShadeRecord.radiance = mix(GfactorTriangleLight(lightHit), 1.0f, objectHit.isPrimary) * lights[lightHit.hitIndex].color * isHitLight;
+  lightShadeRecord.isIlluminate = isHitLight;
+  lightShadeRecord.radiance = mix(GfactorTriangleLight(lightHit), 1.0f, objectHit.isPrimary) * lights[lightHit.hitIndex].color;
   lightShadeRecord.isPrimary = objectHit.isPrimary;
 
   lightShadeUbo.records[gl_GlobalInvocationID.x] = lightShadeRecord;

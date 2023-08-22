@@ -242,6 +242,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
+  RayData rayData = objectRayUbo.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
   hitRecord.isHit = 0.0f;
@@ -250,11 +251,10 @@ void main() {
   hitRecord.point = vec3(0.0f);
   hitRecord.dir = vec3(0.0f);
   hitRecord.normal = vec3(0.0f);
-  hitRecord.isPrimary = 0.0f;
+  hitRecord.isPrimary = rayData.isPrimary;
   
-  if (length(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray.direction) > 0.1f) {
-    hitRecord = hitObjectBvh(objectRayUbo.rayDatas[gl_GlobalInvocationID.x].ray, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMin, objectRayUbo.rayDatas[gl_GlobalInvocationID.x].dirMax);
-    hitRecord.isPrimary = objectRayUbo.rayDatas[gl_GlobalInvocationID.x].isPrimary;
+  if (length(rayData.ray.direction) > 0.1f) {
+    hitRecord = hitObjectBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
   objectHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;

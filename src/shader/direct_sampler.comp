@@ -113,6 +113,7 @@ void main() {
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
 
   DirectData directData;
+  directData.isIlluminate = isHitObject;
   directData.materialIndex = objectHit.materialIndex;
   directData.normal = objectHit.normal;
   directData.uv = objectHit.uv;
