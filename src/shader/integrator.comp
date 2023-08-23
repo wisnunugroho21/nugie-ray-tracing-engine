@@ -47,7 +47,7 @@ void main() {
   curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate;
 
   vec3 totalRadiance = imageLoad(totalRadianceImage, pixelCoord).xyz;
-  totalRadiance = mix(totalRadiance, vec3(0.0f), lightShadeRecord.isPrimary);
+  totalRadiance = mix(vec3(0.0f), totalRadiance, when_gt(lightShadeRecord.rayBounce, 0.0f));
 
   imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance + curRadiance, 1.0f));
 
@@ -57,7 +57,7 @@ void main() {
 
   indirectDataUbo.datas[gl_GlobalInvocationID.x] = totalIndirectData;
 
-  samplerData.isRayContinue = indirectRecord.isIlluminate;
+  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 3.0f);
   samplerData.nextRay = indirectRecord.nextRay;
   
   indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = samplerData;

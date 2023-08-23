@@ -57,17 +57,15 @@ void main() {
   vec2 uv = vec2(samplerData.xCoord, samplerData.yCoord) / ubo.imgSize;
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
-  float isPrimary = when_not(samplerData.isRayContinue);
-
   Ray curRay;
-  curRay.origin = mix(samplerData.nextRay.origin, ubo.origin, isPrimary);
-  curRay.direction = mix(samplerData.nextRay.direction, rayDirection, isPrimary);
+  curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, when_gt(samplerData.rayBounce, 0.0f));
+  curRay.direction = mix(rayDirection, samplerData.nextRay.direction,  when_gt(samplerData.rayBounce, 0.0f));
 
   RayData rayData;
   rayData.ray = curRay;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000.0f);
-  rayData.isPrimary = isPrimary;
+  rayData.rayBounce = samplerData.rayBounce;
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;

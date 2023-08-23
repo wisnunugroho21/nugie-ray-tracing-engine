@@ -79,12 +79,12 @@ namespace nugiEngine {
     float dirMin = 0.001f;
     alignas(16) glm::vec3 dirMax{1000000.0f};
 
-    float isPrimary = 1.0f;
+    float rayBounce = 0.0f;
   };
 
   struct HitRecord {
     float isHit = 0.0f;
-    float isPrimary = 1.0f;
+    float rayBounce = 0.0f;
 
     uint32_t hitIndex = 0u;
     uint32_t materialIndex = 0u;
@@ -111,7 +111,7 @@ namespace nugiEngine {
   struct LightShadeRecord {
     float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
-    float isPrimary = 0.0f;
+    float rayBounce = 0.0f;
   };
 
   struct MissRecord {
@@ -123,7 +123,7 @@ namespace nugiEngine {
     uint32_t xCoord = 0u;
     uint32_t yCoord = 0u;
 
-    float isRayContinue = 0.0f;
+    float rayBounce = 0.0f;
     Ray nextRay;
   };
 

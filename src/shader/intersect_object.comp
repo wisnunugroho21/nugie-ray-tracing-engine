@@ -256,6 +256,6 @@ void main() {
     hitRecord = hitObjectBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
-  hitRecord.isPrimary = rayData.isPrimary;
+  hitRecord.rayBounce = rayData.rayBounce;
   objectHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;
 }

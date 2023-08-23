@@ -57,8 +57,8 @@ void main() {
 
   LightShadeRecord lightShadeRecord;
   lightShadeRecord.isIlluminate = isHitLight;
-  lightShadeRecord.radiance = mix(GfactorTriangleLight(lightHit), 1.0f, objectHit.isPrimary) * lights[lightHit.hitIndex].color;
-  lightShadeRecord.isPrimary = objectHit.isPrimary;
+  lightShadeRecord.radiance = mix(1.0f, GfactorTriangleLight(lightHit), when_gt(objectHit.rayBounce, 0.0f)) * lights[lightHit.hitIndex].color;
+  lightShadeRecord.rayBounce = objectHit.rayBounce;
 
   lightShadeUbo.records[gl_GlobalInvocationID.x] = lightShadeRecord;
 }

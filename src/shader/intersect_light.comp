@@ -192,6 +192,6 @@ void main() {
     hitRecord = hitTriangleLightBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
-  hitRecord.isPrimary = rayData.isPrimary;
+  hitRecord.rayBounce = rayData.rayBounce;
   lightHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;
 }
