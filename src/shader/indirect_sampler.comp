@@ -59,7 +59,7 @@ void main() {
 
   Ray curRay;
   curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, when_gt(samplerData.rayBounce, 0.0f));
-  curRay.direction = mix(rayDirection, samplerData.nextRay.direction,  when_gt(samplerData.rayBounce, 0.0f));
+  curRay.direction = mix(rayDirection, samplerData.nextRay.direction, when_gt(samplerData.rayBounce, 0.0f));
 
   RayData rayData;
   rayData.ray = curRay;
