@@ -52,12 +52,12 @@ void main() {
   imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance + curRadiance, 1.0f));
 
   TotalIndirectData totalIndirectData;
-  totalIndirectData.attenuation = mix(vec3(1.0f), totalPrevIndirect * indirectRecord.radiance, indirectRecord.isIlluminate);
-  totalIndirectData.pdf = mix(1.0f, indirectRecord.pdf, indirectRecord.isIlluminate);
+  totalIndirectData.attenuation = mix(vec3(1.0f), totalPrevIndirect * indirectRecord.radiance, indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f));
+  totalIndirectData.pdf = mix(1.0f, indirectRecord.pdf, indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f));
 
   indirectDataUbo.datas[gl_GlobalInvocationID.x] = totalIndirectData;
 
-  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 3.0f);
+  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f);
   samplerData.nextRay = indirectRecord.nextRay;
   
   indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = samplerData;
