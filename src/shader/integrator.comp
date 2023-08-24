@@ -46,18 +46,21 @@ void main() {
   curRadiance += missRecord.radiance * totalPrevIndirect * missRecord.isMiss;
   curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate;
 
-  vec3 totalRadiance = imageLoad(totalRadianceImage, pixelCoord).xyz;
-  totalRadiance = mix(vec3(0.0f), totalRadiance, when_gt(lightShadeRecord.rayBounce, 0.0f));
+  float totalPdf = indirectRecord.pdf + directRecord.pdf;
 
-  imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance + curRadiance, 1.0f));
+  vec3 totalRadiance = imageLoad(totalRadianceImage, pixelCoord).xyz * when_gt(lightShadeRecord.rayBounce, 0.0f) + curRadiance * directRecord.pdf / totalPdf;
+  vec3 totalIndirect = totalPrevIndirect * indirectRecord.radiance * indirectRecord.pdf / totalPdf;
+  float isRayContinue = indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 10.0f) * when_gt(length(totalIndirect), 0.01f);
+
+  imageStore(totalRadianceImage, pixelCoord, vec4(totalRadiance, 1.0f));
 
   TotalIndirectData totalIndirectData;
-  totalIndirectData.attenuation = mix(vec3(1.0f), totalPrevIndirect * indirectRecord.radiance, indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f));
-  totalIndirectData.pdf = mix(1.0f, indirectRecord.pdf, indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f));
+  totalIndirectData.attenuation = mix(vec3(1.0f), totalPrevIndirect * indirectRecord.radiance, isRayContinue);
+  totalIndirectData.pdf = mix(1.0f, indirectRecord.pdf, isRayContinue);
 
   indirectDataUbo.datas[gl_GlobalInvocationID.x] = totalIndirectData;
 
-  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.0f);
+  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * isRayContinue;
   samplerData.nextRay = indirectRecord.nextRay;
   
   indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = samplerData;
