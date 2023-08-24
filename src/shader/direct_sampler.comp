@@ -101,13 +101,13 @@ void main() {
   uint lightIndex = randomUint(0u, ubo.numLights - 1u, 0u);
 
   Ray shadowRay;
-  shadowRay.origin = objectHit.point + objectHit.normal * 0.001f;
+  shadowRay.origin = objectHit.point;
   shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, 0) * isHitObject;
 
   RayData rayData;
   rayData.ray = shadowRay;
   rayData.dirMin = 0.01f;
-  rayData.dirMax = vec3(1000000000.0f);
+  rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = objectHit.rayBounce;
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
