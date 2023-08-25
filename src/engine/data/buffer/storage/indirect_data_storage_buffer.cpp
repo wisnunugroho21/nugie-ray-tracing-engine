@@ -12,6 +12,11 @@ namespace nugiEngine {
 		auto datas = std::make_shared<std::vector<RenderResult>>();
 		for (uint32_t i = 0; i < dataCount; i++) {
 			RenderResult data{};
+
+			data.totalRadiance = glm::vec3{0.0f};
+			data.totalIndirect = glm::vec3{1.0f};
+			data.pdf = 1.0f;
+			
 			datas->emplace_back(data);
 		}
 
