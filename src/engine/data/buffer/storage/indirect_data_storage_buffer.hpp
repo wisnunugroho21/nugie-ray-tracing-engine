@@ -24,6 +24,6 @@ namespace nugiEngine {
 			EngineDevice &engineDevice;
 			std::vector<std::shared_ptr<EngineBuffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<TotalIndirectData>> datas);
+			void createBuffers(std::shared_ptr<std::vector<RenderResult>> datas);
 	};
 } // namespace nugiEngine

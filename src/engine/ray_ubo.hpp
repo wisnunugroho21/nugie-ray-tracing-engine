@@ -134,7 +134,7 @@ namespace nugiEngine {
     alignas(16) glm::vec2 uv{0.0f};
   };
 
-  struct TotalIndirectData {
+  struct RenderResult {
     alignas(16) glm::vec3 attenuation{1.0f};
     float pdf = 1.0f;
   };

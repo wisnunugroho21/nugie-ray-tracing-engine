@@ -126,8 +126,9 @@ struct DirectData {
   vec2 uv;
 };
 
-struct TotalIndirectData {
-  vec3 attenuation;
+struct RenderResult {
+  vec3 totalIndirect;
+  vec3 totalRadiance;
   float pdf;
 };
 
