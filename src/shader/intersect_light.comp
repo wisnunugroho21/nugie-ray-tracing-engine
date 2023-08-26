@@ -145,7 +145,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
-      if (tempHit.isHit == 1.0f) {
+      if (tempHit.isHit > 0.9f) {
         hit = tempHit;
         hit.hitIndex = lightIndex - 1u;
       }
@@ -155,7 +155,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
-      if (tempHit.isHit == 1.0f) {
+      if (tempHit.isHit > 0.9f) {
         hit = tempHit;
         hit.hitIndex = lightIndex - 1u;
       }

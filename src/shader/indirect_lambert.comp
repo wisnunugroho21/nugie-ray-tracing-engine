@@ -146,7 +146,7 @@ void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
-  float isHitObject = when_and(objectHit.isHit, when_or(when_not(lightHit.isHit), when_gt(length(lightHit.dir), length(objectHit.dir))));
+  float isHitObject = when_and(when_gt(objectHit.isHit, 0.9f), when_or(when_lt(lightHit.isHit, 0.1f), when_gt(length(lightHit.dir), length(objectHit.dir))));
   
   IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHitUbo.records[gl_GlobalInvocationID.x], 0);
   indirectShadeResult.isIlluminate = isHitObject;

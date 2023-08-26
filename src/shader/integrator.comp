@@ -48,9 +48,9 @@ void main() {
 
   float totalPdf = indirectRecord.pdf + directRecord.pdf;
 
-  vec3 totalRadiance = prevRenderResult.totalRadiance * when_gt(lightShadeRecord.rayBounce, 0.0f) + curRadiance * directRecord.pdf / totalPdf;
+  vec3 totalRadiance = prevRenderResult.totalRadiance * when_gt(lightShadeRecord.rayBounce, 0.9f) + curRadiance * directRecord.pdf / totalPdf;
   vec3 totalIndirect = totalPrevIndirect * indirectRecord.radiance * indirectRecord.pdf / totalPdf;
-  float isRayContinue = indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 10.0f) * when_gt(length(totalIndirect), 0.01f);
+  float isRayContinue = indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 9.9f) * when_gt(length(totalIndirect), 0.1f);
 
   if (isRayContinue == 0.0f) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
