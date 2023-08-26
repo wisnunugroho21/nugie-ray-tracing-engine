@@ -42,28 +42,28 @@ void main() {
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
 
-  vec3 curRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * lightShadeRecord.isIlluminate;
-  curRadiance += missRecord.radiance * totalPrevIndirect * missRecord.isMiss;
-  curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate;
+  vec3 curRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * float(lightShadeRecord.isIlluminate);
+  curRadiance += missRecord.radiance * totalPrevIndirect * float(missRecord.isMiss);
+  curRadiance += directRecord.radiance * totalPrevIndirect * float(directRecord.isIlluminate);
 
   float totalPdf = indirectRecord.pdf + directRecord.pdf;
 
-  vec3 totalRadiance = prevRenderResult.totalRadiance * when_gt(lightShadeRecord.rayBounce, 0.9f) + curRadiance * directRecord.pdf / totalPdf;
+  vec3 totalRadiance = prevRenderResult.totalRadiance * float(lightShadeRecord.rayBounce > 0u) + curRadiance * directRecord.pdf / totalPdf;
   vec3 totalIndirect = totalPrevIndirect * indirectRecord.radiance * indirectRecord.pdf / totalPdf;
-  float isRayContinue = indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.9f) * when_gt(length(totalIndirect), 0.1f);
+  bool isRayContinue = indirectRecord.isIlluminate && (lightShadeRecord.rayBounce < 3u) && (length(totalIndirect) > 0.1f);
 
-  if (isRayContinue > 0.1f) {
+  if (isRayContinue) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
   }
 
   RenderResult renderResult;
-  renderResult.totalRadiance = mix(vec3(0.0f), totalRadiance, isRayContinue);
-  renderResult.totalIndirect = mix(vec3(1.0f), totalIndirect, isRayContinue);
-  renderResult.pdf = mix(1.0f, indirectRecord.pdf, isRayContinue);
+  renderResult.totalRadiance = mix(vec3(0.0f), totalRadiance, float(isRayContinue));
+  renderResult.totalIndirect = mix(vec3(1.0f), totalIndirect, float(isRayContinue));
+  renderResult.pdf = mix(1.0f, indirectRecord.pdf, float(isRayContinue));
 
   renderResultUbo.datas[gl_GlobalInvocationID.x] = renderResult;
 
-  samplerData.rayBounce = round((lightShadeRecord.rayBounce + 1.0f) * isRayContinue);
+  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1u) * uint(isRayContinue);
   samplerData.nextRay = indirectRecord.nextRay;
   
   indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = samplerData;

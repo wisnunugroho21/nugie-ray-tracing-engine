@@ -58,14 +58,14 @@ void main() {
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
   Ray curRay;
-  curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, when_gt(samplerData.rayBounce, 0.9f));
-  curRay.direction = mix(rayDirection, samplerData.nextRay.direction, when_gt(samplerData.rayBounce, 0.9f));
+  curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, float(samplerData.rayBounce == 0u));
+  curRay.direction = mix(rayDirection, samplerData.nextRay.direction, float(samplerData.rayBounce == 0u));
 
   RayData rayData;
   rayData.ray = curRay;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
-  rayData.rayBounce = round(samplerData.rayBounce);
+  rayData.rayBounce = samplerData.rayBounce;
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
