@@ -101,7 +101,7 @@ void main() {
   uint lightIndex = randomUint(0u, ubo.numLights - 1u, 0u);
 
   Ray shadowRay;
-  shadowRay.origin = round(objectHit.point)
+  shadowRay.origin = round(objectHit.point);
   shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, 0) * isHitObject;
 
   RayData rayData;
