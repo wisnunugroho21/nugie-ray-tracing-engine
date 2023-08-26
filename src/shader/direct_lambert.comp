@@ -174,7 +174,7 @@ void main() {
   float isHitLight = when_and(when_gt(lightHit.isHit, 0.9f), when_or(when_lt(objectHit.isHit, 0.1f), when_lt(length(lightHit.dir), length(objectHit.dir))));
   
   DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData, 0u);
-  directShadeResult.isIlluminate = directData.isIlluminate * isHitLight;
+  directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitLight;
   
   directUbo.records[gl_GlobalInvocationID.x] = directShadeResult;
 }

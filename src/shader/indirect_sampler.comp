@@ -65,7 +65,7 @@ void main() {
   rayData.ray = curRay;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
-  rayData.rayBounce = samplerData.rayBounce;
+  rayData.rayBounce = round(samplerData.rayBounce);
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;

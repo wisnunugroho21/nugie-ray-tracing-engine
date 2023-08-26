@@ -63,7 +63,7 @@ void main() {
 
   renderResultUbo.datas[gl_GlobalInvocationID.x] = renderResult;
 
-  samplerData.rayBounce = (lightShadeRecord.rayBounce + 1.0f) * isRayContinue;
+  samplerData.rayBounce = round((lightShadeRecord.rayBounce + 1.0f) * isRayContinue);
   samplerData.nextRay = indirectRecord.nextRay;
   
   indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = samplerData;
