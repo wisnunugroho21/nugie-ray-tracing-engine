@@ -137,7 +137,7 @@ float triangleArea(uvec3 triIndices) {
 
 // ------------- Shade ------------- 
 
-DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
+DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3 surfaceNormal) {
   vec3 unitLightDirection = normalize(lightHit.dir);
   DirectShadeRecord scat;
 
@@ -155,7 +155,7 @@ DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3
   return scat;
 }
 
-DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData, uint additionalRandomSeed) {
+DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData) {
   vec3 surfaceColor;
   if (materials[directData.materialIndex].colorTextureIndex == 0u) {
     surfaceColor = materials[directData.materialIndex].baseColor;
@@ -163,7 +163,7 @@ DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData, 
     surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
   }
 
-  return directLambertShade(lightHit, surfaceColor, directData.normal, additionalRandomSeed);
+  return directLambertShade(lightHit, surfaceColor, directData.normal);
 }
 
 void main() {
@@ -173,7 +173,7 @@ void main() {
 
   float isHitLight = when_and(when_gt(lightHit.isHit, 0.9f), when_or(when_lt(objectHit.isHit, 0.1f), when_lt(length(lightHit.dir), length(objectHit.dir))));
   
-  DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData, 0u);
+  DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData);
   directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitLight;
   
   directUbo.records[gl_GlobalInvocationID.x] = directShadeResult;
