@@ -97,18 +97,20 @@ void main() {
   HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
 
+  uint rayBounce = uint(round(objectHit.rayBounce));
+
   float isHitObject = when_and(when_gt(objectHit.isHit, 0.9f), when_or(when_lt(lightHit.isHit, 0.1f), when_gt(length(lightHit.dir), length(objectHit.dir))));
-  uint lightIndex = randomUint(0u, ubo.numLights - 1u, 0u);
+  uint lightIndex = randomUint(0u, ubo.numLights - 1u, rayBounce);
 
   Ray shadowRay;
   shadowRay.origin = round(objectHit.point);
-  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, 0) * isHitObject;
+  shadowRay.direction = triangleRandomDirection(lights[lightIndex].indices, shadowRay.origin, rayBounce) * isHitObject;
 
   RayData rayData;
   rayData.ray = shadowRay;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
-  rayData.rayBounce = round(objectHit.rayBounce);
+  rayData.rayBounce = float(rayBounce);
 
   objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;

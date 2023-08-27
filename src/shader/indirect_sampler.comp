@@ -30,27 +30,6 @@ layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
-// ------------- Random ------------- 
-
-// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
-uint stepRNG(uint rngState) {
-  return rngState * 747796405 + 1;
-}
-
-// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
-float stepAndOutputRNGFloat(inout uint rngState) {
-  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
-  rngState  = stepRNG(rngState);
-  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
-  word      = (word >> 22u) ^ word;
-  return float(word) / 4294967295.0f;
-}
-
-float randomFloat(uint additionalRandomSeed) {
-  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
-  return stepAndOutputRNGFloat(rngState);
-}
-
 void main() {
   IndirectSamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
 
