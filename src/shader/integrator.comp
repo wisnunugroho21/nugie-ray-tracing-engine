@@ -42,17 +42,17 @@ void main() {
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
 
-  vec3 curRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * lightShadeRecord.isIlluminate;
-  curRadiance += missRecord.radiance * totalPrevIndirect * missRecord.isMiss;
-  curRadiance += directRecord.radiance * totalPrevIndirect * directRecord.isIlluminate;
+  vec3 curRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * when_gt(lightShadeRecord.isIlluminate, 0.9f);
+  curRadiance += missRecord.radiance * totalPrevIndirect * when_gt(missRecord.isMiss, 0.9f);
+  curRadiance += directRecord.radiance * totalPrevIndirect * when_gt(directRecord.isIlluminate, 0.9f);
 
   float totalPdf = indirectRecord.pdf + directRecord.pdf;
 
-  vec3 totalRadiance = prevRenderResult.totalRadiance * when_gt(lightShadeRecord.rayBounce, 0.9f) + curRadiance * directRecord.pdf / totalPdf;
+  vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance * directRecord.pdf / totalPdf;
   vec3 totalIndirect = totalPrevIndirect * indirectRecord.radiance * indirectRecord.pdf / totalPdf;
-  float isRayContinue = indirectRecord.isIlluminate * when_lt(lightShadeRecord.rayBounce, 2.9f) * when_gt(length(totalIndirect), 0.1f);
+  float isRayContinue = when_gt(indirectRecord.isIlluminate, 0.9f) * when_lt(lightShadeRecord.rayBounce, 9.9f) * when_gt(length(totalIndirect), 0.1f);
 
-  if (isRayContinue > 0.1f) {
+  if (isRayContinue < 0.1f) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
   }
 
