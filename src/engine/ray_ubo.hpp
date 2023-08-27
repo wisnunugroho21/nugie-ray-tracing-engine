@@ -72,7 +72,7 @@ namespace nugiEngine {
   struct Ray {
     alignas(16) glm::vec3 origin{0.0f};
     alignas(16) glm::vec3 direction{0.0f};
-    uint32_t primitiveId;
+    uint32_t primitiveId = 0u;
   };
 
   struct RayData {
