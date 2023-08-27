@@ -37,8 +37,10 @@ void main() {
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
   Ray curRay;
+
   curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, when_gt(samplerData.rayBounce, 0.9f));
   curRay.direction = mix(rayDirection, samplerData.nextRay.direction, when_gt(samplerData.rayBounce, 0.9f));
+  curRay.primitiveId = samplerData.nextRay.primitiveId * uint(when_gt(samplerData.rayBounce, 0.9f));
 
   RayData rayData;
   rayData.ray = curRay;

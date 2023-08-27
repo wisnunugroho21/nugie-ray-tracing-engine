@@ -115,11 +115,12 @@ float lambertBrdfValue() {
 
 // ------------- Shade ------------- 
 
-IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
+IndirectShadeRecord indirectLambertShade(vec3 hitPoint, uint hitIndex, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   IndirectShadeRecord scat;
 
   scat.nextRay.origin = hitPoint;
   scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
+  scat.nextRay.primitiveId = hitIndex + 1u;
 
   float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
@@ -139,7 +140,7 @@ IndirectShadeRecord indirectLambertShade(HitRecord objectHit, uint additionalRan
     surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
   }
 
-  return indirectLambertShade(objectHit.point, surfaceColor, objectHit.normal, additionalRandomSeed);
+  return indirectLambertShade(objectHit.point, objectHit.hitIndex, surfaceColor, objectHit.normal, additionalRandomSeed);
 }
 
 void main() {
