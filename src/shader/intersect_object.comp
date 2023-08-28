@@ -152,7 +152,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     }
 
     uint primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftObjIndex;
-    if (primIndex >= 1u && r.primitiveId != (primIndex + firstPrimitiveIndex)) {
+    if (primIndex >= 1u) {
       HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit > 0.9f) {
@@ -162,7 +162,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     }
 
     primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightObjIndex;    
-    if (primIndex >= 1u && r.primitiveId != (primIndex + firstPrimitiveIndex)) {
+    if (primIndex >= 1u) {
       HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
       if (tempHit.isHit > 0.9f) {
