@@ -118,7 +118,7 @@ float lambertBrdfValue() {
 IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   IndirectShadeRecord scat;
 
-  scat.nextRay.origin = hitPoint;
+  scat.nextRay.origin = hitPoint + surfaceNormal * 0.01f;
   scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
 
   float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
