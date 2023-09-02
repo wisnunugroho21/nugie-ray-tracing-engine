@@ -36,12 +36,9 @@ void main() {
   vec2 uv = vec2(samplerData.xCoord, samplerData.yCoord) / ubo.imgSize;
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
-  Ray curRay;
-  curRay.origin = mix(ubo.origin, samplerData.nextRay.origin, when_gt(samplerData.rayBounce, 0.9f));
-  curRay.direction = mix(rayDirection, samplerData.nextRay.direction, when_gt(samplerData.rayBounce, 0.9f));
-
   RayData rayData;
-  rayData.ray = curRay;
+  rayData.rayOrigin = mix(ubo.origin, samplerData.nextRayOrigin, when_gt(samplerData.rayBounce, 0.9f));
+  rayData.rayDirection = mix(rayDirection, samplerData.nextRayDirection, when_gt(samplerData.rayBounce, 0.9f));
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = round(samplerData.rayBounce);

@@ -252,8 +252,12 @@ void main() {
   hitRecord.dir = vec3(0.0f);
   hitRecord.normal = vec3(0.0f);
   
-  if (length(rayData.ray.direction) > 0.1f) {
-    hitRecord = hitObjectBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
+  if (length(rayData.rayDirection) > 0.1f) {
+    Ray ray;
+    ray.origin = rayData.rayOrigin;
+    ray.direction = rayData.rayDirection;
+
+    hitRecord = hitObjectBvh(ray, rayData.dirMin, rayData.dirMax);
   }
 
   hitRecord.rayBounce = round(rayData.rayBounce);
