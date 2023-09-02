@@ -41,9 +41,7 @@ namespace nugiEngine {
 
     for (uint32_t i = 0; i < width; i++) {
       for (uint32_t j = 0; j < height; j++) {
-        Ray nextRay{};
-
-        IndirectSamplerData pixel{ i, j, 0.0f, nextRay };
+        IndirectSamplerData pixel{ i, j, 0.0f, glm::vec3{0.0f}, glm::vec3{0.0f} };
         pixels->emplace_back(pixel);
       }
     }
