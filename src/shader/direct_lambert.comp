@@ -92,7 +92,7 @@ DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3
   float pdf = lambertPdfValue(NoL);
 
   scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
-  scat.pdf = when_gt(length(scat.radiance), 0.1f) * pdf;
+  scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
 
   return scat;
 }
