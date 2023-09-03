@@ -32,13 +32,20 @@ layout(push_constant) uniform Push {
 
 void main() {
   IndirectSamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
+  RayData rayData;
 
   vec2 uv = vec2(samplerData.xCoord, samplerData.yCoord) / ubo.imgSize;
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
-  RayData rayData;
-  rayData.rayOrigin = mix(ubo.origin, samplerData.nextRayOrigin, when_gt(samplerData.rayBounce, 0.9f));
-  rayData.rayDirection = mix(rayDirection, samplerData.nextRayDirection, when_gt(samplerData.rayBounce, 0.9f));
+  // This is actually better version (more peformance). Sadly, floating point error happens. 
+  // Until i find how to mitigate floating point error, i will use ternary operator
+  /* rayData.rayOrigin = mix(ubo.origin, samplerData.nextRayOrigin, when_gt(samplerData.rayBounce, 0.9f));
+  rayData.rayDirection = mix(rayDirection, samplerData.nextRayDirection, when_gt(samplerData.rayBounce, 0.9f)); */
+
+  bool isPrimaryRay = samplerData.rayBounce < 0.9f;
+  rayData.rayOrigin = isPrimaryRay ? ubo.origin : samplerData.nextRayOrigin;
+  rayData.rayDirection = isPrimaryRay ? rayDirection : samplerData.nextRayDirection;
+
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = round(samplerData.rayBounce);
