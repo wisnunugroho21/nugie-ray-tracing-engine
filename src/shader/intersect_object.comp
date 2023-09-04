@@ -3,39 +3,39 @@
 #include "core/struct.glsl"
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly ObjectHitUbo {
+layout(set = 0, binding = 0) buffer writeonly ObjectHitBuffer {
   HitRecord records[];
-} objectHitUbo;
+} objectHitBuffer;
 
-layout(set = 0, binding = 1) buffer readonly ObjectRayUbo {
+layout(set = 0, binding = 1) buffer readonly ObjectRayBuffer {
   RayData rayDatas[];
-} objectRayUbo;
+} objectRayBuffer;
 
-layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+layout(set = 0, binding = 2) buffer readonly ObjectModel {
   Object objects[];
 };
 
-layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
+layout(set = 0, binding = 3) buffer readonly ObjectBvhModel {
   BvhNode objectBvhNodes[];
 };
 
-layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
+layout(set = 0, binding = 4) buffer readonly PrimitiveModel {
   Primitive primitives[];
 };
 
-layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
+layout(set = 0, binding = 5) buffer readonly PrimitiveBvhModel {
   BvhNode primitiveBvhNodes[];
 };
 
-layout(set = 0, binding = 6) buffer readonly VertexSsbo {
+layout(set = 0, binding = 6) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
-layout(set = 0, binding = 7) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 7) buffer readonly MaterialModel {
   Material materials[];
 };
 
-layout(set = 0, binding = 8) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 8) buffer readonly TransformationModel {
   Transformation transformations[];
 };
 
@@ -242,7 +242,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
-  RayData rayData = objectRayUbo.rayDatas[gl_GlobalInvocationID.x];
+  RayData rayData = objectRayBuffer.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
   hitRecord.isHit = 0.0f;
@@ -261,5 +261,5 @@ void main() {
   }
 
   hitRecord.rayBounce = round(rayData.rayBounce);
-  objectHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;
+  objectHitBuffer.records[gl_GlobalInvocationID.x] = hitRecord;
 }

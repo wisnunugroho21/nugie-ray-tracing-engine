@@ -5,7 +5,7 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) uniform readonly GlobalUbo {
+layout(set = 0, binding = 0) uniform readonly GlobalUniform {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
@@ -14,24 +14,24 @@ layout(set = 0, binding = 0) uniform readonly GlobalUbo {
   uint numLights;
 } ubo;
 
-layout(set = 0, binding = 1) buffer writeonly ObjectRayUbo {
+layout(set = 0, binding = 1) buffer writeonly ObjectRayBuffer {
   RayData rayDatas[];
-} objectRayUbo;
+} objectRayBuffer;
 
-layout(set = 0, binding = 2) buffer writeonly LightRayUbo {
+layout(set = 0, binding = 2) buffer writeonly LightRayBuffer {
   RayData rayDatas[];
-} lightRayUbo;
+} lightRayBuffer;
 
-layout(set = 0, binding = 3) buffer readonly SamplerDataUbo {
+layout(set = 0, binding = 3) buffer readonly SamplerDataBuffer {
   IndirectSamplerData samplerDatas[];
-} samplerDataUbo;
+} samplerDataBuffer;
 
 layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
 void main() {
-  IndirectSamplerData samplerData = samplerDataUbo.samplerDatas[gl_GlobalInvocationID.x];
+  IndirectSamplerData samplerData = samplerDataBuffer.samplerDatas[gl_GlobalInvocationID.x];
   RayData rayData;
 
   vec2 uv = vec2(samplerData.xCoord, samplerData.yCoord) / ubo.imgSize;
@@ -50,8 +50,8 @@ void main() {
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = round(samplerData.rayBounce);
 
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  lightRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
 }
 
 

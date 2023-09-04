@@ -5,19 +5,19 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly IndirectUbo {
+layout(set = 0, binding = 0) buffer writeonly IndirectBuffer {
   IndirectShadeRecord records[];
-} indirectUbo;
+} indirectBuffer;
 
-layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+layout(set = 0, binding = 1) buffer readonly ObjectHitBuffer {
   HitRecord records[];
-} objectHitUbo;
+} objectHitBuffer;
 
-layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+layout(set = 0, binding = 2) buffer readonly LightHitBuffer {
   HitRecord records[];
-} lightHitUbo;
+} lightHitBuffer;
 
-layout(set = 0, binding = 3) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 3) buffer readonly MaterialModel {
   Material materials[];
 };
 
@@ -143,13 +143,13 @@ IndirectShadeRecord indirectLambertShade(HitRecord objectHit, uint additionalRan
 }
 
 void main() {
-  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
-  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
   float isHitObject = when_and(when_gt(objectHit.isHit, 0.9f), when_or(when_lt(lightHit.isHit, 0.1f), when_gt(length(lightHit.dir), length(objectHit.dir))));
   
   IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHit, uint(round(objectHit.rayBounce)));
   indirectShadeResult.isIlluminate = isHitObject;
   
-  indirectUbo.records[gl_GlobalInvocationID.x] = indirectShadeResult;
+  indirectBuffer.records[gl_GlobalInvocationID.x] = indirectShadeResult;
 }
