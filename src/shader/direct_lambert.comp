@@ -5,31 +5,31 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly DirectUbo {
+layout(set = 0, binding = 0) buffer writeonly DirectBuffer {
   DirectShadeRecord records[];
-} directUbo;
+} directBuffer;
 
-layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+layout(set = 0, binding = 1) buffer readonly ObjectHitBuffer {
   HitRecord records[];
-} objectHitUbo;
+} objectHitBuffer;
 
-layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+layout(set = 0, binding = 2) buffer readonly LightHitBuffer {
   HitRecord records[];
-} lightHitUbo;
+} lightHitBuffer;
 
-layout(set = 0, binding = 3) buffer readonly DirectDataUbo {
+layout(set = 0, binding = 3) buffer readonly DirectDataBuffer {
   DirectData datas[];
-} directDataUbo;
+} directDataBuffer;
 
-layout(set = 0, binding = 4) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 4) buffer readonly MaterialModel {
   Material materials[];
 };
 
-layout(set = 0, binding = 5) buffer readonly LightSsbo {
+layout(set = 0, binding = 5) buffer readonly LightModel {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 6) buffer readonly VertexSsbo {
+layout(set = 0, binding = 6) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
@@ -109,14 +109,14 @@ DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData) 
 }
 
 void main() {
-  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
-  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
-  DirectData directData = directDataUbo.datas[gl_GlobalInvocationID.x];
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
+  DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
   float isHitLight = when_and(when_gt(lightHit.isHit, 0.9f), when_or(when_lt(objectHit.isHit, 0.1f), when_lt(length(lightHit.dir), length(objectHit.dir))));
   
   DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData);
   directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitLight;
   
-  directUbo.records[gl_GlobalInvocationID.x] = directShadeResult;
+  directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
 }

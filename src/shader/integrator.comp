@@ -7,37 +7,37 @@ layout(local_size_x = 32) in;
 
 layout(set = 0, binding = 0, rgba8) uniform image2D resultImage;
 
-layout(set = 0, binding = 1) buffer IndirectSamplerDataUbo {
+layout(set = 0, binding = 1) buffer IndirectSamplerDataBuffer {
   IndirectSamplerData datas[];
-} indirectSamplerDataUbo;
+} indirectSamplerDataBuffer;
 
-layout(set = 0, binding = 2) buffer RenderResultUbo {
+layout(set = 0, binding = 2) buffer RenderResultBuffer {
   RenderResult datas[];
-} renderResultUbo;
+} renderResultBuffer;
 
-layout(set = 0, binding = 3) buffer readonly MissUbo {
+layout(set = 0, binding = 3) buffer readonly MissBuffer {
   MissRecord records[];
-} missUbo;
+} missBuffer;
 
-layout(set = 0, binding = 4) buffer readonly LightShadeUbo {
+layout(set = 0, binding = 4) buffer readonly LightShadeBuffer {
   LightShadeRecord records[];
-} lightShadeUbo;
+} lightShadeBuffer;
 
-layout(set = 0, binding = 5) buffer readonly IndirectShadeUbo {
+layout(set = 0, binding = 5) buffer readonly IndirectShadeBuffer {
   IndirectShadeRecord records[];
-} indirectShadeUbo;
+} indirectShadeBuffer;
 
-layout(set = 0, binding = 6) buffer readonly DirectShadeUbo {
+layout(set = 0, binding = 6) buffer readonly DirectShadeBuffer {
   DirectShadeRecord records[];
-} directShadeUbo;
+} directShadeBuffer;
 
 void main() {
-  IndirectSamplerData samplerData = indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x];
-  DirectShadeRecord directRecord = directShadeUbo.records[gl_GlobalInvocationID.x];
-  IndirectShadeRecord indirectRecord = indirectShadeUbo.records[gl_GlobalInvocationID.x];
-  LightShadeRecord lightShadeRecord = lightShadeUbo.records[gl_GlobalInvocationID.x];
-  MissRecord missRecord = missUbo.records[gl_GlobalInvocationID.x];
-  RenderResult prevRenderResult = renderResultUbo.datas[gl_GlobalInvocationID.x];
+  IndirectSamplerData samplerData = indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x];
+  DirectShadeRecord directRecord = directShadeBuffer.records[gl_GlobalInvocationID.x];
+  IndirectShadeRecord indirectRecord = indirectShadeBuffer.records[gl_GlobalInvocationID.x];
+  LightShadeRecord lightShadeRecord = lightShadeBuffer.records[gl_GlobalInvocationID.x];
+  MissRecord missRecord = missBuffer.records[gl_GlobalInvocationID.x];
+  RenderResult prevRenderResult = renderResultBuffer.datas[gl_GlobalInvocationID.x];
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
@@ -63,7 +63,7 @@ void main() {
   renderResult.totalIndirect = mix(vec3(1.0f), totalIndirect, isRayContinue);
   renderResult.pdf = mix(1.0f, indirectRecord.pdf, isRayContinue);
 
-  renderResultUbo.datas[gl_GlobalInvocationID.x] = renderResult;
+  renderResultBuffer.datas[gl_GlobalInvocationID.x] = renderResult;
 
   IndirectSamplerData newSamplerData;
   newSamplerData.xCoord = samplerData.xCoord;
@@ -72,5 +72,5 @@ void main() {
   newSamplerData.nextRayOrigin = indirectRecord.nextRayOrigin;
   newSamplerData.nextRayDirection = indirectRecord.nextRayDirection;
   
-  indirectSamplerDataUbo.datas[gl_GlobalInvocationID.x] = newSamplerData;
+  indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x] = newSamplerData;
 }

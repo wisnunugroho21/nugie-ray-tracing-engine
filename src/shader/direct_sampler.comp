@@ -5,7 +5,7 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) uniform readonly GlobalUbo {
+layout(set = 0, binding = 0) uniform readonly GlobalUniform {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
@@ -14,31 +14,31 @@ layout(set = 0, binding = 0) uniform readonly GlobalUbo {
   uint numLights;
 } ubo;
 
-layout(set = 0, binding = 1) buffer writeonly ObjectRayUbo {
+layout(set = 0, binding = 1) buffer writeonly ObjectRayBuffer {
   RayData rayDatas[];
-} objectRayUbo;
+} objectRayBuffer;
 
-layout(set = 0, binding = 2) buffer writeonly LightRayUbo {
+layout(set = 0, binding = 2) buffer writeonly LightRayBuffer {
   RayData rayDatas[];
-} lightRayUbo;
+} lightRayBuffer;
 
-layout(set = 0, binding = 3) buffer writeonly DirectDataUbo {
+layout(set = 0, binding = 3) buffer writeonly DirectDataBuffer {
   DirectData datas[];
-} directDataUbo;
+} directDataBuffer;
 
-layout(set = 0, binding = 4) buffer readonly ObjectHitUbo {
+layout(set = 0, binding = 4) buffer readonly ObjectHitBuffer {
   HitRecord records[];
-} objectHitUbo;
+} objectHitBuffer;
 
-layout(set = 0, binding = 5) buffer readonly LightHitUbo {
+layout(set = 0, binding = 5) buffer readonly LightHitBuffer {
   HitRecord records[];
-} lightHitUbo;
+} lightHitBuffer;
 
-layout(set = 0, binding = 6) buffer readonly LightSsbo {
+layout(set = 0, binding = 6) buffer readonly LightModel {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 7) buffer readonly VertexSsbo {
+layout(set = 0, binding = 7) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
@@ -94,8 +94,8 @@ vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRando
 }
 
 void main() {
-  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
-  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
   uint rayBounce = uint(round(objectHit.rayBounce));
 
@@ -109,8 +109,8 @@ void main() {
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = float(rayBounce);
 
-  objectRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
-  lightRayUbo.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  lightRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
 
   DirectData directData;
   directData.isIlluminate = isHitObject;
@@ -118,7 +118,7 @@ void main() {
   directData.normal = objectHit.normal;
   directData.uv = objectHit.uv;
 
-  directDataUbo.datas[gl_GlobalInvocationID.x] = directData;
+  directDataBuffer.datas[gl_GlobalInvocationID.x] = directData;
 }
 
 

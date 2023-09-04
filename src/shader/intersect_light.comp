@@ -3,23 +3,23 @@
 #include "core/struct.glsl"
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly LightHitUbo {
+layout(set = 0, binding = 0) buffer writeonly LightHitBuffer {
   HitRecord records[];
-} lightHitUbo;
+} lightHitBuffer;
 
-layout(set = 0, binding = 1) buffer readonly LightRayUbo {
+layout(set = 0, binding = 1) buffer readonly LightRayBuffer {
   RayData rayDatas[];
-} lightRayUbo;
+} lightRayBuffer;
 
-layout(set = 0, binding = 2) buffer readonly LightSsbo {
+layout(set = 0, binding = 2) buffer readonly LightModel {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 3) buffer readonly LightBvhSsbo {
+layout(set = 0, binding = 3) buffer readonly LightBvhModel {
   BvhNode lightBvhNodes[];
 };
 
-layout(set = 0, binding = 4) buffer readonly VertexSsbo {
+layout(set = 0, binding = 4) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
@@ -178,7 +178,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
 }
 
 void main() {
-  RayData rayData = lightRayUbo.rayDatas[gl_GlobalInvocationID.x];
+  RayData rayData = lightRayBuffer.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
   hitRecord.isHit = 0.0f;
@@ -197,5 +197,5 @@ void main() {
   }
 
   hitRecord.rayBounce = round(rayData.rayBounce);
-  lightHitUbo.records[gl_GlobalInvocationID.x] = hitRecord;
+  lightHitBuffer.records[gl_GlobalInvocationID.x] = hitRecord;
 }

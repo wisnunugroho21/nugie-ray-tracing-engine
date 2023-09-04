@@ -9,7 +9,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 layout(set = 0, binding = 0, rgba8) uniform writeonly image2D targetImage;
 
-layout(set = 0, binding = 1) uniform readonly GlobalUbo {
+layout(set = 0, binding = 1) uniform readonly GlobalUniform {
   vec3 origin;
   vec3 horizontal;
   vec3 vertical;
@@ -18,39 +18,39 @@ layout(set = 0, binding = 1) uniform readonly GlobalUbo {
   SunLight sunLight;
 } ubo;
 
-layout(set = 0, binding = 2) buffer readonly ObjectSsbo {
+layout(set = 0, binding = 2) buffer readonly ObjectModel {
   Object objects[];
 };
 
-layout(set = 0, binding = 3) buffer readonly ObjectBvhSsbo {
+layout(set = 0, binding = 3) buffer readonly ObjectBvhModel {
   BvhNode objectBvhNodes[];
 };
 
-layout(set = 0, binding = 4) buffer readonly PrimitiveSsbo {
+layout(set = 0, binding = 4) buffer readonly PrimitiveModel {
   Primitive primitives[];
 };
 
-layout(set = 0, binding = 5) buffer readonly PrimitiveBvhSsbo {
+layout(set = 0, binding = 5) buffer readonly PrimitiveBvhModel {
   BvhNode primitiveBvhNodes[];
 };
 
-layout(set = 0, binding = 6) buffer readonly VertexSsbo {
+layout(set = 0, binding = 6) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
-layout(set = 0, binding = 7) buffer readonly LightSsbo {
+layout(set = 0, binding = 7) buffer readonly LightModel {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 8) buffer readonly LightBvhSsbo {
+layout(set = 0, binding = 8) buffer readonly LightBvhModel {
   BvhNode lightBvhNodes[];
 };
 
-layout(set = 0, binding = 9) buffer readonly MaterialSsbo {
+layout(set = 0, binding = 9) buffer readonly MaterialModel {
   Material materials[];
 };
 
-layout(set = 0, binding = 10) buffer readonly TransformationSsbo {
+layout(set = 0, binding = 10) buffer readonly TransformationModel {
   Transformation transformations[];
 };
 

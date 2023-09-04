@@ -3,23 +3,23 @@
 #include "core/struct.glsl"
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly LightShadeUbo {
+layout(set = 0, binding = 0) buffer writeonly LightShadeBuffer {
   LightShadeRecord records[];
-} lightShadeUbo;
+} lightShadeBuffer;
 
-layout(set = 0, binding = 1) buffer readonly ObjectHitUbo {
+layout(set = 0, binding = 1) buffer readonly ObjectHitBuffer {
   HitRecord records[];
-} objectHitUbo;
+} objectHitBuffer;
 
-layout(set = 0, binding = 2) buffer readonly LightHitUbo {
+layout(set = 0, binding = 2) buffer readonly LightHitBuffer {
   HitRecord records[];
-} lightHitUbo;
+} lightHitBuffer;
 
-layout(set = 0, binding = 3) buffer readonly LightSsbo {
+layout(set = 0, binding = 3) buffer readonly LightModel {
   TriangleLight lights[];
 };
 
-layout(set = 0, binding = 4) buffer readonly VertexSsbo {
+layout(set = 0, binding = 4) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
@@ -50,8 +50,8 @@ float GfactorTriangleLight(HitRecord hittedLight) {
 }
 
 void main() {
-  HitRecord objectHit = objectHitUbo.records[gl_GlobalInvocationID.x];
-  HitRecord lightHit = lightHitUbo.records[gl_GlobalInvocationID.x];
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
   float isHitLight = when_and(when_gt(lightHit.isHit, 0.9f), when_or(when_lt(objectHit.isHit, 0.1f), when_le(length(lightHit.dir), length(objectHit.dir))));
 
@@ -60,5 +60,5 @@ void main() {
   lightShadeRecord.radiance = mix(1.0f, GfactorTriangleLight(lightHit), when_gt(objectHit.rayBounce, 0.9f)) * lights[lightHit.hitIndex].color;
   lightShadeRecord.rayBounce = round(objectHit.rayBounce);
 
-  lightShadeUbo.records[gl_GlobalInvocationID.x] = lightShadeRecord;
+  lightShadeBuffer.records[gl_GlobalInvocationID.x] = lightShadeRecord;
 }
