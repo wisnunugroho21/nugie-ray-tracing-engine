@@ -46,12 +46,13 @@ void main() {
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
-  float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectShadeBuffer.pdf;
+  float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
 
   vec3 lightShadeRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * when_gt(lightShadeRecord.isIlluminate, 0.9f);
   vec3 missRadiance = missRecord.radiance * totalPrevIndirect * when_gt(missRecord.isMiss, 0.9f);
-  vec3 directRadiance = directRecord.radiance * totalPrevIndirect * directRecord.pdf / totalPdf * when_gt(directRecord.isIlluminate, 0.9f) +
-    sunDirectShadeBuffer.radiance * totalPrevIndirect * sunDirectShadeBuffer.pdf / totalPdf * when_gt(sunDirectShadeBuffer.isIlluminate, 0.9f);
+  vec3 directRadiance = (directRecord.radiance * directRecord.pdf * when_gt(directRecord.isIlluminate, 0.9f) +
+    sunDirectRecord.radiance * sunDirectRecord.pdf * when_gt(sunDirectRecord.isIlluminate, 0.9f)) * 
+    totalPrevIndirect / totalPdf;
 
   vec3 curRadiance = clamp(lightShadeRadiance, 0.0f, 1.0f) + clamp(missRadiance, 0.0f, 1.0f) + clamp(directRadiance, 0.0f, 1.0f);
   vec3 curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);
