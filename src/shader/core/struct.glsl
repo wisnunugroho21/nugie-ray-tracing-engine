@@ -129,6 +129,8 @@ struct DirectData {
   uint materialIndex;
   vec3 normal;
   vec2 uv;
+
+  vec3 direction;
 };
 
 struct RenderResult {

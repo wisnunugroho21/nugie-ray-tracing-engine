@@ -137,6 +137,7 @@ namespace nugiEngine {
     uint32_t materialIndex = 0u;
     alignas(16) glm::vec3 normal{0.0f};
     alignas(16) glm::vec2 uv{0.0f};
+    alignas(16) glm::vec3 direction{0.0f};
   };
 
   struct RenderResult {
@@ -152,6 +153,7 @@ namespace nugiEngine {
     alignas(16) glm::vec3 lowerLeftCorner{0.0f};
     alignas(16) glm::uvec2 imgSize{0u};
     uint32_t numLights = 0u;
+    SunLight sunLight;
   };
 
   struct RayTracePushConstant {
