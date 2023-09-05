@@ -1,0 +1,110 @@
+#version 460
+
+#include "core/struct.glsl"
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0) uniform readonly GlobalUniform {
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  uvec2 imgSize;
+  uint numLights;
+  SunLight sunLight;
+} ubo;
+
+layout(set = 0, binding = 1) buffer writeonly DirectBuffer {
+  DirectShadeRecord records[];
+} directBuffer;
+
+layout(set = 0, binding = 2) buffer readonly ObjectHitBuffer {
+  HitRecord records[];
+} objectHitBuffer;
+
+layout(set = 0, binding = 3) buffer readonly LightHitBuffer {
+  HitRecord records[];
+} lightHitBuffer;
+
+layout(set = 0, binding = 4) buffer readonly DirectDataBuffer {
+  DirectData datas[];
+} directDataBuffer;
+
+layout(set = 0, binding = 5) buffer readonly MaterialModel {
+  Material materials[];
+};
+
+layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- Integrand ------------- 
+
+vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
+  return color * brdf * NoL / pdf; 
+}
+
+vec3 integrandOverArea(vec3 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
+  return color * brdf * NoL * NloL * area / squareDistance;
+}
+
+vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
+  return color * brdf * NoL;
+}
+
+float Gfactor(float NloL, float squareDistance, float area) {
+  return NloL * area / squareDistance;
+}
+
+// ------------- Lambert ------------- 
+
+float lambertPdfValue(float NoL) {
+  return max(NoL / pi, 0.001f);
+}
+
+float lambertBrdfValue() {
+  return 1.0f / pi;
+}
+
+// ------------- Shade -------------
+
+DirectShadeRecord sunDirectLambertShade(vec3 surfaceColor, vec3 surfaceNormal) {
+  vec3 unitLightDirection = normalize(ubo.sunLight.direction);
+  DirectShadeRecord scat;
+    
+  float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
+  float brdf = lambertBrdfValue();
+  float pdf = lambertPdfValue(NoL);
+
+  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / pdf;
+  scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
+
+  return scat;
+}
+
+DirectShadeRecord sunDirectLambertShade(HitRecord hit, DirectData directData) {
+  vec3 surfaceColor;
+  if (materials[directData.materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[directData.materialIndex].baseColor;
+  } else {
+    surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+  }
+
+  return sunDirectLambertShade(surfaceColor, hit.normal);
+}
+
+void main() {
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
+  DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
+
+  float isHitSun = when_and(when_lt(objectHit.isHit, 0.1f), when_lt(lightHit.isHit, 0.1f));
+  
+  DirectShadeRecord directShadeResult = sunDirectLambertShade(lightHit, directData);
+  directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitSun;
+  
+  directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
+}

@@ -31,6 +31,10 @@ layout(set = 0, binding = 6) buffer readonly DirectShadeBuffer {
   DirectShadeRecord records[];
 } directShadeBuffer;
 
+layout(set = 0, binding = 7) buffer readonly SunDirectShadeBuffer {
+  DirectShadeRecord records[];
+} sunDirectShadeBuffer;
+
 void main() {
   IndirectSamplerData samplerData = indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x];
   DirectShadeRecord directRecord = directShadeBuffer.records[gl_GlobalInvocationID.x];

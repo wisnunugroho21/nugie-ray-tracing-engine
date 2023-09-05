@@ -1,0 +1,97 @@
+#version 460
+
+#include "core/struct.glsl"
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0) uniform readonly GlobalUniform {
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  uvec2 imgSize;
+  uint numLights;
+  SunLight sunLight;
+} ubo;
+
+layout(set = 0, binding = 1) buffer writeonly ObjectRayBuffer {
+  RayData rayDatas[];
+} objectRayBuffer;
+
+layout(set = 0, binding = 2) buffer writeonly LightRayBuffer {
+  RayData rayDatas[];
+} lightRayBuffer;
+
+layout(set = 0, binding = 3) buffer writeonly DirectDataBuffer {
+  DirectData datas[];
+} directDataBuffer;
+
+layout(set = 0, binding = 4) buffer readonly ObjectHitBuffer {
+  HitRecord records[];
+} objectHitBuffer;
+
+layout(set = 0, binding = 5) buffer readonly LightHitBuffer {
+  HitRecord records[];
+} lightHitBuffer;
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- Random ------------- 
+
+// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
+uint stepRNG(uint rngState) {
+  return rngState * 747796405 + 1;
+}
+
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return float(word) / 4294967295.0f;
+}
+
+float randomFloat(uint additionalRandomSeed) {
+  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
+  return stepAndOutputRNGFloat(rngState);
+}
+
+float randomFloatAt(float min, float max, uint additionalRandomSeed) {
+  return min + (max - min) * randomFloat(additionalRandomSeed);
+}
+
+uint randomUint(uint min, uint max, uint additionalRandomSeed) {
+  return uint(randomFloatAt(min, max + 1, additionalRandomSeed));
+}
+
+// ------------- Triangle -------------
+
+void main() {
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
+
+  uint rayBounce = uint(round(objectHit.rayBounce));
+  float isHitObject = when_and(when_gt(objectHit.isHit, 0.9f), when_or(when_lt(lightHit.isHit, 0.1f), when_gt(length(lightHit.dir), length(objectHit.dir))));
+
+  RayData rayData;
+  rayData.rayOrigin = objectHit.point;
+  rayData.rayDirection = ubo.sunLight.direction * isHitObject;
+  rayData.dirMin = 0.01f;
+  rayData.dirMax = vec3(1000000000000.0f);
+  rayData.rayBounce = float(rayBounce);
+
+  objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
+  lightRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
+
+  DirectData directData;
+  directData.isIlluminate = isHitObject;
+  directData.materialIndex = objectHit.materialIndex;
+  directData.normal = objectHit.normal;
+  directData.uv = objectHit.uv;
+
+  directDataBuffer.datas[gl_GlobalInvocationID.x] = directData;
+}
