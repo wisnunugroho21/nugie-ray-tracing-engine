@@ -12,7 +12,6 @@ layout(set = 0, binding = 0) uniform readonly GlobalUniform {
   vec3 lowerLeftCorner;
   uvec2 imgSize;
   uint numLights;
-  SunLight sunLight;
 } ubo;
 
 layout(set = 0, binding = 1) buffer writeonly ObjectRayBuffer {
@@ -101,15 +100,11 @@ void main() {
   uint rayBounce = uint(round(objectHit.rayBounce));
 
   float isHitObject = when_and(when_gt(objectHit.isHit, 0.9f), when_or(when_lt(lightHit.isHit, 0.1f), when_gt(length(lightHit.dir), length(objectHit.dir))));
-  uint lightIndex = randomUint(0u, ubo.numLights, rayBounce);
-
-  vec3 lightDirection = (lightIndex == 0u) ? 
-    ubo.sunLight.direction : 
-    triangleRandomDirection(lights[lightIndex - 1u].indices, objectHit.point, rayBounce);
+  uint lightIndex = randomUint(0u, ubo.numLights - 1u, rayBounce);
 
   RayData rayData;
   rayData.rayOrigin = objectHit.point;
-  rayData.rayDirection = lightDirection * isHitObject;
+  rayData.rayDirection = triangleRandomDirection(lights[lightIndex].indices, rayData.rayOrigin, rayBounce) * isHitObject;
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = float(rayBounce);
@@ -122,7 +117,6 @@ void main() {
   directData.materialIndex = objectHit.materialIndex;
   directData.normal = objectHit.normal;
   directData.uv = objectHit.uv;
-  directData.direction = lightDirection;
 
   directDataBuffer.datas[gl_GlobalInvocationID.x] = directData;
 }

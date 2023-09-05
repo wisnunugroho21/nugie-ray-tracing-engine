@@ -10,7 +10,7 @@ namespace nugiEngine {
 	class EngineMissDescSet {
 		public:
 			EngineMissDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[3]);
+				std::vector<VkDescriptorBufferInfo> buffersInfo[3]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
 			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
@@ -20,7 +20,7 @@ namespace nugiEngine {
 			std::vector<VkDescriptorSet> descriptorSets;
 
 			void createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, 
-				std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[3]);
+				std::vector<VkDescriptorBufferInfo> buffersInfo[3]);
 	};
 	
 }

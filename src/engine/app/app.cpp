@@ -537,9 +537,6 @@ namespace nugiEngine {
 		float sunY = glm::sin(theta) * glm::sin(phi);
 		float sunZ = glm::cos(theta);
 
-		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
-		ubo.sunLight.color = glm::vec3(0.52f, 0.8f, 0.92f);
-
 		return ubo;
 	}
 
@@ -679,12 +676,12 @@ namespace nugiEngine {
 		};
 
 		this->indirectLambertDescSet = std::make_unique<EngineIndirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), indirectLambertBufferInfos, indirectLambertModelInfos, lambertTexturesInfo);
-		this->directLambertDescSet = std::make_unique<EngineDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directLambertBufferInfos, directLambertModelInfos, lambertTexturesInfo);
+		this->directLambertDescSet = std::make_unique<EngineDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), directLambertBufferInfos, directLambertModelInfos, lambertTexturesInfo);
 		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
 		this->intersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), intersectLightBufferInfos, intersectLightModelInfos);
 		this->intersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), intersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
 		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
-		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
+		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), missBufferInfos);
 		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
 		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
