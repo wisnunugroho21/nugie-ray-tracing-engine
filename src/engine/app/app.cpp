@@ -576,6 +576,10 @@ namespace nugiEngine {
 		float sunY = glm::sin(theta) * glm::sin(phi);
 		float sunZ = glm::cos(theta);
 
+		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
+		ubo.sunLight.color = glm::vec3(1.0f, 1.0f, 0.63f);
+		ubo.skyColor = glm::vec3(0.52f, 0.8f, 0.92f);
+
 		return ubo;
 	}
 
@@ -756,7 +760,7 @@ namespace nugiEngine {
 		this->indirectIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
 		this->indirectIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
 		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
-		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), missBufferInfos);
+		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
 		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
 		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
 		this->sunDirectSamplerDescSet = std::make_unique<EngineSunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);

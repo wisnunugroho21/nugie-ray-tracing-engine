@@ -13,6 +13,7 @@ layout(set = 0, binding = 0) uniform readonly GlobalUniform {
   uvec2 imgSize;
   uint numLights;
   SunLight sunLight;
+  vec3 skyColor;
 } ubo;
 
 layout(set = 0, binding = 1) buffer writeonly DirectBuffer {

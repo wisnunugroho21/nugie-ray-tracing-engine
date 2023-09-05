@@ -37,19 +37,21 @@ layout(set = 0, binding = 7) buffer readonly SunDirectShadeBuffer {
 
 void main() {
   IndirectSamplerData samplerData = indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x];
-  DirectShadeRecord directRecord = directShadeBuffer.records[gl_GlobalInvocationID.x];
   IndirectShadeRecord indirectRecord = indirectShadeBuffer.records[gl_GlobalInvocationID.x];
+  DirectShadeRecord directRecord = directShadeBuffer.records[gl_GlobalInvocationID.x];
+  DirectShadeRecord sunDirectRecord = sunDirectShadeBuffer.records[gl_GlobalInvocationID.x];
   LightShadeRecord lightShadeRecord = lightShadeBuffer.records[gl_GlobalInvocationID.x];
   MissRecord missRecord = missBuffer.records[gl_GlobalInvocationID.x];
   RenderResult prevRenderResult = renderResultBuffer.datas[gl_GlobalInvocationID.x];
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
-  float totalPdf = indirectRecord.pdf + directRecord.pdf;
+  float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectShadeBuffer.pdf;
 
   vec3 lightShadeRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * when_gt(lightShadeRecord.isIlluminate, 0.9f);
   vec3 missRadiance = missRecord.radiance * totalPrevIndirect * when_gt(missRecord.isMiss, 0.9f);
-  vec3 directRadiance = directRecord.radiance * totalPrevIndirect * directRecord.pdf / totalPdf * when_gt(directRecord.isIlluminate, 0.9f);
+  vec3 directRadiance = directRecord.radiance * totalPrevIndirect * directRecord.pdf / totalPdf * when_gt(directRecord.isIlluminate, 0.9f) +
+    sunDirectShadeBuffer.radiance * totalPrevIndirect * sunDirectShadeBuffer.pdf / totalPdf * when_gt(sunDirectShadeBuffer.isIlluminate, 0.9f);
 
   vec3 curRadiance = clamp(lightShadeRadiance, 0.0f, 1.0f) + clamp(missRadiance, 0.0f, 1.0f) + clamp(directRadiance, 0.0f, 1.0f);
   vec3 curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);

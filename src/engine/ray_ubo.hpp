@@ -153,6 +153,7 @@ namespace nugiEngine {
     alignas(16) glm::uvec2 imgSize{0u};
     uint32_t numLights = 0u;
     SunLight sunLight;
+    alignas(16) glm::vec3 skyColor{0.0f};
   };
 
   struct RayTracePushConstant {
