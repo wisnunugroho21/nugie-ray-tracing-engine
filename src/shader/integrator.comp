@@ -43,9 +43,11 @@ void main() {
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
   float totalPdf = indirectRecord.pdf + directRecord.pdf;
 
+  vec3 curDirect = mix(prevRenderResult.totalDirect, directRecord.radiance, when_gt(directRecord.radiance, prevRenderResult.totalDirect));
+
   vec3 lightShadeRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * when_gt(lightShadeRecord.isIlluminate, 0.9f);
   vec3 missRadiance = missRecord.radiance * totalPrevIndirect * when_gt(missRecord.isMiss, 0.9f);
-  vec3 directRadiance = directRecord.radiance * totalPrevIndirect * directRecord.pdf / totalPdf * when_gt(directRecord.isIlluminate, 0.9f);
+  vec3 directRadiance = curDirect * totalPrevIndirect * directRecord.pdf / totalPdf * when_gt(directRecord.isIlluminate, 0.9f);
 
   vec3 curRadiance = clamp(lightShadeRadiance, 0.0f, 1.0f) + clamp(missRadiance, 0.0f, 1.0f) + clamp(directRadiance, 0.0f, 1.0f);
   vec3 curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);
@@ -59,6 +61,7 @@ void main() {
   }
 
   RenderResult renderResult;
+  renderResult.totalDirect = curDirect * directRecord.isIlluminate;
   renderResult.totalRadiance = mix(vec3(0.0f), totalRadiance, isRayContinue);
   renderResult.totalIndirect = mix(vec3(1.0f), totalIndirect, isRayContinue);
   renderResult.pdf = mix(1.0f, indirectRecord.pdf, isRayContinue);

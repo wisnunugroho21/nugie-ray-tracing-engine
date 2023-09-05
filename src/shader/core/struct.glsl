@@ -134,6 +134,7 @@ struct DirectData {
 };
 
 struct RenderResult {
+  vec3 totalDirect;
   vec3 totalIndirect;
   vec3 totalRadiance;
   float pdf;
