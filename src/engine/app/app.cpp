@@ -122,6 +122,9 @@ namespace nugiEngine {
 				this->directObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 
+				this->indirectObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->indirectLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
+
 				// ----------- Intersect Object -----------
 
 				this->intersectObjectRender->render(commandBuffer, this->directIntersectObjectDescSet->getDescriptorSets(frameIndex));
@@ -140,7 +143,7 @@ namespace nugiEngine {
 
 				this->sunDirectLambertRender->render(commandBuffer, this->sunDirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
-				this->directLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+				this->sunDirectLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
 				this->directObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directDataBuffer->transferToWrite(commandBuffer, frameIndex);
@@ -155,9 +158,6 @@ namespace nugiEngine {
 				this->indirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->sunDirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
-
-				this->indirectObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
-				this->indirectLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 
 				// ----------- Final Sampling -----------
 
@@ -606,6 +606,7 @@ namespace nugiEngine {
 		this->indirectSamplerBuffer = std::make_shared<EngineIndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
 		this->indirectDataBuffer = std::make_shared<EngineIndirectDataStorageBuffer>(this->device, width * height);
 		this->directDataBuffer = std::make_shared<EngineDirectDataStorageBuffer>(this->device, width * height);
+		this->sunDirectLambertShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
 
 		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
 			this->indirectLambertShadeBuffer->getBuffersInfo(),
@@ -620,13 +621,21 @@ namespace nugiEngine {
 			this->directDataBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[6] {
+		std::vector<VkDescriptorBufferInfo> sunDirectLambertBufferInfos[4] {
+			this->sunDirectLambertShadeBuffer->getBuffersInfo(),
+			this->directObjectHitRecordBuffer->getBuffersInfo(),
+			this->directLightHitRecordBuffer->getBuffersInfo(),
+			this->directDataBuffer->getBuffersInfo()
+		};
+
+		std::vector<VkDescriptorBufferInfo> integratorBufferInfos[7] {
 			this->indirectSamplerBuffer->getBuffersInfo(),
 			this->indirectDataBuffer->getBuffersInfo(),
 			this->missBuffer->getBuffersInfo(),
 			this->lightShadeBuffer->getBuffersInfo(),
 			this->indirectLambertShadeBuffer->getBuffersInfo(),
-			this->directLambertShadeBuffer->getBuffersInfo()
+			this->directLambertShadeBuffer->getBuffersInfo(),
+			this->sunDirectLambertShadeBuffer->getBuffersInfo()
 		};
 
 		std::vector<VkDescriptorBufferInfo> directIntersectLightBufferInfos[2] {
@@ -675,6 +684,14 @@ namespace nugiEngine {
 			this->indirectLightHitRecordBuffer->getBuffersInfo()
 		};
 
+		std::vector<VkDescriptorBufferInfo> sunDirectSamplerBufferInfos[5] {
+			this->objectRayDataBuffer->getBuffersInfo(),
+			this->lightRayDataBuffer->getBuffersInfo(),
+			this->directDataBuffer->getBuffersInfo(),
+			this->indirectObjectHitRecordBuffer->getBuffersInfo(),
+			this->indirectLightHitRecordBuffer->getBuffersInfo()
+		};
+
 		VkDescriptorBufferInfo indirectLambertModelInfos[1] {
 			this->materialModel->getMaterialInfo()
 		};
@@ -683,6 +700,10 @@ namespace nugiEngine {
 			this->materialModel->getMaterialInfo(),
 			this->lightModel->getLightInfo(),
 			this->rayTraceVertexModels->getVertexnfo()
+		};
+
+		VkDescriptorBufferInfo sunDirectLambertModelInfos[1] {
+			this->materialModel->getMaterialInfo()
 		};
 
 		VkDescriptorBufferInfo intersectLightModelInfos[3] {
@@ -728,8 +749,8 @@ namespace nugiEngine {
 
 		this->indirectLambertDescSet = std::make_unique<EngineIndirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), indirectLambertBufferInfos, indirectLambertModelInfos, lambertTexturesInfo);
 		this->directLambertDescSet = std::make_unique<EngineDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), directLambertBufferInfos, directLambertModelInfos, lambertTexturesInfo);
+		this->sunDirectLambertDescSet = std::make_unique<EngineSunDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectLambertBufferInfos, sunDirectLambertModelInfos, lambertTexturesInfo);
 		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
-		
 		this->directIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
 		this->directIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
 		this->indirectIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
@@ -738,10 +759,12 @@ namespace nugiEngine {
 		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), missBufferInfos);
 		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
 		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
+		this->sunDirectSamplerDescSet = std::make_unique<EngineSunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
 		this->indirectLambertRender = std::make_unique<EngineIndirectLambertRenderSystem>(this->device, this->indirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->directLambertRender = std::make_unique<EngineDirectLambertRenderSystem>(this->device, this->directLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectLambertRender = std::make_unique<EngineSunDirectLambertRenderSystem>(this->device, this->sunDirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->integratorRender = std::make_unique<EngineIntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->intersectLightRender = std::make_unique<EngineIntersectLightRenderSystem>(this->device, this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->intersectObjectRender = std::make_unique<EngineIntersectObjectRenderSystem>(this->device, this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
@@ -749,6 +772,7 @@ namespace nugiEngine {
 		this->missRender = std::make_unique<EngineMissRenderSystem>(this->device, this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->indirectSamplerRender = std::make_unique<EngineIndirectSamplerRenderSystem>(this->device, this->indirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->directSamplerRender = std::make_unique<EngineDirectSamplerRenderSystem>(this->device, this->directSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectSamplerRender = std::make_unique<EngineSunDirectSamplerRenderSystem>(this->device, this->sunDirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
 			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
