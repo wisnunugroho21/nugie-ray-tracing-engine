@@ -150,7 +150,6 @@ void main() {
   
   IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHit, uint(round(objectHit.rayBounce)));
   indirectShadeResult.isIlluminate = isHitObject;
-  indirectShadeResult.pdf *= isHitObject;
   
   indirectBuffer.records[gl_GlobalInvocationID.x] = indirectShadeResult;
 }

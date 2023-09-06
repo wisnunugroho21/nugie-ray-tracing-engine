@@ -106,7 +106,6 @@ void main() {
   
   DirectShadeRecord directShadeResult = sunDirectLambertShade(lightHit, directData);
   directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitSun;
-  directShadeResult.pdf *= isHitSun;
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
 }

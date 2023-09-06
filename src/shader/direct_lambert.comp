@@ -117,7 +117,6 @@ void main() {
   
   DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData);
   directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitLight;
-  directShadeResult.pdf *= isHitLight;
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
 }
