@@ -73,12 +73,12 @@ struct RayData {
   float dirMin;
   vec3 dirMax;
 
-  float rayBounce;
+  uint rayBounce;
 };
 
 struct HitRecord {
-  float isHit;
-  float rayBounce;
+  bool isHit;
+  uint rayBounce;
 
   uint hitIndex;
   uint materialIndex;
@@ -90,7 +90,7 @@ struct HitRecord {
 };
 
 struct IndirectShadeRecord {
-  float isIlluminate;
+  bool isIlluminate;
   vec3 radiance;
   float pdf;
 
@@ -99,33 +99,33 @@ struct IndirectShadeRecord {
 };
 
 struct DirectShadeRecord {
-  float isIlluminate;
+  bool isIlluminate;
   vec3 radiance;
   float pdf;
 };
 
 struct LightShadeRecord {
-  float isIlluminate;
+  bool isIlluminate;
   vec3 radiance;
-  float rayBounce;
+  uint rayBounce;
 };
 
 struct MissRecord {
-  float isMiss;
+  bool isMiss;
   vec3 radiance;
 };
 
 struct IndirectSamplerData {
   uint xCoord;
   uint yCoord;
-  float rayBounce;
+  uint rayBounce;
 
   vec3 nextRayOrigin;
   vec3 nextRayDirection;
 };
 
 struct DirectData {
-  float isIlluminate;
+  bool isIlluminate;
   uint materialIndex;
   vec3 normal;
   vec2 uv;
