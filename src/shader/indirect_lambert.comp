@@ -126,7 +126,7 @@ IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 
   float pdf = lambertPdfValue(NoL);
 
   scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
-  scat.pdf = length(scat.radiance) > 0.001f ? pdf : 0.0f;
+  scat.pdf = when_gt(length(scat.radiance), 0.001f) * pdf;
   
   return scat;
 }
