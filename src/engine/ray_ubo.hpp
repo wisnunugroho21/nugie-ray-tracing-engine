@@ -81,12 +81,12 @@ namespace nugiEngine {
     float dirMin = 0.001f;
     alignas(16) glm::vec3 dirMax{1000000.0f};
 
-    uint32_t rayBounce = 0u;
+    float rayBounce = 0.0f;
   };
 
   struct HitRecord {
-    bool isHit = false;
-    uint32_t rayBounce = 0u;
+    float isHit = 0.0f;
+    float rayBounce = 0.0f;
 
     uint32_t hitIndex = 0u;
     uint32_t materialIndex = 0u;
@@ -98,7 +98,7 @@ namespace nugiEngine {
   };
 
   struct IndirectShadeRecord {
-    bool isIlluminate = false;
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
     float pdf = 0.0f;
     
@@ -107,33 +107,33 @@ namespace nugiEngine {
   };
 
   struct DirectShadeRecord {
-    bool isIlluminate = false;
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
     float pdf = 0.0f;
   };
 
   struct LightShadeRecord {
-    bool isIlluminate = false;
+    float isIlluminate = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
-    uint32_t rayBounce = 0u;
+    float rayBounce = 0.0f;
   };
 
   struct MissRecord {
-    bool isMiss = false;
+    float isMiss = 0.0f;
     alignas(16) glm::vec3 radiance{0.0f};
   };
 
   struct IndirectSamplerData {
     uint32_t xCoord = 0u;
     uint32_t yCoord = 0u;
-    uint32_t rayBounce = 0u;
+    float rayBounce = 0.0f;
 
     alignas(16) glm::vec3 nextRayOrigin;
     alignas(16) glm::vec3 nextRayDirection;
   };
 
   struct DirectData {
-    bool isIlluminate = false;
+    float isIlluminate = 0.0f;
     uint32_t materialIndex = 0u;
     alignas(16) glm::vec3 normal{0.0f};
     alignas(16) glm::vec2 uv{0.0f};

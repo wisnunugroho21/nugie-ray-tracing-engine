@@ -44,13 +44,13 @@ void main() {
   /* rayData.rayOrigin = mix(ubo.origin, samplerData.nextRayOrigin, when_gt(samplerData.rayBounce, 0.9f));
   rayData.rayDirection = mix(rayDirection, samplerData.nextRayDirection, when_gt(samplerData.rayBounce, 0.9f)); */
 
-  bool isPrimaryRay = samplerData.rayBounce == 0u;
+  bool isPrimaryRay = samplerData.rayBounce < 0.9f;
   rayData.rayOrigin = isPrimaryRay ? ubo.origin : samplerData.nextRayOrigin;
   rayData.rayDirection = isPrimaryRay ? rayDirection : samplerData.nextRayDirection;
 
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
-  rayData.rayBounce = samplerData.rayBounce;
+  rayData.rayBounce = round(samplerData.rayBounce);
 
   objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
   lightRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;

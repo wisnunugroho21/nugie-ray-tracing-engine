@@ -102,10 +102,10 @@ void main() {
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
-  bool isHitSun = !objectHit.isHit && !lightHit.isHit;
+  float isHitSun = when_and(when_lt(objectHit.isHit, 0.1f), when_lt(lightHit.isHit, 0.1f));
   
   DirectShadeRecord directShadeResult = sunDirectLambertShade(lightHit, directData);
-  directShadeResult.isIlluminate = directData.isIlluminate && isHitSun;
+  directShadeResult.isIlluminate = round(directData.isIlluminate) * isHitSun;
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
 }
