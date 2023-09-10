@@ -63,9 +63,6 @@ namespace nugiEngine {
 			EngineGraphicPipeline(EngineDevice& device, const GraphicPipelineConfigInfo& configInfo);
 			~EngineGraphicPipeline();
 
-			EngineGraphicPipeline(const EngineGraphicPipeline&) = delete;
-			EngineGraphicPipeline& operator =(const EngineDevice&) = delete;
-
 			static std::vector<char> readFile(const std::string& filepath);
 			static void createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule);
 

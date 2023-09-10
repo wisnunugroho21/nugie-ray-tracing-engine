@@ -1,0 +1,128 @@
+#version 460
+
+#include "core/struct.glsl"
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0) buffer writeonly DirectBuffer {
+  DirectShadeRecord records[];
+} directBuffer;
+
+layout(set = 0, binding = 1) buffer readonly ObjectHitBuffer {
+  HitRecord records[];
+} objectHitBuffer;
+
+layout(set = 0, binding = 2) buffer readonly LightHitBuffer {
+  HitRecord records[];
+} lightHitBuffer;
+
+layout(set = 0, binding = 3) buffer readonly DirectDataBuffer {
+  DirectData datas[];
+} directDataBuffer;
+
+layout(set = 0, binding = 4) buffer readonly MaterialModel {
+  Material materials[];
+};
+
+layout(set = 0, binding = 5) buffer readonly LightModel {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 6) buffer readonly VertexModel {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 7) uniform sampler2D colorTextureSampler[1];
+
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- Integrand ------------- 
+
+vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
+  return color * brdf * NoL / pdf; 
+}
+
+vec3 integrandOverArea(vec3 color, float brdf, float NoL, float NloL, float squareDistance, float area) {
+  return color * brdf * NoL * NloL * area / squareDistance;
+}
+
+vec3 partialIntegrand(vec3 color, float brdf, float NoL) {
+  return color * brdf * NoL;
+}
+
+float Gfactor(float NloL, float squareDistance, float area) {
+  return NloL * area / squareDistance;
+}
+
+// ------------- Lambert ------------- 
+
+float lambertPdfValue(float NoL) {
+  return NoL / pi;
+}
+
+float lambertBrdfValue() {
+  return 1.0f / pi;
+}
+
+// ------------- Triangle -------------
+
+float triangleArea(uvec3 triIndices) {
+  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
+  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+
+  vec3 pvec = cross(v0v1, v0v2);
+  return 0.5 * sqrt(dot(pvec, pvec)); 
+}
+
+// ------------- Shade ------------- 
+
+DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3 surfaceNormal) {
+  vec3 unitLightDirection = normalize(lightHit.dir);
+  DirectShadeRecord scat;
+
+  float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
+  float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
+
+  float brdf = lambertBrdfValue();
+  float sqrDistance = dot(lightHit.dir, lightHit.dir);
+  float area = triangleArea(lights[lightHit.hitIndex].indices);
+  float pdf = lambertPdfValue(NoL);
+
+  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+  scat.pdf = length(scat.radiance) > 0.001f ? pdf : 0.0f;
+
+  return scat;
+}
+
+DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData) {
+  vec3 surfaceColor;
+  if (materials[directData.materialIndex].colorTextureIndex == 0u) {
+    surfaceColor = materials[directData.materialIndex].baseColor;
+  } else {
+    surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+  }
+
+  return directLambertShade(lightHit, surfaceColor, directData.normal);
+}
+
+void main() {
+  HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
+  HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
+  DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
+
+  bool isHitLight = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
+
+  DirectShadeRecord directShadeResult;
+  directShadeResult.isIlluminate = directData.isIlluminate && isHitLight;
+  directShadeResult.radiance = vec3(0.0f);
+  directShadeResult.pdf = 0.0f;
+
+  if (directShadeResult.isIlluminate) {
+    directShadeResult = directLambertShade(lightHit, directData);
+  }
+  
+  directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
+}

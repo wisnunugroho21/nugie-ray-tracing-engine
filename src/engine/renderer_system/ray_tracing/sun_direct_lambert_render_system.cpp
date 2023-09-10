@@ -1,4 +1,4 @@
-#include "trace_ray_render_system.hpp"
+#include "sun_direct_lambert_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,17 +10,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineTraceRayRenderSystem::EngineTraceRayRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) : appDevice{device}, width{width}, height{height}, nSample{nSample}
+	EngineSunDirectLambertRenderSystem::EngineSunDirectLambertRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
+		: appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline();
 	}
 
-	EngineTraceRayRenderSystem::~EngineTraceRayRenderSystem() {
+	EngineSunDirectLambertRenderSystem::~EngineSunDirectLambertRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineTraceRayRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void EngineSunDirectLambertRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -38,15 +39,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineTraceRayRenderSystem::createPipeline() {
+	void EngineSunDirectLambertRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/ray_trace.comp.spv")
+			.setDefault("shader/sun_direct_lambert.comp.spv")
 			.build();
 	}
 
-	void EngineTraceRayRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void EngineSunDirectLambertRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(
@@ -72,6 +73,6 @@ namespace nugiEngine {
 			&pushConstant
 		);
 
-		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), this->width / 8, this->height / 8, this->nSample / 1);
+		this->pipeline->dispatch(commandBuffer->getCommandBuffer(), (this->width * this->height * this->nSample) / 32u, 1u, 1u);
 	}
 }

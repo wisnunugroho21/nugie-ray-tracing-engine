@@ -1,6 +1,9 @@
 #pragma once
 
 #include "../device/device.hpp"
+#include "../command/command_buffer.hpp"
+
+#include <memory>
  
 namespace nugiEngine {
  
@@ -14,9 +17,6 @@ class EngineBuffer {
       VkMemoryPropertyFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment = 1);
   ~EngineBuffer();
- 
-  EngineBuffer(const EngineBuffer&) = delete;
-  EngineBuffer& operator=(const EngineBuffer&) = delete;
 
   void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties);
   void copyBuffer(VkBuffer srcBuffer, VkDeviceSize size);
@@ -34,8 +34,13 @@ class EngineBuffer {
   void writeToIndex(void* data, int index);
   void readFromIndex(void* data, int index);
   VkResult flushIndex(int index);
-  VkDescriptorBufferInfo descriptorInfoForIndex(int index);
   VkResult invalidateIndex(int index);
+  VkDescriptorBufferInfo descriptorInfoForIndex(int index);
+
+  void transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
+    uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, 
+    EngineDevice *appDevice = nullptr);
  
   VkBuffer getBuffer() const { return buffer; }
   void* getMappedMemory() const { return mapped; }
@@ -45,6 +50,11 @@ class EngineBuffer {
   VkBufferUsageFlags getUsageFlags() const { return usageFlags; }
   VkMemoryPropertyFlags getMemoryPropertyFlags() const { return memoryPropertyFlags; }
   VkDeviceSize getBufferSize() const { return bufferSize; }
+
+  static void transitionBuffer(std::vector<std::shared_ptr<EngineBuffer>> buffers, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
+    uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, std::shared_ptr<EngineCommandBuffer> commandBuffer = nullptr, 
+    EngineDevice *appDevice = nullptr);
  
  private:
   static VkDeviceSize getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment);

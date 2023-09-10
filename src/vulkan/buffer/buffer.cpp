@@ -6,7 +6,6 @@
  */
  
 #include "buffer.hpp"
-#include "../command/command_buffer.hpp"
  
 // std
 #include <cassert>
@@ -233,6 +232,103 @@ namespace nugiEngine {
    */
   VkResult EngineBuffer::invalidateIndex(int index) {
     return this->invalidate(this->alignmentSize, index * this->alignmentSize);
+  }
+
+  void EngineBuffer::transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, 
+    uint32_t dstQueueFamilyIndex, std::shared_ptr<EngineCommandBuffer> commandBuffer, 
+    EngineDevice *appDevice)
+  {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(this->engineDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    VkBufferMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+
+    barrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
+    barrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
+
+    barrier.buffer = this->buffer;
+    barrier.size = this->bufferSize;
+    barrier.offset = 0;
+    barrier.srcAccessMask = srcAccess;
+    barrier.dstAccessMask = dstAccess;
+
+    vkCmdPipelineBarrier(
+      commandBuffer->getCommandBuffer(), 
+      srcStage, 
+      dstStage,
+      0,
+      0, 
+      nullptr,
+      1, 
+      &barrier,
+      0, 
+      nullptr
+    );
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(this->engineDevice.getTransferQueue(0));
+    }
+  }
+
+  void EngineBuffer::transitionBuffer(std::vector<std::shared_ptr<EngineBuffer>> buffers, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, 
+    uint32_t dstQueueFamilyIndex, std::shared_ptr<EngineCommandBuffer> commandBuffer, 
+    EngineDevice *appDevice) 
+  {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = std::make_shared<EngineCommandBuffer>(*appDevice);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    std::vector<VkBufferMemoryBarrier> barriers{};
+
+    for (auto &&buffer : buffers) {
+      VkBufferMemoryBarrier barrier{};
+      barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+
+      barrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
+      barrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
+
+      barrier.buffer = buffer->getBuffer();
+      barrier.size = buffer->getBufferSize();
+      barrier.offset = 0;
+      barrier.srcAccessMask = srcAccess;
+      barrier.dstAccessMask = dstAccess;
+
+      barriers.emplace_back(barrier);
+    }
+    
+
+    vkCmdPipelineBarrier(
+      commandBuffer->getCommandBuffer(), 
+      srcStage, 
+      dstStage,
+      0,
+      0, 
+      nullptr,
+      static_cast<uint32_t>(barriers.size()), 
+      barriers.data(),
+      0, 
+      nullptr
+    );
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(appDevice->getTransferQueue(0));
+    }
   }
 
   void EngineBuffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {

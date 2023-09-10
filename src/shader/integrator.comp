@@ -1,0 +1,90 @@
+#version 460
+
+#include "core/struct.glsl"
+#include "core/boolean.glsl"
+
+layout(local_size_x = 32) in;
+
+layout(set = 0, binding = 0, rgba8) uniform image2D resultImage;
+
+layout(set = 0, binding = 1) buffer IndirectSamplerDataBuffer {
+  IndirectSamplerData datas[];
+} indirectSamplerDataBuffer;
+
+layout(set = 0, binding = 2) buffer RenderResultBuffer {
+  RenderResult datas[];
+} renderResultBuffer;
+
+layout(set = 0, binding = 3) buffer readonly MissBuffer {
+  MissRecord records[];
+} missBuffer;
+
+layout(set = 0, binding = 4) buffer readonly LightShadeBuffer {
+  LightShadeRecord records[];
+} lightShadeBuffer;
+
+layout(set = 0, binding = 5) buffer readonly IndirectShadeBuffer {
+  IndirectShadeRecord records[];
+} indirectShadeBuffer;
+
+layout(set = 0, binding = 6) buffer readonly DirectShadeBuffer {
+  DirectShadeRecord records[];
+} directShadeBuffer;
+
+layout(set = 0, binding = 7) buffer readonly SunDirectShadeBuffer {
+  DirectShadeRecord records[];
+} sunDirectShadeBuffer;
+
+void main() {
+  IndirectSamplerData samplerData = indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x];
+  IndirectShadeRecord indirectRecord = indirectShadeBuffer.records[gl_GlobalInvocationID.x];
+  DirectShadeRecord directRecord = directShadeBuffer.records[gl_GlobalInvocationID.x];
+  DirectShadeRecord sunDirectRecord = sunDirectShadeBuffer.records[gl_GlobalInvocationID.x];
+  LightShadeRecord lightShadeRecord = lightShadeBuffer.records[gl_GlobalInvocationID.x];
+  MissRecord missRecord = missBuffer.records[gl_GlobalInvocationID.x];
+  RenderResult prevRenderResult = renderResultBuffer.datas[gl_GlobalInvocationID.x];
+
+  ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
+  vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
+
+  vec3 curRadiance = vec3(0.0f);
+  vec3 curIndirect = vec3(1.0f);
+
+  if (missRecord.isMiss) {
+    curRadiance = clamp(missRecord.radiance * totalPrevIndirect, 0.0f, 1.0f);
+  }
+
+  else if (lightShadeRecord.isIlluminate) {
+    curRadiance = clamp(lightShadeRecord.radiance * prevRenderResult.totalIndirect, 0.0f, 1.0f);
+  }
+
+  else {
+    vec3 directRadiance = (directRecord.radiance + sunDirectRecord.radiance) * totalPrevIndirect;
+
+    curRadiance = clamp(directRadiance, 0.0f, 1.0f);
+    curIndirect = clamp(indirectRecord.radiance, 0.0f, 1.0f);
+  }
+
+  vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
+  vec3 totalIndirect = totalPrevIndirect * curIndirect;
+  bool isRayContinue = indirectRecord.isIlluminate && length(totalIndirect) > 0.1f;
+
+  if (!isRayContinue) {
+    imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
+  }
+
+  RenderResult renderResult;
+  renderResult.totalRadiance = isRayContinue ? totalRadiance : vec3(0.0f);
+  renderResult.totalIndirect = isRayContinue ? totalIndirect : vec3(1.0f);
+  renderResult.pdf = isRayContinue ? indirectRecord.pdf : 1.0f;
+
+  renderResultBuffer.datas[gl_GlobalInvocationID.x] = renderResult;
+
+  IndirectSamplerData newSamplerData;
+  newSamplerData.xCoord = samplerData.xCoord;
+  newSamplerData.yCoord = samplerData.yCoord;
+  newSamplerData.rayBounce = isRayContinue ? lightShadeRecord.rayBounce + 1u : 0u;
+  newSamplerData.nextRay = indirectRecord.nextRay;
+  
+  indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x] = newSamplerData;
+}

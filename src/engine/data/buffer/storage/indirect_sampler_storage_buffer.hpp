@@ -1,0 +1,34 @@
+#pragma once
+
+#include "../../../../vulkan/device/device.hpp"
+#include "../../../../vulkan/buffer/buffer.hpp"
+#include "../../../../vulkan/command/command_buffer.hpp"
+#include "../../../ray_ubo.hpp"
+#include "../../../utils/transform/transform.hpp"
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+
+#include <vector>
+#include <memory>
+
+namespace nugiEngine {
+	class EngineIndirectSamplerStorageBuffer {
+		public:
+			EngineIndirectSamplerStorageBuffer(EngineDevice &device, std::shared_ptr<std::vector<IndirectSamplerData>> datas);
+
+			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
+
+			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void transferFromReadToWriteRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void transferFromWriteReadToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			
+		private:
+			EngineDevice &engineDevice;
+			std::vector<std::shared_ptr<EngineBuffer>> buffers;
+
+			void createBuffers(std::shared_ptr<std::vector<IndirectSamplerData>> datas);
+	};
+} // namespace nugiEngine

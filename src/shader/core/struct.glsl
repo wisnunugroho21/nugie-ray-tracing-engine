@@ -61,38 +61,81 @@ struct Transformation {
   mat4 normalMatrix;
 };
 
-// ---------------------- internal struct ----------------------
-
 struct Ray {
   vec3 origin;
   vec3 direction;
 };
 
-struct FaceNormal {
-  bool frontFace;
-  vec3 normal;
+struct RayData {
+  Ray ray;
+
+  float dirMin;
+  vec3 dirMax;
+
+  uint rayBounce;
 };
 
 struct HitRecord {
   bool isHit;
+  uint rayBounce;
+
   uint hitIndex;
+  uint materialIndex;
 
   vec3 point;
-  float dir;
-
-  vec3 color;
+  vec3 dir;
   vec3 normal;
-  float metallicness;
-  float roughness;
-  float fresnelReflect;
+  vec2 uv;
 };
 
-struct ShadeRecord {
-  vec3 radiance;  
+struct IndirectShadeRecord {
+  bool isIlluminate;
+  vec3 radiance;
+  float pdf;
+
   Ray nextRay;
+};
+
+struct DirectShadeRecord {
+  bool isIlluminate;
+  vec3 radiance;
   float pdf;
 };
 
+struct LightShadeRecord {
+  bool isIlluminate;
+  vec3 radiance;
+  uint rayBounce;
+};
+
+struct MissRecord {
+  bool isMiss;
+  vec3 radiance;
+};
+
+struct IndirectSamplerData {
+  uint xCoord;
+  uint yCoord;
+  uint rayBounce;
+
+  Ray nextRay;
+};
+
+struct DirectData {
+  bool isIlluminate;
+  uint materialIndex;
+  vec3 normal;
+  vec2 uv;
+};
+
+struct RenderResult {
+  vec3 totalIndirect;
+  vec3 totalRadiance;
+  float pdf;
+};
+
+// ---------------------- internal struct ----------------------
+
 float pi = 3.14159265359;
-float FLT_MAX = 3.402823e+38;
-float FLT_MIN = 1.175494e-38;
+float FLT_MAX = 1.0e+12;
+float FLT_MIN = 1.0e-12;

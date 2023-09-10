@@ -30,9 +30,6 @@ class EngineDescriptorSetLayout {
  
   EngineDescriptorSetLayout(EngineDevice &engineDevice, std::unordered_map<uint32_t, VkDescriptorSetLayoutBinding> bindings);
   ~EngineDescriptorSetLayout();
-
-  EngineDescriptorSetLayout(const EngineDescriptorSetLayout &) = delete;
-  EngineDescriptorSetLayout &operator=(const EngineDescriptorSetLayout &) = delete;
  
   VkDescriptorSetLayout getDescriptorSetLayout() const { return this->descriptorSetLayout; }
  
@@ -69,9 +66,6 @@ class EngineDescriptorPool {
     const std::vector<VkDescriptorPoolSize> &poolSizes
   );
   ~EngineDescriptorPool();
-  
-  EngineDescriptorPool(const EngineDescriptorPool &) = delete;
-  EngineDescriptorPool &operator=(const EngineDescriptorPool &) = delete;
  
   bool allocateDescriptor(const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet *descriptor) const;
   void freeDescriptors(std::vector<VkDescriptorSet> &descriptors) const;

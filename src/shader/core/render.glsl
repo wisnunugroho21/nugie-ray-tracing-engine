@@ -16,17 +16,17 @@ float Gfactor(float NloL, float squareDistance, float area) {
   return NloL * area / squareDistance;
 }
 
-float GfactorPointLight(Ray r, HitRecord hittedLight) {
-  float sqrDistance = hittedLight.dir * hittedLight.dir;
-  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(r.direction)), 0.001f);
+float GfactorPointLight(HitRecord hittedLight) {
+  float sqrDistance = dot(hittedLight.dir, hittedLight.dir);
+  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.001f);
   float area = pointLightArea();
 
   return Gfactor(NloL, sqrDistance, area);
 }
 
-float GfactorTriangleLight(Ray r, HitRecord hittedLight) {
-  float sqrDistance = hittedLight.dir * hittedLight.dir;
-  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(r.direction)), 0.001f);
+float GfactorTriangleLight(HitRecord hittedLight) {
+  float sqrDistance = dot(hittedLight.dir, hittedLight.dir);
+  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.001f);
   float area = triangleArea(lights[hittedLight.hitIndex].indices);
 
   return Gfactor(NloL, sqrDistance, area);
