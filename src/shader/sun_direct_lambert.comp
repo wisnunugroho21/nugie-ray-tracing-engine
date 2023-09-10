@@ -63,7 +63,7 @@ float Gfactor(float NloL, float squareDistance, float area) {
 // ------------- Lambert ------------- 
 
 float lambertPdfValue(float NoL) {
-  return max(NoL / pi, 0.001f);
+  return NoL / pi;
 }
 
 float lambertBrdfValue() {

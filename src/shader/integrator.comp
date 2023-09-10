@@ -59,11 +59,10 @@ void main() {
   }
 
   else {
-    float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
-    vec3 directRadiance = (directRecord.radiance * directRecord.pdf + sunDirectRecord.radiance * sunDirectRecord.pdf) * totalPrevIndirect / totalPdf;
+    vec3 directRadiance = (directRecord.radiance + sunDirectRecord.radiance) * totalPrevIndirect;
 
     curRadiance = clamp(directRadiance, 0.0f, 1.0f);
-    curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);
+    curIndirect = clamp(indirectRecord.radiance, 0.0f, 1.0f);
   }
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
