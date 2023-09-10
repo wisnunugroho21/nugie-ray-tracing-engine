@@ -99,7 +99,7 @@ void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
-  bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) >= length(objectHit.dir));
+  bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
   uint lightIndex = randomUint(0u, ubo.numLights - 1u, objectHit.rayBounce);
 
   RayData rayData;

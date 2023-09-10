@@ -114,9 +114,15 @@ void main() {
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
   bool isHitLight = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
-  
-  DirectShadeRecord directShadeResult = directLambertShade(lightHit, directData);
+
+  DirectShadeRecord directShadeResult;
   directShadeResult.isIlluminate = directData.isIlluminate && isHitLight;
+  directShadeResult.radiance = vec3(0.0f);
+  directShadeResult.pdf = 0.0f;
+
+  if (directShadeResult.isIlluminate) {
+    directShadeResult = directLambertShade(lightHit, directData);
+  }
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
 }

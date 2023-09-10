@@ -38,7 +38,11 @@ void main() {
 
   MissRecord missRecord;
   missRecord.isMiss = !objectHit.isHit && !lightHit.isHit;
-  missRecord.radiance = objectHit.rayBounce == 0u ? ubo.skyColor : vec3(0.0f);
+  missRecord.radiance = vec3(0.0f);
+
+  if (missRecord.isMiss) {
+    missRecord.radiance = objectHit.rayBounce == 0u ? ubo.skyColor : vec3(0.0f);
+  }
 
   missBuffer.records[gl_GlobalInvocationID.x] = missRecord;
 }

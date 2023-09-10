@@ -46,18 +46,30 @@ void main() {
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
-  float totalPdf = indirectRecord.pdf * float(indirectRecord.isIlluminate) +
-    directRecord.pdf * float(directRecord.isIlluminate) + 
-    sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate);
 
-  vec3 lightShadeRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect * float(lightShadeRecord.isIlluminate);
-  vec3 missRadiance = missRecord.radiance * totalPrevIndirect * float(missRecord.isMiss);
-  vec3 directRadiance = (directRecord.radiance * directRecord.pdf * float(directRecord.isIlluminate) +
-    sunDirectRecord.radiance * sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate)) * 
-    totalPrevIndirect / totalPdf;
+  vec3 curRadiance = vec3(0.0f);
+  vec3 curIndirect = vec3(1.0f);
 
-  vec3 curRadiance = clamp(lightShadeRadiance, 0.0f, 1.0f) + clamp(missRadiance, 0.0f, 1.0f) + clamp(directRadiance, 0.0f, 1.0f);
-  vec3 curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf * float(indirectRecord.isIlluminate), 0.0f, 1.0f);
+  if (missRecord.isMiss) {
+    curRadiance = clamp(missRecord.radiance * totalPrevIndirect, 0.0f, 1.0f);
+  }
+
+  else if (lightShadeRecord.isIlluminate) {
+    curRadiance = clamp(lightShadeRecord.radiance * prevRenderResult.totalIndirect, 0.0f, 1.0f);
+  }
+
+  else {
+    float totalPdf = indirectRecord.pdf * float(indirectRecord.isIlluminate) +
+      directRecord.pdf * float(directRecord.isIlluminate) + 
+      sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate);
+
+    vec3 directRadiance = (directRecord.radiance * directRecord.pdf * float(directRecord.isIlluminate) +
+      sunDirectRecord.radiance * sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate)) * 
+      totalPrevIndirect / totalPdf;
+
+    curRadiance = clamp(directRadiance, 0.0f, 1.0f);
+    curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);
+  }
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
   vec3 totalIndirect = totalPrevIndirect * curIndirect;

@@ -146,10 +146,19 @@ void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
-  bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) >= length(objectHit.dir));
-  
-  IndirectShadeRecord indirectShadeResult = indirectLambertShade(objectHit, objectHit.rayBounce);
+  bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
+
+  IndirectShadeRecord indirectShadeResult;
   indirectShadeResult.isIlluminate = isHitObject;
+  indirectShadeResult.radiance = vec3(0.0f);
+  indirectShadeResult.pdf = 0.0f;
+
+  indirectShadeResult.nextRayOrigin = vec3(0.0f);
+  indirectShadeResult.nextRayDirection = vec3(0.0f);
+
+  if (indirectShadeResult.isIlluminate) {
+    indirectShadeResult = indirectLambertShade(objectHit, objectHit.rayBounce);
+  }
   
   indirectBuffer.records[gl_GlobalInvocationID.x] = indirectShadeResult;
 }
