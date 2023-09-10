@@ -75,8 +75,7 @@ namespace nugiEngine {
   };
 
   struct RayData {
-    alignas(16) glm::vec3 rayOrigin;
-    alignas(16) glm::vec3 rayDirection;
+    Ray ray{};
 
     float dirMin = 0.001f;
     alignas(16) glm::vec3 dirMax{1000000.0f};
@@ -101,9 +100,8 @@ namespace nugiEngine {
     bool isIlluminate = false;
     alignas(16) glm::vec3 radiance{0.0f};
     float pdf = 0.0f;
-    
-    alignas(16) glm::vec3 nextRayOrigin;
-    alignas(16) glm::vec3 nextRayDirection;
+
+    Ray nextRay{};
   };
 
   struct DirectShadeRecord {
@@ -128,8 +126,7 @@ namespace nugiEngine {
     uint32_t yCoord = 0u;
     uint32_t rayBounce = 0u;
 
-    alignas(16) glm::vec3 nextRayOrigin;
-    alignas(16) glm::vec3 nextRayDirection;
+    Ray nextRay{};
   };
 
   struct DirectData {

@@ -118,10 +118,10 @@ float lambertBrdfValue() {
 IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
   IndirectShadeRecord scat;
 
-  scat.nextRayOrigin = hitPoint;
-  scat.nextRayDirection = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
+  scat.nextRay.origin = hitPoint;
+  scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
 
-  float NoL = max(dot(surfaceNormal, normalize(scat.nextRayDirection)), 0.001f);
+  float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
   float brdf = lambertBrdfValue();
   float pdf = lambertPdfValue(NoL);
 
@@ -153,8 +153,8 @@ void main() {
   indirectShadeResult.radiance = vec3(0.0f);
   indirectShadeResult.pdf = 0.0f;
 
-  indirectShadeResult.nextRayOrigin = vec3(0.0f);
-  indirectShadeResult.nextRayDirection = vec3(0.0f);
+  indirectShadeResult.nextRay.origin = vec3(0.0f);
+  indirectShadeResult.nextRay.direction = vec3(0.0f);
 
   if (indirectShadeResult.isIlluminate) {
     indirectShadeResult = indirectLambertShade(objectHit, objectHit.rayBounce);

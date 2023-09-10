@@ -40,8 +40,8 @@ void main() {
   vec3 rayDirection = ubo.lowerLeftCorner + uv.x * ubo.horizontal - uv.y * ubo.vertical - ubo.origin;
 
   bool isPrimaryRay = samplerData.rayBounce == 0u;
-  rayData.rayOrigin = isPrimaryRay ? ubo.origin : samplerData.nextRayOrigin;
-  rayData.rayDirection = isPrimaryRay ? rayDirection : samplerData.nextRayDirection;
+  rayData.ray.origin = isPrimaryRay ? ubo.origin : samplerData.nextRay.origin;
+  rayData.ray.direction = isPrimaryRay ? rayDirection : samplerData.nextRay.direction;
 
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);

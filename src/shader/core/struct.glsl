@@ -67,8 +67,7 @@ struct Ray {
 };
 
 struct RayData {
-  vec3 rayOrigin;
-  vec3 rayDirection;
+  Ray ray;
 
   float dirMin;
   vec3 dirMax;
@@ -94,8 +93,7 @@ struct IndirectShadeRecord {
   vec3 radiance;
   float pdf;
 
-  vec3 nextRayOrigin;
-  vec3 nextRayDirection;
+  Ray nextRay;
 };
 
 struct DirectShadeRecord {
@@ -120,8 +118,7 @@ struct IndirectSamplerData {
   uint yCoord;
   uint rayBounce;
 
-  vec3 nextRayOrigin;
-  vec3 nextRayDirection;
+  Ray nextRay;
 };
 
 struct DirectData {

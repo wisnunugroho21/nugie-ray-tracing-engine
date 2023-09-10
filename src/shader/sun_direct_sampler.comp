@@ -78,8 +78,8 @@ void main() {
   bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
 
   RayData rayData;
-  rayData.rayOrigin = objectHit.point;
-  rayData.rayDirection = isHitObject ? ubo.sunLight.direction : vec3(0.0f);
+  rayData.ray.origin = objectHit.point;
+  rayData.ray.direction = isHitObject ? ubo.sunLight.direction : vec3(0.0f);
   rayData.dirMin = 0.01f;
   rayData.dirMax = vec3(1000000000000.0f);
   rayData.rayBounce = objectHit.rayBounce;

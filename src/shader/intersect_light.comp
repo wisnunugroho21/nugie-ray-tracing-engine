@@ -188,12 +188,8 @@ void main() {
   hitRecord.dir = vec3(0.0f);
   hitRecord.normal = vec3(0.0f);
 
-  if (length(rayData.rayDirection) > 0.1f) {
-    Ray ray;
-    ray.origin = rayData.rayOrigin;
-    ray.direction = rayData.rayDirection;
-
-    hitRecord = hitTriangleLightBvh(ray, rayData.dirMin, rayData.dirMax);
+  if (length(rayData.ray.direction) > 0.1f) {
+    hitRecord = hitTriangleLightBvh(rayData.ray, rayData.dirMin, rayData.dirMax);
   }
 
   hitRecord.rayBounce = rayData.rayBounce;
