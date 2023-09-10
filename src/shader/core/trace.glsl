@@ -4,7 +4,7 @@
 
 HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float dirMax, uint transformIndex, uint materialIndex) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
   vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
@@ -40,7 +40,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float dirMax, uint 
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = dir;
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
 
@@ -58,7 +58,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, float dirMax, uint 
 
 HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, float dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
   vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
@@ -94,7 +94,7 @@ HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, float dirMax) 
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = dir;
   hit.point = rayAt(r, t);
 
@@ -108,7 +108,7 @@ HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, float dirMax) 
 
 HitRecord hitPointLight(PointLight light, Ray r, float dirMin, float dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 lightDirection = light.position - r.origin;
   vec3 lightNormal = normalize(lightDirection);
@@ -118,7 +118,7 @@ HitRecord hitPointLight(PointLight light, Ray r, float dirMin, float dirMax) {
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = dir;
   hit.point = light.position;
   hit.normal = setFaceNormal(r.direction, lightNormal);
@@ -141,7 +141,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 
 HitRecord hitPrimitiveBvh(Ray r, float dirMin, float dirMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];
@@ -201,7 +201,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, float dirMax, uint firstBvhIndex,
 
 HitRecord hitObjectBvh(Ray r, float dirMin, float dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];
@@ -257,7 +257,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, float dirMax) {
 
 HitRecord hitTriangleLightBvh(Ray r, float dirMin, float dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];

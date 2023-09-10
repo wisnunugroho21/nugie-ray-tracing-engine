@@ -39,7 +39,7 @@ vec3 setFaceNormal(vec3 r_direction, vec3 outwardNormal) {
 
 HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
   vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
@@ -75,7 +75,7 @@ HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax) {
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = dir;
   hit.point = rayAt(r, t);
 
@@ -89,7 +89,7 @@ HitRecord hitTriangleLight(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax) {
 
 HitRecord hitPointLight(PointLight light, Ray r, float dirMin, vec3 dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 lightDirection = light.position - r.origin;
   vec3 lightNormal = normalize(lightDirection);
@@ -98,7 +98,7 @@ HitRecord hitPointLight(PointLight light, Ray r, float dirMin, vec3 dirMax) {
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = lightDirection;
   hit.point = light.position;
   hit.normal = setFaceNormal(r.direction, lightNormal);
@@ -123,7 +123,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 
 HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];
@@ -145,7 +145,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = lightIndex - 1u;
       }
@@ -155,7 +155,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = lightIndex - 1u;
       }
@@ -181,7 +181,7 @@ void main() {
   RayData rayData = lightRayBuffer.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
-  hitRecord.isHit = 0.0f;
+  hitRecord.isHit = false;
   hitRecord.hitIndex = 0u;
   hitRecord.materialIndex = 0u;
   hitRecord.point = vec3(0.0f);
@@ -196,6 +196,6 @@ void main() {
     hitRecord = hitTriangleLightBvh(ray, rayData.dirMin, rayData.dirMax);
   }
 
-  hitRecord.rayBounce = round(rayData.rayBounce);
+  hitRecord.rayBounce = rayData.rayBounce;
   lightHitBuffer.records[gl_GlobalInvocationID.x] = hitRecord;
 }

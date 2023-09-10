@@ -53,12 +53,12 @@ void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
-  float isHitLight = when_and(when_gt(lightHit.isHit, 0.9f), when_or(when_lt(objectHit.isHit, 0.1f), when_le(length(lightHit.dir), length(objectHit.dir))));
+  bool isHitLight = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
 
   LightShadeRecord lightShadeRecord;
   lightShadeRecord.isIlluminate = isHitLight;
-  lightShadeRecord.radiance = mix(1.0f, GfactorTriangleLight(lightHit), when_gt(objectHit.rayBounce, 0.9f)) * lights[lightHit.hitIndex].color;
-  lightShadeRecord.rayBounce = round(objectHit.rayBounce);
+  lightShadeRecord.radiance = objectHit.rayBounce >= 1u ? GfactorTriangleLight(lightHit) * lights[lightHit.hitIndex].color : lights[lightHit.hitIndex].color;
+  lightShadeRecord.rayBounce = objectHit.rayBounce;
 
   lightShadeBuffer.records[gl_GlobalInvocationID.x] = lightShadeRecord;
 }

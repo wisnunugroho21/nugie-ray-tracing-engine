@@ -61,7 +61,7 @@ vec2 getTotalTextureCoordinate(uvec3 triIndices, vec2 uv) {
 
 HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax, uint transformIndex, uint materialIndex) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
 
   vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
   vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
@@ -97,7 +97,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax, uint t
     return hit;
   }
 
-  hit.isHit = 1.0f;
+  hit.isHit = true;
   hit.dir = dir;
   hit.materialIndex = materialIndex;
   hit.uv = getTotalTextureCoordinate(triIndices, vec2(u, v));
@@ -129,7 +129,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 
 HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];
@@ -155,7 +155,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     if (primIndex >= 1u) {
       HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
       }
@@ -165,7 +165,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     if (primIndex >= 1u) {
       HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
         hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
       }
@@ -189,7 +189,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
 
 HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
   HitRecord hit;
-  hit.isHit = 0.0f;
+  hit.isHit = false;
   hit.dir = dirMax;
 
   uint stack[30];
@@ -211,7 +211,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     if (objIndex >= 1u) {
       HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
       }
     }
@@ -220,7 +220,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     if (objIndex >= 1u) {
       HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
 
-      if (tempHit.isHit > 0.9f) {
+      if (tempHit.isHit) {
         hit = tempHit;
       }
     }
@@ -245,7 +245,7 @@ void main() {
   RayData rayData = objectRayBuffer.rayDatas[gl_GlobalInvocationID.x];
   HitRecord hitRecord;
   
-  hitRecord.isHit = 0.0f;
+  hitRecord.isHit = false;
   hitRecord.hitIndex = 0u;
   hitRecord.materialIndex = 0u;
   hitRecord.point = vec3(0.0f);
@@ -260,6 +260,6 @@ void main() {
     hitRecord = hitObjectBvh(ray, rayData.dirMin, rayData.dirMax);
   }
 
-  hitRecord.rayBounce = round(rayData.rayBounce);
+  hitRecord.rayBounce = rayData.rayBounce;
   objectHitBuffer.records[gl_GlobalInvocationID.x] = hitRecord;
 }
