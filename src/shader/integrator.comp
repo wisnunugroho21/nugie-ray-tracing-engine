@@ -63,7 +63,7 @@ void main() {
   vec3 totalIndirect = totalPrevIndirect * curIndirect;
   bool isRayContinue = indirectRecord.isIlluminate && lightShadeRecord.rayBounce < 10u && length(totalIndirect) > 0.1f;
 
-  if (isRayContinue) {
+  if (!isRayContinue) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
   }
 
