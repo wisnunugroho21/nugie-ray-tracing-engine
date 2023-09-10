@@ -59,13 +59,8 @@ void main() {
   }
 
   else {
-    float totalPdf = indirectRecord.pdf * float(indirectRecord.isIlluminate) +
-      directRecord.pdf * float(directRecord.isIlluminate) + 
-      sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate);
-
-    vec3 directRadiance = (directRecord.radiance * directRecord.pdf * float(directRecord.isIlluminate) +
-      sunDirectRecord.radiance * sunDirectRecord.pdf * float(sunDirectRecord.isIlluminate)) * 
-      totalPrevIndirect / totalPdf;
+    float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
+    vec3 directRadiance = (directRecord.radiance * directRecord.pdf + sunDirectRecord.radiance * sunDirectRecord.pdf) * totalPrevIndirect / totalPdf;
 
     curRadiance = clamp(directRadiance, 0.0f, 1.0f);
     curIndirect = clamp(indirectRecord.radiance * indirectRecord.pdf / totalPdf, 0.0f, 1.0f);
@@ -73,7 +68,7 @@ void main() {
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
   vec3 totalIndirect = totalPrevIndirect * curIndirect;
-  bool isRayContinue = indirectRecord.isIlluminate && lightShadeRecord.rayBounce < 10u && length(totalIndirect) > 0.1f;
+  bool isRayContinue = indirectRecord.isIlluminate && length(totalIndirect) > 0.1f;
 
   if (!isRayContinue) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
