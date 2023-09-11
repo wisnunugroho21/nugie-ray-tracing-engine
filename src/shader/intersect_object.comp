@@ -253,7 +253,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    if (!intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum)) {
+    if (intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum) < 1000000000000.0f) {
       continue;
     }
 
