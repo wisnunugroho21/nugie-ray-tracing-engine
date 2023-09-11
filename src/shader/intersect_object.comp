@@ -135,7 +135,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
   r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0f)).xyz;
   r.direction = mat3(transformations[transformIndex].dirInverseMatrix) * r.direction;
 
-  if (intersectAABB(r, primitiveBvhNodes[firstBvhIndex].minimum, primitiveBvhNodes[firstBvhIndex].maximum) >= 1000000000000.0f) {
+  if (intersectAABB(r, primitiveBvhNodes[firstBvhIndex].minimum, primitiveBvhNodes[firstBvhIndex].maximum) == 1000000000000.0f) {
     return hit;
   }
 
@@ -253,7 +253,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    if (intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum) < 1000000000000.0f) {
+    if (intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum) == 1000000000000.0f) {
       continue;
     }
 
