@@ -283,7 +283,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     }
 
     if (leftNode != 0u && rightNode == 0u) {
-      float leftDist = intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum);
+      float leftDist = intersectAABB(r, objectBvhNodes[leftNode - 1u].minimum, objectBvhNodes[leftNode - 1u].maximum);
 
       if (leftDist < 1000000000000.0f) {
         stack[stackIndex] = leftNode;
@@ -294,7 +294,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     }
 
     if (leftNode == 0u && rightNode != 0u) {
-      float rightDist = intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum);
+      float rightDist = intersectAABB(r, objectBvhNodes[rightNode - 1u].minimum, objectBvhNodes[rightNode - 1u].maximum);
 
       if (rightDist < 1000000000000.0f) {
         stack[stackIndex] = rightNode;
@@ -304,8 +304,8 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    float leftDist = intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum);
-    float rightDist = intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum);
+    float leftDist = intersectAABB(r, objectBvhNodes[leftNode - 1u].minimum, objectBvhNodes[leftNode - 1u].maximum);
+    float rightDist = intersectAABB(r, objectBvhNodes[rightNode - 1u].minimum, objectBvhNodes[rightNode - 1u].maximum);
 
     if (leftDist == 1000000000000.0f && rightDist == 1000000000000.0f) {
       continue;
