@@ -108,7 +108,7 @@ HitRecord hitPointLight(PointLight light, Ray r, float dirMin, vec3 dirMax) {
 
 // ------------- Bvh -------------
 
-bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
@@ -116,7 +116,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return tNear < tFar;
+  return tNear <= tFar ? tNear : 1000000000000.0f;
 }
 
 // ------------- Triangle Light-------------
@@ -126,6 +126,10 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   hit.isHit = false;
   hit.dir = dirMax;
 
+  if (intersectAABB(r, lightBvhNodes[0u].minimum, lightBvhNodes[0u].maximum) == 1000000000000.0f) {
+    return hit;
+  }
+
   uint stack[30];
   stack[0] = 1u;
 
@@ -134,10 +138,6 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     stackIndex--;
     uint currentNode = stack[stackIndex];
     if (currentNode == 0u) {
-      continue;
-    }
-
-    if (!intersectAABB(r, lightBvhNodes[currentNode - 1u].minimum, lightBvhNodes[currentNode - 1u].maximum)) {
       continue;
     }
 
@@ -161,15 +161,65 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       }
     }
 
-    uint bvhNode = lightBvhNodes[currentNode - 1u].leftNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
-      stackIndex++;
+    uint leftNode = lightBvhNodes[currentNode - 1u].leftNode;
+    uint rightNode = lightBvhNodes[currentNode - 1u].rightNode;
+
+    if (leftNode == 0u && rightNode == 0u) {
+      continue;
     }
 
-    bvhNode = lightBvhNodes[currentNode - 1u].rightNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (leftNode != 0u && rightNode == 0u) {
+      float leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
+
+      if (leftDist < 1000000000000.0f) {
+        stack[stackIndex] = leftNode;
+        stackIndex++;
+      }
+
+      continue;
+    }
+
+    if (leftNode == 0u && rightNode != 0u) {
+      float rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
+
+      if (rightDist < 1000000000000.0f) {
+        stack[stackIndex] = rightNode;
+        stackIndex++;
+      }
+      
+      continue;
+    }
+
+    float leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
+    float rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
+
+    if (leftDist == 1000000000000.0f && rightDist == 1000000000000.0f) {
+      continue;
+    }
+    
+    if (leftDist < 1000000000000.0f && rightDist == 1000000000000.0f) {
+      stack[stackIndex] = leftNode;
+      stackIndex++;
+      continue;
+    }
+
+    if (leftDist == 1000000000000.0f && rightDist < 1000000000000.0f) {
+      stack[stackIndex] = rightNode;
+      stackIndex++;
+      continue;
+    }
+
+    if (leftDist <= rightDist) {
+      stack[stackIndex] = leftNode;
+      stackIndex++;
+
+      stack[stackIndex] = rightNode;
+      stackIndex++;
+    } else {
+      stack[stackIndex] = rightNode;
+      stackIndex++;
+
+      stack[stackIndex] = leftNode;
       stackIndex++;
     }
   }
