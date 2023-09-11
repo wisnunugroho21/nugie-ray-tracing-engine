@@ -1,7 +1,6 @@
 #version 460
 
 #include "core/struct.glsl"
-#include "core/boolean.glsl"
 
 layout(local_size_x = 32) in;
 
