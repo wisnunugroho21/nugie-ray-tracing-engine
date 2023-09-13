@@ -174,47 +174,28 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     uint leftNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftNode;
     uint rightNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightNode;
 
-    if (leftNode == 0u && rightNode == 0u) {
-      continue;
+    float leftDist = 1000000000000.0f;
+    float rightDist = 1000000000000.0f;
+
+    if (leftNode > 0u) {
+      leftDist = intersectAABB(r, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].maximum);
     }
 
-    if (leftNode != 0u && rightNode == 0u) {
-      float leftDist = intersectAABB(r, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].maximum);
-
-      if (leftDist < 1000000000000.0f) {
-        stack[stackIndex] = leftNode;
-        stackIndex++;
-      }
-
-      continue;
+    if (rightNode > 0u) {
+      rightDist = intersectAABB(r, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].maximum);
     }
 
-    if (leftNode == 0u && rightNode != 0u) {
-      float rightDist = intersectAABB(r, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].maximum);
-
+    if (leftDist >= 1000000000000.0f) {
       if (rightDist < 1000000000000.0f) {
         stack[stackIndex] = rightNode;
         stackIndex++;
       }
-      
+
       continue;
     }
 
-    float leftDist = intersectAABB(r, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[leftNode - 1u + firstBvhIndex].maximum);
-    float rightDist = intersectAABB(r, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[rightNode - 1u + firstBvhIndex].maximum);
-
-    if (leftDist == 1000000000000.0f && rightDist == 1000000000000.0f) {
-      continue;
-    }
-    
-    if (leftDist < 1000000000000.0f && rightDist == 1000000000000.0f) {
+    if (rightDist >= 1000000000000.0f) {
       stack[stackIndex] = leftNode;
-      stackIndex++;
-      continue;
-    }
-
-    if (leftDist == 1000000000000.0f && rightDist < 1000000000000.0f) {
-      stack[stackIndex] = rightNode;
       stackIndex++;
       continue;
     }
