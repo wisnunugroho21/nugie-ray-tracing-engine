@@ -164,47 +164,28 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     uint leftNode = lightBvhNodes[currentNode - 1u].leftNode;
     uint rightNode = lightBvhNodes[currentNode - 1u].rightNode;
 
-    if (leftNode == 0u && rightNode == 0u) {
-      continue;
+    float leftDist = 1000000000000.0f;
+    float rightDist = 1000000000000.0f;
+
+    if (leftNode > 0u) {
+      leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
     }
 
-    if (leftNode != 0u && rightNode == 0u) {
-      float leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
-
-      if (leftDist < 1000000000000.0f) {
-        stack[stackIndex] = leftNode;
-        stackIndex++;
-      }
-
-      continue;
+    if (rightNode > 0u) {
+      rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
     }
 
-    if (leftNode == 0u && rightNode != 0u) {
-      float rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
-
+    if (leftDist >= 1000000000000.0f) {
       if (rightDist < 1000000000000.0f) {
         stack[stackIndex] = rightNode;
         stackIndex++;
       }
-      
+
       continue;
     }
 
-    float leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
-    float rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
-
-    if (leftDist == 1000000000000.0f && rightDist == 1000000000000.0f) {
-      continue;
-    }
-    
-    if (leftDist < 1000000000000.0f && rightDist == 1000000000000.0f) {
+    if (rightDist >= 1000000000000.0f) {
       stack[stackIndex] = leftNode;
-      stackIndex++;
-      continue;
-    }
-
-    if (leftDist == 1000000000000.0f && rightDist < 1000000000000.0f) {
-      stack[stackIndex] = rightNode;
       stackIndex++;
       continue;
     }
