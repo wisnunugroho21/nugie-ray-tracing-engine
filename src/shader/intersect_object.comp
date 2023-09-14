@@ -210,16 +210,16 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     }
 
     if (leftDist <= rightDist) {
-      stack[stackIndex] = leftNodeIndex;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = rightNodeIndex;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
     } else {
-      stack[stackIndex] = rightNodeIndex;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = leftNodeIndex;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     }
   }
@@ -302,16 +302,16 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     }
 
     if (leftDist <= rightDist) {
-      stack[stackIndex] = leftNodeIndex;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = rightNodeIndex;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
     } else {
-      stack[stackIndex] = rightNodeIndex;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = leftNodeIndex;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     }
   }
