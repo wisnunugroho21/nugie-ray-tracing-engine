@@ -126,6 +126,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   hit.isHit = false;
   hit.dir = dirMax;
 
+  BvhNode rootNode = lightBvhNodes[0u];
   if (intersectAABB(r, lightBvhNodes[0u].minimum, lightBvhNodes[0u].maximum) == 1000000000000.0f) {
     return hit;
   }
@@ -141,7 +142,9 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
+    BvhNode curNode = lightBvhNodes[currentNode - 1u];
+
+    uint lightIndex = curNode.leftObjIndex;
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
@@ -151,7 +154,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       }
     }
 
-    lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
+    lightIndex = curNode.rightObjIndex;    
     if (lightIndex >= 1u) {
       HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
 
@@ -161,23 +164,23 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       }
     }
 
-    uint leftNode = lightBvhNodes[currentNode - 1u].leftNode;
-    uint rightNode = lightBvhNodes[currentNode - 1u].rightNode;
+    uint leftNodeIndex = curNode.leftNode;
+    uint rightNodeIndex = curNode.rightNode;
 
     float leftDist = 1000000000000.0f;
     float rightDist = 1000000000000.0f;
 
-    if (leftNode > 0u) {
-      leftDist = intersectAABB(r, lightBvhNodes[leftNode - 1u].minimum, lightBvhNodes[leftNode - 1u].maximum);
+    if (leftNodeIndex > 0u) {
+      leftDist = intersectAABB(r, lightBvhNodes[leftNodeIndex - 1u].minimum, lightBvhNodes[leftNodeIndex - 1u].maximum);
     }
 
-    if (rightNode > 0u) {
-      rightDist = intersectAABB(r, lightBvhNodes[rightNode - 1u].minimum, lightBvhNodes[rightNode - 1u].maximum);
+    if (rightNodeIndex > 0u) {
+      rightDist = intersectAABB(r, lightBvhNodes[rightNodeIndex - 1u].minimum, lightBvhNodes[rightNodeIndex - 1u].maximum);
     }
 
     if (leftDist >= 1000000000000.0f) {
       if (rightDist < 1000000000000.0f) {
-        stack[stackIndex] = rightNode;
+        stack[stackIndex] = rightNodeIndex;
         stackIndex++;
       }
 
@@ -185,22 +188,22 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     }
 
     if (rightDist >= 1000000000000.0f) {
-      stack[stackIndex] = leftNode;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
       continue;
     }
 
     if (leftDist <= rightDist) {
-      stack[stackIndex] = leftNode;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = rightNode;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     } else {
-      stack[stackIndex] = rightNode;
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
 
-      stack[stackIndex] = leftNode;
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
     }
   }
