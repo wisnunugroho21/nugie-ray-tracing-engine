@@ -30,7 +30,6 @@ layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
-#include "core/boolean.glsl"
 
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
