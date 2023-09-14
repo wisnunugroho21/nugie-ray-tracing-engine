@@ -172,7 +172,8 @@ namespace nugiEngine {
   }
 
   int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length) {
-    float costArr[splitNumber]{};
+    float bestCost = 1000000000000.0f;
+    int bestSplitIndex = 0;
 
     for (int i = 0; i < splitNumber; i++) {
       int totalLeft = 0, totalRight = 0;
@@ -194,10 +195,15 @@ namespace nugiEngine {
       float probLeft = leftLength / length;
       float probRight = (length - leftLength) / length;
 
-      costArr[i] = 0.5f + probLeft * totalLeft * 1.0f + probRight * totalRight * 1.0f;
+      float curCost = probLeft * totalLeft + probRight * totalRight;
+
+      if (curCost < bestCost) {
+        bestCost = curCost;
+        bestSplitIndex = i;
+      }
     }
 
-    return static_cast<int>(std::distance(costArr, std::min_element(costArr, costArr + splitNumber)));
+    return bestSplitIndex;
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
