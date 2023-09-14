@@ -45,14 +45,17 @@ namespace nugiEngine {
 	}
 
 	void EngineHybridRenderer::createDescriptorPool() {
-		uint32_t nSample = 8;
+		uint32_t nDescSet = 11;
+		uint32_t nImageLimit = 5;
+		uint32_t nBufferLimit = 10;
 		uint32_t imageCount = static_cast<uint32_t>(this->swapChain->getswapChainImages().size());
 
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
-				.setMaxSets(imageCount * nSample + imageCount)
-				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageCount * nSample + imageCount * 2)
-				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 2 * imageCount * nSample)
+				.setMaxSets(nDescSet * imageCount)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, nImageLimit * nDescSet * imageCount)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, nBufferLimit * nDescSet * imageCount)
+				.addPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, nBufferLimit * nDescSet * imageCount)
 				.build();
 	}
 
