@@ -171,11 +171,13 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     float rightDist = 1000000000000.0f;
 
     if (leftNodeIndex > 0u) {
-      leftDist = intersectAABB(r, lightBvhNodes[leftNodeIndex - 1u].minimum, lightBvhNodes[leftNodeIndex - 1u].maximum);
+      BvhNode leftNode = lightBvhNodes[leftNodeIndex - 1u];
+      leftDist = intersectAABB(r, leftNode.minimum, leftNode.maximum);
     }
 
     if (rightNodeIndex > 0u) {
-      rightDist = intersectAABB(r, lightBvhNodes[rightNodeIndex - 1u].minimum, lightBvhNodes[rightNodeIndex - 1u].maximum);
+      BvhNode rightNode = lightBvhNodes[rightNodeIndex - 1u];
+      rightDist = intersectAABB(r, rightNode.minimum, rightNode.maximum);
     }
 
     if (leftDist >= 1000000000000.0f) {
