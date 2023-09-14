@@ -48,7 +48,7 @@ namespace nugiEngine {
 		uint32_t nDescSet = 11;
 		uint32_t nImageLimit = 5;
 		uint32_t nBufferLimit = 10;
-		uint32_t imageCount = static_cast<uint32_t>(this->swapChain->getswapChainImages().size());
+		uint32_t imageCount = EngineDevice::MAX_FRAMES_IN_FLIGHT;
 
 		this->descriptorPool = 
 			EngineDescriptorPool::Builder(this->appDevice)
