@@ -223,7 +223,7 @@ namespace nugiEngine {
       float curCost = leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i];
       if (curCost < bestCost) {
         bestCost = curCost;
-        splitPos = node.box.min[axis] + scale * (i + 1)
+        splitPos = node.box.min[axis] + scale * (i + 1);
       }
     }
 
