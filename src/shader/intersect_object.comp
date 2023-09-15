@@ -116,7 +116,7 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax, uint t
 
 // ------------- Bvh -------------
 
-bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
@@ -124,7 +124,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return tNear < tFar;
+  return tNear <= tFar ? tNear : 1000000000000.0f;
 }
 
 HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
@@ -132,13 +132,20 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
   hit.isHit = false;
   hit.dir = dirMax;
 
-  uint stack[30];
+  Transformation curTransf = transformations[transformIndex];
+  BvhNode rootNode = primitiveBvhNodes[firstBvhIndex];
+
+  r.origin = (curTransf.pointInverseMatrix * vec4(r.origin, 1.0f)).xyz;
+  r.direction = mat3(curTransf.dirInverseMatrix) * r.direction;
+
+  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) >= 1000000000000.0f) {
+    return hit;
+  }
+
+  uint stack[32];
   stack[0] = 1u;
 
-  int stackIndex = 1;  
-
-  r.origin = (transformations[transformIndex].pointInverseMatrix * vec4(r.origin, 1.0f)).xyz;
-  r.direction = mat3(transformations[transformIndex].dirInverseMatrix) * r.direction;
+  int stackIndex = 1;
 
   while(stackIndex > 0 && stackIndex <= 30) {
     stackIndex--;
@@ -147,39 +154,72 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
       continue;
     }
 
-    if (!intersectAABB(r, primitiveBvhNodes[currentNode - 1u + firstBvhIndex].minimum, primitiveBvhNodes[currentNode - 1u + firstBvhIndex].maximum)) {
+    BvhNode curNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex];
+
+    uint primIndex = curNode.leftObjIndex;
+    if (primIndex >= 1u) {
+      Primitive leftPrimitive = primitives[primIndex - 1u + firstPrimitiveIndex]; 
+      HitRecord tempHit = hitTriangle(leftPrimitive.indices, r, dirMin, hit.dir, transformIndex, leftPrimitive.materialIndex);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
+      }
+    }
+
+    primIndex = curNode.rightObjIndex;    
+    if (primIndex >= 1u) {
+      Primitive rightPrimitive = primitives[primIndex - 1u + firstPrimitiveIndex];
+      HitRecord tempHit = hitTriangle(rightPrimitive.indices, r, dirMin, hit.dir, transformIndex, rightPrimitive.materialIndex);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
+      }
+    }
+
+    uint leftNodeIndex = curNode.leftNode;
+    uint rightNodeIndex = curNode.rightNode;
+
+    float leftDist = 1000000000000.0f;
+    float rightDist = 1000000000000.0f;
+
+    if (leftNodeIndex > 0u) {
+      BvhNode leftNode = primitiveBvhNodes[leftNodeIndex - 1u + firstBvhIndex];
+      leftDist = intersectAABB(r, leftNode.minimum, leftNode.maximum);
+    }
+
+    if (rightNodeIndex > 0u) {
+      BvhNode rightNode = primitiveBvhNodes[rightNodeIndex - 1u + firstBvhIndex];
+      rightDist = intersectAABB(r, rightNode.minimum, rightNode.maximum);
+    }
+
+    if (leftDist >= 1000000000000.0f) {
+      if (rightDist < 1000000000000.0f) {
+        stack[stackIndex] = rightNodeIndex;
+        stackIndex++;
+      }
+
       continue;
     }
 
-    uint primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftObjIndex;
-    if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
-      }
-    }
-
-    primIndex = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightObjIndex;    
-    if (primIndex >= 1u) {
-      HitRecord tempHit = hitTriangle(primitives[primIndex - 1u + firstPrimitiveIndex].indices, r, dirMin, hit.dir, transformIndex, primitives[primIndex - 1u + firstPrimitiveIndex].materialIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
-      }
-    }
-
-    uint bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].leftNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (rightDist >= 1000000000000.0f) {
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
+      continue;
     }
 
-    bvhNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex].rightNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (leftDist <= rightDist) {
+      stack[stackIndex] = rightNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+    } else {
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     }
   }
@@ -192,6 +232,11 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
   hit.isHit = false;
   hit.dir = dirMax;
 
+  BvhNode rootNode = objectBvhNodes[0u];
+  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) >= 1000000000000.0f) {
+    return hit;
+  }
+
   uint stack[30];
   stack[0] = 1u;
 
@@ -203,37 +248,70 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    if (!intersectAABB(r, objectBvhNodes[currentNode - 1u].minimum, objectBvhNodes[currentNode - 1u].maximum)) {
+    BvhNode curNode = objectBvhNodes[currentNode - 1u];
+
+    uint objIndex = curNode.leftObjIndex;
+    if (objIndex >= 1u) {
+      Object leftObject = objects[objIndex - 1u];
+      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, leftObject.firstBvhIndex, leftObject.firstPrimitiveIndex, leftObject.transformIndex);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+      }
+    }
+
+    objIndex = curNode.rightObjIndex;
+    if (objIndex >= 1u) {
+      Object rightObject = objects[objIndex - 1u];
+      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, rightObject.firstBvhIndex, rightObject.firstPrimitiveIndex, rightObject.transformIndex);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+      }
+    }
+
+    uint leftNodeIndex = curNode.leftNode;
+    uint rightNodeIndex = curNode.rightNode;
+
+    float leftDist = 1000000000000.0f;
+    float rightDist = 1000000000000.0f;
+
+    if (leftNodeIndex > 0u) {
+      BvhNode leftNode = objectBvhNodes[leftNodeIndex - 1u];
+      leftDist = intersectAABB(r, leftNode.minimum, leftNode.maximum);
+    }
+
+    if (rightNodeIndex > 0u) {
+      BvhNode rightNode = objectBvhNodes[rightNodeIndex - 1u];
+      rightDist = intersectAABB(r, rightNode.minimum, rightNode.maximum);
+    }
+
+    if (leftDist >= 1000000000000.0f) {
+      if (rightDist < 1000000000000.0f) {
+        stack[stackIndex] = rightNodeIndex;
+        stackIndex++;
+      }
+
       continue;
     }
 
-    uint objIndex = objectBvhNodes[currentNode - 1u].leftObjIndex;
-    if (objIndex >= 1u) {
-      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-      }
-    }
-
-    objIndex = objectBvhNodes[currentNode - 1u].rightObjIndex;
-    if (objIndex >= 1u) {
-      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, objects[objIndex - 1u].firstBvhIndex, objects[objIndex - 1u].firstPrimitiveIndex, objects[objIndex - 1u].transformIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-      }
-    }
-
-    uint bvhNode = objectBvhNodes[currentNode - 1u].leftNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (rightDist >= 1000000000000.0f) {
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
+      continue;
     }
 
-    bvhNode = objectBvhNodes[currentNode - 1u].rightNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (leftDist <= rightDist) {
+      stack[stackIndex] = rightNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+    } else {
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     }
   }

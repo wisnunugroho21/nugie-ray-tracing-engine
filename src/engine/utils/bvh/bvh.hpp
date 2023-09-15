@@ -14,14 +14,17 @@
 #include <algorithm>
 #include <stack>
 
+#define SPLIT_NUMBER 11
+
 namespace nugiEngine {
   const glm::vec3 eps(0.01f);
-  const uint32_t splitNumber = 11;
 
   // Axis-aligned bounding box.
   struct Aabb {
     glm::vec3 min = glm::vec3{FLT_MAX};
     glm::vec3 max = glm::vec3{FLT_MIN};
+
+    float area();
 
     uint32_t longestAxis();
     uint32_t randomAxis();
@@ -76,6 +79,11 @@ namespace nugiEngine {
     TriangleLightBoundBox(int i, TriangleLight &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
 
     Aabb boundingBox();
+  };
+
+  struct BvhBinSAH {
+    Aabb box;
+    uint32_t objectCount;
   };
 
   // Intermediate BvhNode structure needed for constructing Bvh.

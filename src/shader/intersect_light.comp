@@ -108,7 +108,7 @@ HitRecord hitPointLight(PointLight light, Ray r, float dirMin, vec3 dirMax) {
 
 // ------------- Bvh -------------
 
-bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
+float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   vec3 tMin = (boxMin - r.origin) / r.direction;
   vec3 tMax = (boxMax - r.origin) / r.direction;
   vec3 t1 = min(tMin, tMax);
@@ -116,7 +116,7 @@ bool intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return tNear < tFar;
+  return tNear <= tFar ? tNear : 1000000000000.0f;
 }
 
 // ------------- Triangle Light-------------
@@ -125,6 +125,11 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   HitRecord hit;
   hit.isHit = false;
   hit.dir = dirMax;
+
+  BvhNode rootNode = lightBvhNodes[0u];
+  if (intersectAABB(r, lightBvhNodes[0u].minimum, lightBvhNodes[0u].maximum) == 1000000000000.0f) {
+    return hit;
+  }
 
   uint stack[30];
   stack[0] = 1u;
@@ -137,39 +142,70 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    if (!intersectAABB(r, lightBvhNodes[currentNode - 1u].minimum, lightBvhNodes[currentNode - 1u].maximum)) {
+    BvhNode curNode = lightBvhNodes[currentNode - 1u];
+
+    uint lightIndex = curNode.leftObjIndex;
+    if (lightIndex >= 1u) {
+      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = lightIndex - 1u;
+      }
+    }
+
+    lightIndex = curNode.rightObjIndex;    
+    if (lightIndex >= 1u) {
+      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
+
+      if (tempHit.isHit) {
+        hit = tempHit;
+        hit.hitIndex = lightIndex - 1u;
+      }
+    }
+
+    uint leftNodeIndex = curNode.leftNode;
+    uint rightNodeIndex = curNode.rightNode;
+
+    float leftDist = 1000000000000.0f;
+    float rightDist = 1000000000000.0f;
+
+    if (leftNodeIndex > 0u) {
+      BvhNode leftNode = lightBvhNodes[leftNodeIndex - 1u];
+      leftDist = intersectAABB(r, leftNode.minimum, leftNode.maximum);
+    }
+
+    if (rightNodeIndex > 0u) {
+      BvhNode rightNode = lightBvhNodes[rightNodeIndex - 1u];
+      rightDist = intersectAABB(r, rightNode.minimum, rightNode.maximum);
+    }
+
+    if (leftDist >= 1000000000000.0f) {
+      if (rightDist < 1000000000000.0f) {
+        stack[stackIndex] = rightNodeIndex;
+        stackIndex++;
+      }
+
       continue;
     }
 
-    uint lightIndex = lightBvhNodes[currentNode - 1u].leftObjIndex;
-    if (lightIndex >= 1u) {
-      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = lightIndex - 1u;
-      }
-    }
-
-    lightIndex = lightBvhNodes[currentNode - 1u].rightObjIndex;    
-    if (lightIndex >= 1u) {
-      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = lightIndex - 1u;
-      }
-    }
-
-    uint bvhNode = lightBvhNodes[currentNode - 1u].leftNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (rightDist >= 1000000000000.0f) {
+      stack[stackIndex] = leftNodeIndex;
       stackIndex++;
+      continue;
     }
 
-    bvhNode = lightBvhNodes[currentNode - 1u].rightNode;
-    if (bvhNode >= 1u) {
-      stack[stackIndex] = bvhNode;
+    if (leftDist <= rightDist) {
+      stack[stackIndex] = rightNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+    } else {
+      stack[stackIndex] = leftNodeIndex;
+      stackIndex++;
+
+      stack[stackIndex] = rightNodeIndex;
       stackIndex++;
     }
   }

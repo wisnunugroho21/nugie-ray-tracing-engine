@@ -1,6 +1,11 @@
 #include "bvh.hpp"
 
 namespace nugiEngine {
+  float Aabb::area() {
+    auto diff = this->max - this->min;
+    return diff.x * diff.y + diff.y * diff.z + diff.z * diff.x;
+  }
+
   uint32_t Aabb::longestAxis() {
     float x = abs(max[0] - min[0]);
     float y = abs(max[1] - min[1]);
@@ -172,32 +177,57 @@ namespace nugiEngine {
   }
 
   int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length) {
-    float costArr[splitNumber]{};
+    float bestCost = 1000000000000.0f;
+    int bestSplitIndex = 0;
 
-    for (int i = 0; i < splitNumber; i++) {
-      int totalLeft = 0, totalRight = 0;
+    BvhBinSAH bvhBins[SPLIT_NUMBER];
+    float scale = SPLIT_NUMBER / (node.box.max[axis] - node.box.min[axis]);
 
-      float leftLength = length * (i + 1) / (splitNumber + 1);
-      float posBarrier = leftLength + node.box.min[axis];
+    for (auto &&item : node.objects) {
+      Aabb boundBox = item->boundingBox();
+      float pos = (boundBox.max[axis] - boundBox.min[axis]) / 2.0f + boundBox.min[axis];
 
-      for (auto &&item : node.objects) {
-        Aabb curBox = item->boundingBox();
-        float pos = (curBox.max[axis] - curBox.min[axis]) / 2.0f + curBox.min[axis];
+      int binIdx = glm::min(SPLIT_NUMBER - 1, (int) std::floor((pos - boundBox.min[axis]) * scale));
+      BvhBinSAH binSah = bvhBins[binIdx];
 
-        if (pos < posBarrier) {
-          totalLeft++;
-        } else {
-          totalRight++;
-        }
-      }
+      binSah.box.max = glm::max(binSah.box.max, boundBox.max);
+      binSah.box.min = glm::min(binSah.box.min, boundBox.min);
+      binSah.objectCount++;
 
-      float probLeft = leftLength / length;
-      float probRight = (length - leftLength) / length;
-
-      costArr[i] = 0.5f + probLeft * totalLeft * 1.0f + probRight * totalRight * 1.0f;
+      bvhBins[binIdx] = binSah;
     }
 
-    return static_cast<int>(std::distance(costArr, std::min_element(costArr, costArr + splitNumber)));
+    float leftArea[SPLIT_NUMBER - 1], rightArea[SPLIT_NUMBER - 1];
+    int leftCount[SPLIT_NUMBER - 1], rightCount[SPLIT_NUMBER - 1];
+    Aabb leftBox, rightBox;
+    int leftSum = 0, rightSum = 0;
+
+    for (int i = 0; i < SPLIT_NUMBER - 1; i++) {
+      leftSum += bvhBins[i].objectCount;
+      leftCount[i] = leftSum;
+
+      leftBox.max = glm::max(leftBox.max, bvhBins[i].box.max);
+      leftBox.min = glm::min(leftBox.min, bvhBins[i].box.min);
+      leftArea[i] = leftBox.area();
+
+      rightSum += bvhBins[i].objectCount;
+      rightCount[i] = rightSum;
+
+      rightBox.max = glm::max(rightBox.max, bvhBins[i].box.max);
+      rightBox.min = glm::min(rightBox.min, bvhBins[i].box.min);
+      rightArea[i] = rightBox.area();
+    }
+
+    scale = (node.box.max[axis] - node.box.min[axis]) / SPLIT_NUMBER;
+    for (int i = 0; i < SPLIT_NUMBER - 1; i++) {
+      float curCost = leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i];
+      if (curCost < bestCost) {
+        bestCost = curCost;
+        bestSplitIndex = i;
+      }
+    }
+
+    return bestSplitIndex;
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
@@ -235,7 +265,7 @@ namespace nugiEngine {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
         int mid = findPrimitiveSplitIndex(currentNode, axis, length); //  std::ceil(objectSpan / 2);
 
-        float posBarrier = length * (mid + 1) / (splitNumber + 1) + currentNode.box.min[axis];
+        float posBarrier = length * (mid + 1) / SPLIT_NUMBER + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;
 
         for (auto &&item : currentNode.objects) {
