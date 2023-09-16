@@ -176,9 +176,9 @@ namespace nugiEngine {
     return boxCompare(a, b, 2);
   }
 
-  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length) {
+  float findPrimitiveSplitPosition(BvhItemBuild node, int axis, float length) {
     float bestCost = 1000000000000.0f;
-    int bestSplitIndex = 0;
+    float splitPos = 0.0f;
 
     BvhBinSAH bvhBins[SPLIT_NUMBER];
     float scale = SPLIT_NUMBER / (node.box.max[axis] - node.box.min[axis]);
@@ -223,11 +223,11 @@ namespace nugiEngine {
       float curCost = leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i];
       if (curCost < bestCost) {
         bestCost = curCost;
-        bestSplitIndex = i;
+        splitPos = node.box.min[axis] + scale * (i + 1);
       }
     }
 
-    return bestSplitIndex;
+    return splitPos;
   }
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
@@ -263,16 +263,15 @@ namespace nugiEngine {
         continue;
       } else {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
-        int mid = findPrimitiveSplitIndex(currentNode, axis, length); //  std::ceil(objectSpan / 2);
+        float splitPos = findPrimitiveSplitPosition(currentNode, axis, length); //  std::ceil(objectSpan / 2);
 
-        float posBarrier = length * (mid + 1) / SPLIT_NUMBER + currentNode.box.min[axis];
         BvhItemBuild leftNode, rightNode;
 
         for (auto &&item : currentNode.objects) {
           Aabb curBox = item->boundingBox();
           float pos = (curBox.max[axis] - curBox.min[axis]) / 2 + curBox.min[axis];
 
-          if (pos < posBarrier) {
+          if (pos < splitPos) {
             leftNode.objects.push_back(item);
           } else {
             rightNode.objects.push_back(item);
@@ -280,7 +279,7 @@ namespace nugiEngine {
         }
 
         if (leftNode.objects.size() == 0 || rightNode.objects.size() == 0) {
-					mid = static_cast<int>(std::ceil(objectSpan / 2));
+					int mid = static_cast<int>(std::ceil(objectSpan / 2));
 
 					leftNode.objects.clear();
 					rightNode.objects.clear();

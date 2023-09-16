@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <stack>
 
-#define SPLIT_NUMBER 11
+#define SPLIT_NUMBER 12
 
 namespace nugiEngine {
   const glm::vec3 eps(0.01f);
@@ -104,7 +104,7 @@ namespace nugiEngine {
   bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
   bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  int findPrimitiveSplitIndex(BvhItemBuild node, int axis, float length);
+  float findPrimitiveSplitPosition(BvhItemBuild node, int axis, float length);
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
