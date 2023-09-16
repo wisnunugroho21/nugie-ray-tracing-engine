@@ -14,7 +14,7 @@
 #include <algorithm>
 #include <stack>
 
-#define SPLIT_NUMBER 11
+#define SPLIT_NUMBER 12
 
 namespace nugiEngine {
   const glm::vec3 eps(0.01f);
