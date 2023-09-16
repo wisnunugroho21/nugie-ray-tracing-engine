@@ -78,49 +78,37 @@ float triangleArea(uvec3 triIndices) {
 
 // ------------- Shade ------------- 
 
-DirectShadeRecord directLambertShade(HitRecord lightHit, vec3 surfaceColor, vec3 surfaceNormal) {
-  vec3 unitLightDirection = normalize(lightHit.dir);
-  DirectShadeRecord scat;
-
-  float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
-  float NoL = max(dot(surfaceNormal, unitLightDirection), 0.001f);
-
-  float brdf = lambertBrdfValue();
-  float sqrDistance = dot(lightHit.dir, lightHit.dir);
-  float area = triangleArea(lights[lightHit.hitIndex].indices);
-  float pdf = lambertPdfValue(NoL);
-
-  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
-  scat.pdf = length(scat.radiance) > 0.001f ? pdf : 0.0f;
-
-  return scat;
-}
-
-DirectShadeRecord directLambertShade(HitRecord lightHit, DirectData directData) {
-  vec3 surfaceColor;
-  if (materials[directData.materialIndex].colorTextureIndex == 0u) {
-    surfaceColor = materials[directData.materialIndex].baseColor;
-  } else {
-    surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
-  }
-
-  return directLambertShade(lightHit, surfaceColor, directData.normal);
-}
-
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
-  bool isHitLight = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
-
   DirectShadeRecord directShadeResult;
-  directShadeResult.isIlluminate = directData.isIlluminate && isHitLight;
+  directShadeResult.isIlluminate = directData.isIlluminate && lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
   directShadeResult.radiance = vec3(0.0f);
   directShadeResult.pdf = 0.0f;
 
   if (directShadeResult.isIlluminate) {
-    directShadeResult = directLambertShade(lightHit, directData);
+    vec3 surfaceColor;
+    
+    if (materials[directData.materialIndex].colorTextureIndex == 0u) {
+      surfaceColor = materials[directData.materialIndex].baseColor;
+    } else {
+      surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+    }
+
+    vec3 unitLightDirection = normalize(lightHit.dir);
+
+    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
+    float NoL = max(dot(directData.normal, unitLightDirection), 0.001f);
+
+    float brdf = lambertBrdfValue();
+    float sqrDistance = dot(lightHit.dir, lightHit.dir);
+    float area = triangleArea(lights[lightHit.hitIndex].indices);
+    float pdf = lambertPdfValue(NoL);
+
+    directShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    directShadeResult.pdf = length(directShadeResult.radiance) > 0.001f ? pdf : 0.0f;
   }
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;

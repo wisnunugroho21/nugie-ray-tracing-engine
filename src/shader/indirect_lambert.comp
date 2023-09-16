@@ -112,43 +112,12 @@ float lambertBrdfValue() {
   return 1.0f / pi;
 }
 
-// ------------- Shade ------------- 
-
-IndirectShadeRecord indirectLambertShade(vec3 hitPoint, vec3 surfaceColor, vec3 surfaceNormal, uint additionalRandomSeed) {
-  IndirectShadeRecord scat;
-
-  scat.nextRay.origin = hitPoint;
-  scat.nextRay.direction = lambertRandomDirection(buildOnb(surfaceNormal), additionalRandomSeed);
-
-  float NoL = max(dot(surfaceNormal, normalize(scat.nextRay.direction)), 0.001f);
-  float brdf = lambertBrdfValue();
-  float pdf = lambertPdfValue(NoL);
-
-  scat.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
-  scat.pdf = length(scat.radiance) > 0.001f ? pdf : 0.0f;
-  
-  return scat;
-}
-
-IndirectShadeRecord indirectLambertShade(HitRecord objectHit, uint additionalRandomSeed) {
-  vec3 surfaceColor;
-  if (materials[objectHit.materialIndex].colorTextureIndex == 0u) {
-    surfaceColor = materials[objectHit.materialIndex].baseColor;
-  } else {
-    surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
-  }
-
-  return indirectLambertShade(objectHit.point, surfaceColor, objectHit.normal, additionalRandomSeed);
-}
-
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
-  bool isHitObject = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
-
   IndirectShadeRecord indirectShadeResult;
-  indirectShadeResult.isIlluminate = isHitObject;
+  indirectShadeResult.isIlluminate = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
   indirectShadeResult.radiance = vec3(0.0f);
   indirectShadeResult.pdf = 0.0f;
 
@@ -156,7 +125,22 @@ void main() {
   indirectShadeResult.nextRay.direction = vec3(0.0f);
 
   if (indirectShadeResult.isIlluminate) {
-    indirectShadeResult = indirectLambertShade(objectHit, objectHit.rayBounce);
+    vec3 surfaceColor;
+    if (materials[objectHit.materialIndex].colorTextureIndex == 0u) {
+      surfaceColor = materials[objectHit.materialIndex].baseColor;
+    } else {
+      surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
+    }
+
+    indirectShadeResult.nextRay.origin = objectHit.point;
+    indirectShadeResult.nextRay.direction = lambertRandomDirection(buildOnb(objectHit.normal), 0u);
+
+    float NoL = max(dot(objectHit.normal, normalize(indirectShadeResult.nextRay.direction)), 0.001f);
+    float brdf = lambertBrdfValue();
+    float pdf = lambertPdfValue(NoL);
+
+    indirectShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL); 
+    indirectShadeResult.pdf = length(indirectShadeResult.radiance) > 0.001f ? pdf : 0.0f;
   }
   
   indirectBuffer.records[gl_GlobalInvocationID.x] = indirectShadeResult;

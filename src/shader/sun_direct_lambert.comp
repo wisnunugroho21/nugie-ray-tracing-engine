@@ -101,15 +101,27 @@ void main() {
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
-  bool isHitSun = !objectHit.isHit && !lightHit.isHit;
-
   DirectShadeRecord directShadeResult;
-  directShadeResult.isIlluminate = directData.isIlluminate && isHitSun;
+  directShadeResult.isIlluminate = directData.isIlluminate && !objectHit.isHit && !lightHit.isHit;
   directShadeResult.radiance = vec3(0.0f);
   directShadeResult.pdf = 0.0f;
 
   if (directShadeResult.isIlluminate) {
-    directShadeResult = sunDirectLambertShade(lightHit, directData);
+    vec3 surfaceColor;
+    if (materials[directData.materialIndex].colorTextureIndex == 0u) {
+      surfaceColor = materials[directData.materialIndex].baseColor;
+    } else {
+      surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+    }
+
+    vec3 unitLightDirection = normalize(ubo.sunLight.direction);
+      
+    float NoL = max(dot(directData.normal, unitLightDirection), 0.001f);
+    float brdf = lambertBrdfValue();
+    float pdf = lambertPdfValue(NoL);
+
+    directShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / pdf;
+    directShadeResult.pdf = length(directShadeResult.radiance) > 0.001f ? pdf : 0.0f;
   }
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;
