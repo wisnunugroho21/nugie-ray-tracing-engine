@@ -45,23 +45,22 @@ void main() {
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
+  float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
 
   vec3 curRadiance = vec3(0.0f);
   vec3 curIndirect = vec3(1.0f);
 
   if (missRecord.isMiss) {
-    curRadiance = clamp(missRecord.radiance * totalPrevIndirect, 0.0f, 1.0f);
+    curRadiance = missRecord.radiance * totalPrevIndirect;
   }
 
   else if (lightShadeRecord.isIlluminate) {
-    curRadiance = clamp(lightShadeRecord.radiance * prevRenderResult.totalIndirect, 0.0f, 1.0f);
+    curRadiance = lightShadeRecord.radiance * prevRenderResult.totalIndirect;
   }
 
   else {
-    vec3 directRadiance = (directRecord.radiance + sunDirectRecord.radiance) * totalPrevIndirect;
-
-    curRadiance = clamp(directRadiance, 0.0f, 1.0f);
-    curIndirect = clamp(indirectRecord.radiance, 0.0f, 1.0f);
+    curRadiance = (directRecord.radiance * directRecord.pdf + sunDirectRecord.radiance * sunDirectRecord.pdf) / totalPdf * totalPrevIndirect;
+    curIndirect = indirectRecord.radiance * indirectRecord.pdf / totalPdf;
   }
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;

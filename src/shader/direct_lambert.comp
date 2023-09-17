@@ -99,8 +99,8 @@ void main() {
 
     vec3 unitLightDirection = normalize(lightHit.dir);
 
-    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.001f);
-    float NoL = max(dot(directData.normal, unitLightDirection), 0.001f);
+    float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.01f);
+    float NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
 
     float brdf = lambertBrdfValue();
     float sqrDistance = dot(lightHit.dir, lightHit.dir);
@@ -108,7 +108,7 @@ void main() {
     float pdf = lambertPdfValue(NoL);
 
     directShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
-    directShadeResult.pdf = length(directShadeResult.radiance) > 0.001f ? pdf : 0.0f;
+    directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;

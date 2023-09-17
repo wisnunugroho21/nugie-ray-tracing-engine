@@ -42,7 +42,7 @@ float Gfactor(float NloL, float squareDistance, float area) {
 
 float GfactorTriangleLight(HitRecord hittedLight) {
   float sqrDistance = dot(hittedLight.dir, hittedLight.dir);
-  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.001f);
+  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.01f);
   float area = triangleArea(lights[hittedLight.hitIndex].indices);
 
   return Gfactor(NloL, sqrDistance, area);
@@ -52,10 +52,8 @@ void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
 
-  bool isHitLight = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
-
   LightShadeRecord lightShadeRecord;
-  lightShadeRecord.isIlluminate = isHitLight;
+  lightShadeRecord.isIlluminate = lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
   lightShadeRecord.radiance = vec3(0.0f);
   lightShadeRecord.rayBounce = objectHit.rayBounce;
 
