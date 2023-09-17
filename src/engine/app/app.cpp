@@ -577,7 +577,7 @@ namespace nugiEngine {
 		float sunZ = glm::cos(theta);
 
 		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
-		ubo.sunLight.color = glm::vec3(1.0f, 1.0f, 0.63f);
+		ubo.sunLight.color = glm::vec3(100.0f, 100.0f, 63.0f);
 		ubo.skyColor = glm::vec3(0.52f, 0.8f, 0.92f);
 
 		return ubo;
