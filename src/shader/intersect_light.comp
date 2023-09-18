@@ -127,7 +127,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   hit.dir = dirMax;
 
   BvhNode rootNode = lightBvhNodes[0u];
-  if (intersectAABB(r, lightBvhNodes[0u].minimum, lightBvhNodes[0u].maximum) == 1000000000000.0f) {
+  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) == 1000000000000.0f) {
     return hit;
   }
 

@@ -79,8 +79,12 @@ uint randomUint(uint min, uint max, uint additionalRandomSeed) {
 // ------------- Triangle -------------
 
 vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
-  vec3 a = vertices[triIndices.y].position - vertices[triIndices.x].position;
-  vec3 b = vertices[triIndices.z].position - vertices[triIndices.x].position;
+  Vertex vectex1 = vertices[triIndices.x];
+  Vertex vectex2 = vertices[triIndices.y];
+  Vertex vectex3 = vertices[triIndices.z];
+
+  vec3 a = vectex2.position - vectex1.position;
+  vec3 b = vectex3.position - vectex1.position;
 
   float u1 = randomFloat(additionalRandomSeed);
   float u2 = randomFloat(additionalRandomSeed + 1);
@@ -90,7 +94,7 @@ vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRando
     u2 = 1 - u2;
   }
 
-  vec3 randomTriangle = u1 * a + u2 * b + vertices[triIndices.x].position;
+  vec3 randomTriangle = u1 * a + u2 * b + vectex1.position;
   return randomTriangle - origin;
 }
 
@@ -119,6 +123,3 @@ void main() {
 
   directDataBuffer.datas[gl_GlobalInvocationID.x] = directData;
 }
-
-
-

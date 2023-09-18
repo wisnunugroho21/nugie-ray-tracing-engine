@@ -107,7 +107,7 @@ void main() {
     float area = triangleArea(lights[lightHit.hitIndex].indices);
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = lights[lightHit.hitIndex].color * surfaceColor * brdf * NoL * NloL * area / squareDistance;
+    directShadeResult.radiance = lights[lightHit.hitIndex].color * surfaceColor * brdf * NoL * NloL * area / max(squareDistance, 0.001f);
     directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

@@ -139,7 +139,6 @@ namespace nugiEngine {
   struct RenderResult {
     alignas(16) glm::vec3 totalIndirect{1.0f};
     alignas(16) glm::vec3 totalRadiance{0.0f};
-    float pdf = 1.0f;
   };
 
   struct RayTraceUbo {

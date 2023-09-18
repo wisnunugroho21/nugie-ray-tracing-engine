@@ -73,7 +73,6 @@ void main() {
   RenderResult renderResult;
   renderResult.totalRadiance = isRayContinue ? totalRadiance : vec3(0.0f);
   renderResult.totalIndirect = isRayContinue ? totalIndirect : vec3(1.0f);
-  renderResult.pdf = isRayContinue ? indirectRecord.pdf : 1.0f;
 
   renderResultBuffer.datas[gl_GlobalInvocationID.x] = renderResult;
 
