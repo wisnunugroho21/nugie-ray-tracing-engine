@@ -93,7 +93,7 @@ void main() {
     float brdf = lambertBrdfValue();
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL) * ubo.sunLight.color / pdf;
+    directShadeResult.radiance = ubo.sunLight.color * surfaceColor * brdf * NoL / pdf;
     directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

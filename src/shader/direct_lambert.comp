@@ -103,11 +103,11 @@ void main() {
     float NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
 
     float brdf = lambertBrdfValue();
-    float sqrDistance = dot(lightHit.dir, lightHit.dir);
+    float squareDistance = dot(lightHit.dir, lightHit.dir);
     float area = triangleArea(lights[lightHit.hitIndex].indices);
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = partialIntegrand(surfaceColor, brdf, NoL) * Gfactor(NloL, sqrDistance, area) * lights[lightHit.hitIndex].color;
+    directShadeResult.radiance = lights[lightHit.hitIndex].color * surfaceColor * brdf * NoL * NloL * area / squareDistance;
     directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   
