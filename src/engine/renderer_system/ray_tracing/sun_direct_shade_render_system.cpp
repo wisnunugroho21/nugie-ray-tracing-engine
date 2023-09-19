@@ -1,4 +1,4 @@
-#include "indirect_lambert_render_system.hpp"
+#include "sun_direct_shade_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,18 +10,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineIndirectLambertRenderSystem::EngineIndirectLambertRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
+	EngineSunDirectShadeRenderSystem::EngineSunDirectShadeRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
 		: appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline();
 	}
 
-	EngineIndirectLambertRenderSystem::~EngineIndirectLambertRenderSystem() {
+	EngineSunDirectShadeRenderSystem::~EngineSunDirectShadeRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineIndirectLambertRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void EngineSunDirectShadeRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -39,15 +39,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineIndirectLambertRenderSystem::createPipeline() {
+	void EngineSunDirectShadeRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/indirect_lambert.comp.spv")
+			.setDefault("shader/sun_direct_shade.comp.spv")
 			.build();
 	}
 
-	void EngineIndirectLambertRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void EngineSunDirectShadeRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

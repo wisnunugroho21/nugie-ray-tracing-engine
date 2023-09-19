@@ -1,4 +1,4 @@
-#include "direct_lambert_render_system.hpp"
+#include "indirect_shade_render_system.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,18 +10,18 @@
 #include <string>
 
 namespace nugiEngine {
-	EngineDirectLambertRenderSystem::EngineDirectLambertRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
+	EngineIndirectShadeRenderSystem::EngineIndirectShadeRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
 		: appDevice{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayouts);
 		this->createPipeline();
 	}
 
-	EngineDirectLambertRenderSystem::~EngineDirectLambertRenderSystem() {
+	EngineIndirectShadeRenderSystem::~EngineIndirectShadeRenderSystem() {
 		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineDirectLambertRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void EngineIndirectShadeRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
@@ -39,15 +39,15 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineDirectLambertRenderSystem::createPipeline() {
+	void EngineIndirectShadeRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
-			.setDefault("shader/direct_lambert.comp.spv")
+			.setDefault("shader/indirect_shade.comp.spv")
 			.build();
 	}
 
-	void EngineDirectLambertRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void EngineIndirectShadeRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

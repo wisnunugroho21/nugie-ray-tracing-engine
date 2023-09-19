@@ -7,9 +7,9 @@
 #include <memory>
 
 namespace nugiEngine {
-	class EngineDirectLambertDescSet {
+	class EngineDirectShadeDescSet {
 		public:
-			EngineDirectLambertDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+			EngineDirectShadeDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				std::vector<VkDescriptorBufferInfo> buffersInfo[4], VkDescriptorBufferInfo modelsInfo[3], std::vector<VkDescriptorImageInfo> texturesInfo[1]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
