@@ -13,10 +13,10 @@
 #include <vector>
 
 namespace nugiEngine {
-	class EngineSunDirectLambertRenderSystem {
+	class EngineSunDirectShadeRenderSystem {
 		public:
-			EngineSunDirectLambertRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
-			~EngineSunDirectLambertRenderSystem();
+			EngineSunDirectShadeRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample);
+			~EngineSunDirectShadeRenderSystem();
 
 			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed = 1);
 

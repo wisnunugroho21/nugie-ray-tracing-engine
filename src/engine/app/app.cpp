@@ -62,10 +62,10 @@ namespace nugiEngine {
 				this->indirectLightHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
 
-				// ----------- Indirect Lambert -----------
+				// ----------- Indirect Shade -----------
 
-				this->indirectLambertRender->render(commandBuffer, this->indirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
-				this->indirectLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+				this->indirectShadeRender->render(commandBuffer, this->indirectShadeDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->indirectShadeShadeBuffer->transferToRead(commandBuffer, frameIndex);
 
 				// ----------- Light Shade -----------
 
@@ -102,11 +102,11 @@ namespace nugiEngine {
 				this->directLightHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
 
-				// ----------- Direct Lambert -----------
+				// ----------- Direct Shade -----------
 
-				this->directLambertRender->render(commandBuffer, this->directLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->directShadeRender->render(commandBuffer, this->directShadeDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
-				this->directLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+				this->directShadeShadeBuffer->transferToRead(commandBuffer, frameIndex);
 				this->directObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directDataBuffer->transferToWrite(commandBuffer, frameIndex);
@@ -139,11 +139,11 @@ namespace nugiEngine {
 				this->directLightHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
 
-				// ----------- Sun Direct Lambert -----------
+				// ----------- Sun Direct Shade -----------
 
-				this->sunDirectLambertRender->render(commandBuffer, this->sunDirectLambertDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				this->sunDirectShadeRender->render(commandBuffer, this->sunDirectShadeDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
-				this->sunDirectLambertShadeBuffer->transferToRead(commandBuffer, frameIndex);
+				this->sunDirectShadeShadeBuffer->transferToRead(commandBuffer, frameIndex);
 				this->directObjectHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directLightHitRecordBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->directDataBuffer->transferToWrite(commandBuffer, frameIndex);
@@ -155,9 +155,9 @@ namespace nugiEngine {
 				this->indirectSamplerBuffer->transferFromWriteReadToRead(commandBuffer, frameIndex);
 				this->missBuffer->transferToWrite(commandBuffer, frameIndex);
 				this->lightShadeBuffer->transferToWrite(commandBuffer, frameIndex);
-				this->indirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
-				this->directLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
-				this->sunDirectLambertShadeBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->indirectShadeShadeBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->directShadeShadeBuffer->transferToWrite(commandBuffer, frameIndex);
+				this->sunDirectShadeShadeBuffer->transferToWrite(commandBuffer, frameIndex);
 
 				// ----------- Final Sampling -----------
 
@@ -603,30 +603,30 @@ namespace nugiEngine {
 		this->directLightHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
 		this->indirectObjectHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
 		this->indirectLightHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
-		this->indirectLambertShadeBuffer = std::make_shared<EngineIndirectShadeStorageBuffer>(this->device, width * height);
-		this->directLambertShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
+		this->indirectShadeShadeBuffer = std::make_shared<EngineIndirectShadeStorageBuffer>(this->device, width * height);
+		this->directShadeShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
 		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
 		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
 		this->indirectSamplerBuffer = std::make_shared<EngineIndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
 		this->indirectDataBuffer = std::make_shared<EngineIndirectDataStorageBuffer>(this->device, width * height);
 		this->directDataBuffer = std::make_shared<EngineDirectDataStorageBuffer>(this->device, width * height);
-		this->sunDirectLambertShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
+		this->sunDirectShadeShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
 
-		std::vector<VkDescriptorBufferInfo> indirectLambertBufferInfos[3] {
-			this->indirectLambertShadeBuffer->getBuffersInfo(),
+		std::vector<VkDescriptorBufferInfo> indirectShadeBufferInfos[3] {
+			this->indirectShadeShadeBuffer->getBuffersInfo(),
 			this->indirectObjectHitRecordBuffer->getBuffersInfo(),
 			this->indirectLightHitRecordBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> directLambertBufferInfos[4] {
-			this->directLambertShadeBuffer->getBuffersInfo(),
+		std::vector<VkDescriptorBufferInfo> directShadeBufferInfos[4] {
+			this->directShadeShadeBuffer->getBuffersInfo(),
 			this->directObjectHitRecordBuffer->getBuffersInfo(),
 			this->directLightHitRecordBuffer->getBuffersInfo(),
 			this->directDataBuffer->getBuffersInfo()
 		};
 
-		std::vector<VkDescriptorBufferInfo> sunDirectLambertBufferInfos[4] {
-			this->sunDirectLambertShadeBuffer->getBuffersInfo(),
+		std::vector<VkDescriptorBufferInfo> sunDirectShadeBufferInfos[4] {
+			this->sunDirectShadeShadeBuffer->getBuffersInfo(),
 			this->directObjectHitRecordBuffer->getBuffersInfo(),
 			this->directLightHitRecordBuffer->getBuffersInfo(),
 			this->directDataBuffer->getBuffersInfo()
@@ -637,9 +637,9 @@ namespace nugiEngine {
 			this->indirectDataBuffer->getBuffersInfo(),
 			this->missBuffer->getBuffersInfo(),
 			this->lightShadeBuffer->getBuffersInfo(),
-			this->indirectLambertShadeBuffer->getBuffersInfo(),
-			this->directLambertShadeBuffer->getBuffersInfo(),
-			this->sunDirectLambertShadeBuffer->getBuffersInfo()
+			this->indirectShadeShadeBuffer->getBuffersInfo(),
+			this->directShadeShadeBuffer->getBuffersInfo(),
+			this->sunDirectShadeShadeBuffer->getBuffersInfo()
 		};
 
 		std::vector<VkDescriptorBufferInfo> directIntersectLightBufferInfos[2] {
@@ -696,17 +696,17 @@ namespace nugiEngine {
 			this->indirectLightHitRecordBuffer->getBuffersInfo()
 		};
 
-		VkDescriptorBufferInfo indirectLambertModelInfos[1] {
+		VkDescriptorBufferInfo indirectShadeModelInfos[1] {
 			this->materialModel->getMaterialInfo()
 		};
 
-		VkDescriptorBufferInfo directLambertModelInfos[3] {
+		VkDescriptorBufferInfo directShadeModelInfos[3] {
 			this->materialModel->getMaterialInfo(),
 			this->lightModel->getLightInfo(),
 			this->rayTraceVertexModels->getVertexnfo()
 		};
 
-		VkDescriptorBufferInfo sunDirectLambertModelInfos[1] {
+		VkDescriptorBufferInfo sunDirectShadeModelInfos[1] {
 			this->materialModel->getMaterialInfo()
 		};
 
@@ -736,9 +736,9 @@ namespace nugiEngine {
 			this->rayTraceVertexModels->getVertexnfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> lambertTexturesInfo[1];
+		std::vector<VkDescriptorImageInfo> shadeTexturesInfo[1];
 		for (int i = 0; i < this->colorTextures.size(); i++) {
-			lambertTexturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
+			shadeTexturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
 		}
 
 		std::vector<VkDescriptorImageInfo> intersectObjectTexturesInfo[1];
@@ -751,9 +751,9 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		this->indirectLambertDescSet = std::make_unique<EngineIndirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), indirectLambertBufferInfos, indirectLambertModelInfos, lambertTexturesInfo);
-		this->directLambertDescSet = std::make_unique<EngineDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), directLambertBufferInfos, directLambertModelInfos, lambertTexturesInfo);
-		this->sunDirectLambertDescSet = std::make_unique<EngineSunDirectLambertDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectLambertBufferInfos, sunDirectLambertModelInfos, lambertTexturesInfo);
+		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos, shadeTexturesInfo);
+		this->directShadeDescSet = std::make_unique<EngineDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos, shadeTexturesInfo);
+		this->sunDirectShadeDescSet = std::make_unique<EngineSunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos, shadeTexturesInfo);
 		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
 		this->directIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
 		this->directIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
@@ -766,9 +766,9 @@ namespace nugiEngine {
 		this->sunDirectSamplerDescSet = std::make_unique<EngineSunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
 		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
-		this->indirectLambertRender = std::make_unique<EngineIndirectLambertRenderSystem>(this->device, this->indirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->directLambertRender = std::make_unique<EngineDirectLambertRenderSystem>(this->device, this->directLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->sunDirectLambertRender = std::make_unique<EngineSunDirectLambertRenderSystem>(this->device, this->sunDirectLambertDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->indirectShadeRender = std::make_unique<EngineIndirectShadeRenderSystem>(this->device, this->indirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->directShadeRender = std::make_unique<EngineDirectShadeRenderSystem>(this->device, this->directShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectShadeRender = std::make_unique<EngineSunDirectShadeRenderSystem>(this->device, this->sunDirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->integratorRender = std::make_unique<EngineIntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->intersectLightRender = std::make_unique<EngineIntersectLightRenderSystem>(this->device, this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
 		this->intersectObjectRender = std::make_unique<EngineIntersectObjectRenderSystem>(this->device, this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);

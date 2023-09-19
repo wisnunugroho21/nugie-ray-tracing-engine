@@ -23,9 +23,9 @@
 #include "../data/buffer/storage/indirect_data_storage_buffer.hpp"
 #include "../data/buffer/storage/direct_shade_storage_buffer.hpp"
 #include "../data/buffer/storage/direct_data_storage_buffer.hpp"
-#include "../data/descSet/ray_tracing/indirect_lambert_desc_set.hpp"
-#include "../data/descSet/ray_tracing/direct_lambert_desc_set.hpp"
-#include "../data/descSet/ray_tracing/sun_direct_lambert_desc_set.hpp"
+#include "../data/descSet/ray_tracing/indirect_shade_desc_set.hpp"
+#include "../data/descSet/ray_tracing/direct_shade_desc_set.hpp"
+#include "../data/descSet/ray_tracing/sun_direct_shade_desc_set.hpp"
 #include "../data/descSet/ray_tracing/integrator_desc_set.hpp"
 #include "../data/descSet/ray_tracing/intersect_light_desc_set.hpp"
 #include "../data/descSet/ray_tracing/intersect_object_desc_set.hpp"
@@ -37,9 +37,9 @@
 #include "../data/descSet/sampling_desc_set.hpp"
 #include "../renderer/hybrid_renderer.hpp"
 #include "../renderer_sub/swapchain_sub_renderer.hpp"
-#include "../renderer_system/ray_tracing/indirect_lambert_render_system.hpp"
-#include "../renderer_system/ray_tracing/direct_lambert_render_system.hpp"
-#include "../renderer_system/ray_tracing/sun_direct_lambert_render_system.hpp"
+#include "../renderer_system/ray_tracing/indirect_shade_render_system.hpp"
+#include "../renderer_system/ray_tracing/direct_shade_render_system.hpp"
+#include "../renderer_system/ray_tracing/sun_direct_shade_render_system.hpp"
 #include "../renderer_system/ray_tracing/integrator_render_system.hpp"
 #include "../renderer_system/ray_tracing/intersect_light_render_system.hpp"
 #include "../renderer_system/ray_tracing/intersect_object_render_system.hpp"
@@ -86,9 +86,9 @@ namespace nugiEngine {
 			std::unique_ptr<EngineHybridRenderer> renderer{};
 			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
 
-			std::unique_ptr<EngineIndirectLambertRenderSystem> indirectLambertRender{};
-			std::unique_ptr<EngineDirectLambertRenderSystem> directLambertRender{};
-			std::unique_ptr<EngineSunDirectLambertRenderSystem> sunDirectLambertRender{};
+			std::unique_ptr<EngineIndirectShadeRenderSystem> indirectShadeRender{};
+			std::unique_ptr<EngineDirectShadeRenderSystem> directShadeRender{};
+			std::unique_ptr<EngineSunDirectShadeRenderSystem> sunDirectShadeRender{};
 			std::unique_ptr<EngineIntegratorRenderSystem> integratorRender{};
 			std::unique_ptr<EngineIntersectObjectRenderSystem> intersectObjectRender{};
 			std::unique_ptr<EngineIntersectLightRenderSystem> intersectLightRender{};
@@ -117,18 +117,18 @@ namespace nugiEngine {
 			std::shared_ptr<EngineHitRecordStorageBuffer> directLightHitRecordBuffer{};
 			std::shared_ptr<EngineHitRecordStorageBuffer> indirectObjectHitRecordBuffer{};
 			std::shared_ptr<EngineHitRecordStorageBuffer> indirectLightHitRecordBuffer{};
-			std::shared_ptr<EngineIndirectShadeStorageBuffer> indirectLambertShadeBuffer{};
-			std::shared_ptr<EngineDirectShadeStorageBuffer> directLambertShadeBuffer{};
-			std::shared_ptr<EngineDirectShadeStorageBuffer> sunDirectLambertShadeBuffer{};
+			std::shared_ptr<EngineIndirectShadeStorageBuffer> indirectShadeShadeBuffer{};
+			std::shared_ptr<EngineDirectShadeStorageBuffer> directShadeShadeBuffer{};
+			std::shared_ptr<EngineDirectShadeStorageBuffer> sunDirectShadeShadeBuffer{};
 			std::shared_ptr<EngineLightShadeStorageBuffer> lightShadeBuffer{};
 			std::shared_ptr<EngineMissRecordStorageBuffer> missBuffer{};
 			std::shared_ptr<EngineIndirectSamplerStorageBuffer> indirectSamplerBuffer{};
 			std::shared_ptr<EngineIndirectDataStorageBuffer> indirectDataBuffer{};
 			std::shared_ptr<EngineDirectDataStorageBuffer> directDataBuffer{};
 
-			std::unique_ptr<EngineIndirectLambertDescSet> indirectLambertDescSet{};
-			std::unique_ptr<EngineDirectLambertDescSet> directLambertDescSet{};
-			std::unique_ptr<EngineSunDirectLambertDescSet> sunDirectLambertDescSet{};
+			std::unique_ptr<EngineIndirectShadeDescSet> indirectShadeDescSet{};
+			std::unique_ptr<EngineDirectShadeDescSet> directShadeDescSet{};
+			std::unique_ptr<EngineSunDirectShadeDescSet> sunDirectShadeDescSet{};
 			std::unique_ptr<EngineIntegratorDescSet> integratorDescSet{};
 			std::unique_ptr<EngineIntersectObjectDescSet> directIntersectObjectDescSet{};
 			std::unique_ptr<EngineIntersectLightDescSet> directIntersectLightDescSet{};

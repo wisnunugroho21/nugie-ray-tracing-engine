@@ -7,9 +7,9 @@
 #include <memory>
 
 namespace nugiEngine {
-	class EngineSunDirectLambertDescSet {
+	class EngineSunDirectShadeDescSet {
 		public:
-			EngineSunDirectLambertDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+			EngineSunDirectShadeDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4], 
 				VkDescriptorBufferInfo modelsInfo[1], std::vector<VkDescriptorImageInfo> texturesInfo[1]);
 

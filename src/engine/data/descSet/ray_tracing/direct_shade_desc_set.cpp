@@ -1,13 +1,13 @@
-#include "direct_lambert_desc_set.hpp"
+#include "direct_shade_desc_set.hpp"
 
 namespace nugiEngine {
-  EngineDirectLambertDescSet::EngineDirectLambertDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+  EngineDirectShadeDescSet::EngineDirectShadeDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 		std::vector<VkDescriptorBufferInfo> buffersInfo[4], VkDescriptorBufferInfo modelsInfo[3], std::vector<VkDescriptorImageInfo> texturesInfo[1]) 
 	{
 		this->createDescriptor(device, descriptorPool, buffersInfo, modelsInfo, texturesInfo);
   }
 
-  void EngineDirectLambertDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+  void EngineDirectShadeDescSet::createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 		std::vector<VkDescriptorBufferInfo> buffersInfo[4], VkDescriptorBufferInfo modelsInfo[3], std::vector<VkDescriptorImageInfo> texturesInfo[1]) 
 	{
     this->descSetLayout = 
