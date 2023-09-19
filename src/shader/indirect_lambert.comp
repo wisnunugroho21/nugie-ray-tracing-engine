@@ -139,7 +139,7 @@ void main() {
     float brdf = lambertBrdfValue();
     float pdf = lambertPdfValue(NoL);
 
-    indirectShadeResult.radiance = surfaceColor * brdf * NoL / pdf;
+    indirectShadeResult.radiance = surfaceColor * brdf * NoL;
     indirectShadeResult.pdf = length(indirectShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

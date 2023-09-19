@@ -45,12 +45,13 @@ void main() {
 
   ivec2 pixelCoord = ivec2(samplerData.xCoord, samplerData.yCoord);
   float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
+  vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
 
   vec3 curRadiance = vec3(0.0f);
   vec3 curIndirect = vec3(1.0f);
 
   if (missRecord.isMiss) {
-    curRadiance = missRecord.radiance * prevRenderResult.totalIndirect;
+    curRadiance = missRecord.radiance * totalPrevIndirect;
   }
 
   else if (lightShadeRecord.isIlluminate) {
@@ -58,12 +59,12 @@ void main() {
   }
 
   else {
-    curRadiance = (directRecord.radiance * directRecord.pdf + sunDirectRecord.radiance * sunDirectRecord.pdf) / totalPdf * prevRenderResult.totalIndirect;
+    curRadiance = (directRecord.radiance * directRecord.pdf + sunDirectRecord.radiance * sunDirectRecord.pdf) / totalPdf * totalPrevIndirect;
     curIndirect = indirectRecord.radiance * indirectRecord.pdf / totalPdf;
   }
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
-  vec3 totalIndirect = prevRenderResult.totalIndirect * curIndirect;
+  vec3 totalIndirect = totalPrevIndirect * curIndirect;
   bool isRayContinue = indirectRecord.isIlluminate && length(totalIndirect) > 0.1f;
 
   if (!isRayContinue) {
@@ -73,6 +74,7 @@ void main() {
   RenderResult renderResult;
   renderResult.totalRadiance = isRayContinue ? totalRadiance : vec3(0.0f);
   renderResult.totalIndirect = isRayContinue ? totalIndirect : vec3(1.0f);
+  renderResult.pdf = isRayContinue ? indirectRecord.pdf : 1.0f;
 
   renderResultBuffer.datas[gl_GlobalInvocationID.x] = renderResult;
 
