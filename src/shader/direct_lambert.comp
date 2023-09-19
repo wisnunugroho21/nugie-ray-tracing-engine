@@ -69,8 +69,12 @@ float lambertBrdfValue() {
 // ------------- Triangle -------------
 
 float triangleArea(uvec3 triIndices) {
-  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
-  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+  Vertex vertex0 = vertices[triIndices.x];
+  Vertex vertex1 = vertices[triIndices.y];
+  Vertex vertex2 = vertices[triIndices.z];
+
+  vec3 v0v1 = vertex1.position - vertex0.position;
+  vec3 v0v2 = vertex2.position - vertex0.position;
 
   vec3 pvec = cross(v0v1, v0v2);
   return 0.5 * sqrt(dot(pvec, pvec)); 
@@ -83,6 +87,9 @@ void main() {
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
+  TriangleLight hittedLight = lights[lightHit.hitIndex];
+  Material surfaceMaterial = materials[directData.materialIndex];
+
   DirectShadeRecord directShadeResult;
   directShadeResult.isIlluminate = directData.isIlluminate && lightHit.isHit && (!objectHit.isHit || length(lightHit.dir) <= length(objectHit.dir));
   directShadeResult.radiance = vec3(0.0f);
@@ -91,10 +98,10 @@ void main() {
   if (directShadeResult.isIlluminate) {
     vec3 surfaceColor;
     
-    if (materials[directData.materialIndex].colorTextureIndex == 0u) {
-      surfaceColor = materials[directData.materialIndex].baseColor;
+    if (surfaceMaterial.colorTextureIndex == 0u) {
+      surfaceColor = surfaceMaterial.baseColor;
     } else {
-      surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+      surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], directData.uv).xyz;
     }
 
     vec3 unitLightDirection = normalize(lightHit.dir);
@@ -104,10 +111,10 @@ void main() {
 
     float brdf = lambertBrdfValue();
     float squareDistance = dot(lightHit.dir, lightHit.dir);
-    float area = triangleArea(lights[lightHit.hitIndex].indices);
+    float area = triangleArea(hittedLight.indices);
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = lights[lightHit.hitIndex].color * surfaceColor * brdf * NoL * NloL * area / max(squareDistance, 0.001f);
+    directShadeResult.radiance = hittedLight.color * surfaceColor * brdf * NoL * NloL * area / max(squareDistance, 0.001f);
     directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

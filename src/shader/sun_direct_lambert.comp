@@ -74,6 +74,8 @@ void main() {
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
   DirectData directData = directDataBuffer.datas[gl_GlobalInvocationID.x];
 
+  Material surfaceMaterial = materials[directData.materialIndex];
+
   DirectShadeRecord directShadeResult;
   directShadeResult.isIlluminate = directData.isIlluminate && !objectHit.isHit && !lightHit.isHit;
   directShadeResult.radiance = vec3(0.0f);
@@ -81,10 +83,10 @@ void main() {
 
   if (directShadeResult.isIlluminate) {
     vec3 surfaceColor;
-    if (materials[directData.materialIndex].colorTextureIndex == 0u) {
-      surfaceColor = materials[directData.materialIndex].baseColor;
+    if (surfaceMaterial.colorTextureIndex == 0u) {
+      surfaceColor = surfaceMaterial.baseColor;
     } else {
-      surfaceColor = texture(colorTextureSampler[materials[directData.materialIndex].colorTextureIndex - 1u], directData.uv).xyz;
+      surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], directData.uv).xyz;
     }
 
     vec3 unitLightDirection = normalize(ubo.sunLight.direction);

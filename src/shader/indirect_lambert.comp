@@ -115,6 +115,8 @@ float lambertBrdfValue() {
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
+  
+  Material surfaceMaterial = materials[objectHit.materialIndex];
 
   IndirectShadeRecord indirectShadeResult;
   indirectShadeResult.isIlluminate = objectHit.isHit && (!lightHit.isHit || length(lightHit.dir) > length(objectHit.dir));
@@ -126,10 +128,10 @@ void main() {
 
   if (indirectShadeResult.isIlluminate) {
     vec3 surfaceColor;
-    if (materials[objectHit.materialIndex].colorTextureIndex == 0u) {
-      surfaceColor = materials[objectHit.materialIndex].baseColor;
+    if (surfaceMaterial.colorTextureIndex == 0u) {
+      surfaceColor = surfaceMaterial.baseColor;
     } else {
-      surfaceColor = texture(colorTextureSampler[materials[objectHit.materialIndex].colorTextureIndex - 1u], objectHit.uv).xyz;
+      surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], objectHit.uv).xyz;
     }
 
     indirectShadeResult.nextRay.origin = objectHit.point;

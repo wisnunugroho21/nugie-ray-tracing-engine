@@ -23,30 +23,21 @@ layout(set = 0, binding = 4) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
-
 // ------------- Triangle -------------
 
 float triangleArea(uvec3 triIndices) {
-  vec3 v0v1 = vertices[triIndices.y].position - vertices[triIndices.x].position;
-  vec3 v0v2 = vertices[triIndices.z].position - vertices[triIndices.x].position;
+  Vertex vertex0 = vertices[triIndices.x];
+  Vertex vertex1 = vertices[triIndices.y];
+  Vertex vertex2 = vertices[triIndices.z];
+
+  vec3 v0v1 = vertex1.position - vertex0.position;
+  vec3 v0v2 = vertex2.position - vertex0.position;
 
   vec3 pvec = cross(v0v1, v0v2);
   return 0.5 * sqrt(dot(pvec, pvec)); 
 }
 
 // ------------- Integrand ------------- 
-
-float Gfactor(float NloL, float squareDistance, float area) {
-  return NloL * area / squareDistance;
-}
-
-float GfactorTriangleLight(HitRecord hittedLight) {
-  float sqrDistance = dot(hittedLight.dir, hittedLight.dir);
-  float NloL = max(dot(hittedLight.normal, -1.0f * normalize(hittedLight.dir)), 0.01f);
-  float area = triangleArea(lights[hittedLight.hitIndex].indices);
-
-  return Gfactor(NloL, sqrDistance, area);
-}
 
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
@@ -58,7 +49,16 @@ void main() {
   lightShadeRecord.rayBounce = objectHit.rayBounce;
 
   if (lightShadeRecord.isIlluminate) {
-    lightShadeRecord.radiance = objectHit.rayBounce >= 1u ? GfactorTriangleLight(lightHit) * lights[lightHit.hitIndex].color : lights[lightHit.hitIndex].color;
+    TriangleLight hittedLight = lights[lightHit.hitIndex];
+    lightShadeRecord.radiance = hittedLight.color;
+
+    if (objectHit.rayBounce >= 1u) {
+      float squareDistance = dot(lightHit.dir, lightHit.dir);
+      float NloL = max(dot(lightHit.normal, -1.0f * normalize(lightHit.dir)), 0.01f);
+      float area = triangleArea(hittedLight.indices);
+
+      lightShadeRecord.radiance *=  NloL * area / squareDistance;
+    }
   }
 
   lightShadeBuffer.records[gl_GlobalInvocationID.x] = lightShadeRecord;
