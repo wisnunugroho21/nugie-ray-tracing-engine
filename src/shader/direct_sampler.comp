@@ -120,6 +120,7 @@ void main() {
   directData.materialIndex = objectHit.materialIndex;
   directData.normal = objectHit.normal;
   directData.uv = objectHit.uv;
+  directData.dir = objectHit.dir;
 
   directDataBuffer.datas[gl_GlobalInvocationID.x] = directData;
 }

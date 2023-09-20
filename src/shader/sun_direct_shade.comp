@@ -41,6 +41,43 @@ layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
+// ------------- Basic -------------
+
+vec3 rayAt(Ray r, float t) {
+  return r.origin + t * r.direction;
+}
+
+vec3[3] buildOnb(vec3 normal) {
+  vec3 a = abs(normalize(normal).x) > 0.9 ? vec3(0.0f, 1.0f, 0.0f) : vec3(1.0f, 0.0f, 0.0f);
+
+  vec3 z = normalize(normal);
+  vec3 y = normalize(cross(z, a));
+  vec3 x = cross(z, y);
+
+  return vec3[3](x, y, z);
+}
+
+// ------------- Random ------------- 
+
+// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
+uint stepRNG(uint rngState) {
+  return rngState * 747796405 + 1;
+}
+
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return float(word) / 4294967295.0f;
+}
+
+float randomFloat(uint additionalRandomSeed) {
+  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
+  return stepAndOutputRNGFloat(rngState);
+}
+
 // ------------- Integrand ------------- 
 
 vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
@@ -69,6 +106,59 @@ float lambertBrdfValue() {
   return 1.0f / pi;
 }
 
+// ------------- GGX Function -------------
+
+float fresnelSchlick(float VoH, float F0) {
+  return F0 + (1.0f - F0) * pow(1.0f - VoH, 5.0f);
+} 
+
+float D_GGX(float NoH, float roughness) {
+  float r = max(roughness, 0.05f);
+  
+  float alpha = r * r;
+  float alpha2 = alpha * alpha;
+  
+  float b = (NoH * NoH * (alpha2 - 1.0f) + 1.0f);
+  return alpha2 / (pi * b * b);
+}
+
+float G1_GGX_Schlick(float cosine, float roughness) {
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float k = (r * r) / 2.0f;
+
+  float denom = cosine * (1.0f - k) + k;
+  return cosine / denom;
+}
+
+float G1_GGX(float cosine, float roughness) {
+  float alpha = roughness * roughness;
+  float alpha2 = alpha * alpha;
+
+  float b = alpha2 + (1 - alpha2) * cosine * cosine;
+  return 2 * cosine / (cosine + sqrt(b));
+}
+
+float G_Smith(float NoV, float NoL, float roughness) {
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
+
+  return g1_l * g1_v;
+}
+
+// ------------- GGX -------------
+
+float ggxPdfValue(float NoH, float VoH, float roughness) {
+  return max(D_GGX(NoH, roughness) * NoH / (4.0 * VoH), 0.001f);
+}
+
+float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {
+  float F = fresnelSchlick(VoH, f0);
+  float D = D_GGX(NoH, roughness);
+  float G = G_Smith(NoV, NoL, roughness);
+
+  return (F * D * G) / (4.0 * NoV * NoL);
+}
+
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
@@ -90,10 +180,29 @@ void main() {
     }
 
     vec3 unitLightDirection = normalize(ubo.sunLight.direction);
+    float NoL = 0.01f, brdf = 0.0f, pdf = 0.0f;
+
+    if (surfaceMaterial.metallicness >= randomFloat(0u)) {
+      vec3 unitViewDirection = normalize(directData.dir);
+      vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, directData.normal));
       
-    float NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
-    float brdf = lambertBrdfValue();
-    float pdf = lambertPdfValue(NoL);
+      vec3 H = normalize(ubo.sunLight.direction - directData.dir);
+      float f0 = 0.16 * (surfaceMaterial.fresnelReflect * surfaceMaterial.fresnelReflect);
+
+      NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
+      float NoV = max(dot(directData.normal, -1.0f * unitViewDirection), 0.01f);
+      float NoH = max(dot(directData.normal, H), 0.01f);
+      float VoH = max(dot(unitViewDirection, H), 0.01f);
+
+      brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceMaterial.roughness);
+      pdf = ggxPdfValue(NoH, VoH, surfaceMaterial.roughness);
+    }
+
+    else {
+      NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
+      brdf = lambertBrdfValue();
+      pdf = lambertPdfValue(NoL);
+    }
 
     directShadeResult.radiance = ubo.sunLight.color * surfaceColor * brdf * NoL / pdf;
     directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;

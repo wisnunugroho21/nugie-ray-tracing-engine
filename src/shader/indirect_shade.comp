@@ -112,6 +112,81 @@ float lambertBrdfValue() {
   return 1.0f / pi;
 }
 
+// ------------- GGX Function -------------
+
+float fresnelSchlick(float VoH, float F0) {
+  return F0 + (1.0f - F0) * pow(1.0f - VoH, 5.0f);
+} 
+
+float D_GGX(float NoH, float roughness) {
+  float r = max(roughness, 0.05f);
+  
+  float alpha = r * r;
+  float alpha2 = alpha * alpha;
+  
+  float b = (NoH * NoH * (alpha2 - 1.0f) + 1.0f);
+  return alpha2 / (pi * b * b);
+}
+
+float G1_GGX_Schlick(float cosine, float roughness) {
+  float r = 0.5 + 0.5 * roughness; // Disney remapping
+  float k = (r * r) / 2.0f;
+
+  float denom = cosine * (1.0f - k) + k;
+  return cosine / denom;
+}
+
+float G1_GGX(float cosine, float roughness) {
+  float alpha = roughness * roughness;
+  float alpha2 = alpha * alpha;
+
+  float b = alpha2 + (1 - alpha2) * cosine * cosine;
+  return 2 * cosine / (cosine + sqrt(b));
+}
+
+float G_Smith(float NoV, float NoL, float roughness) {
+  float g1_l = G1_GGX_Schlick(NoL, roughness);
+  float g1_v = G1_GGX_Schlick(NoV, roughness);
+
+  return g1_l * g1_v;
+}
+
+// ------------- GGX -------------
+
+vec3 randomGGX(float roughness, uint additionalRandomSeed) {
+  float r1 = randomFloat(additionalRandomSeed);
+  float r2 = randomFloat(additionalRandomSeed + 1);
+
+  float a = roughness * roughness;
+  float phi = 2 * 3.14159265359 * r2;
+
+  float cosTheta = sqrt((1.0f - r1) / ((a * a - 1.0f) * r1 + 1.0f));
+  float sinTheta = sqrt(1 - cosTheta * cosTheta);
+
+  float x = cos(phi) * sinTheta;
+  float y = sin(phi) * sinTheta;
+  float z = cosTheta;
+
+  return vec3(x, y, z);
+}
+
+vec3 ggxRandomDirection(vec3[3] globalOnb, float roughness, uint additionalRandomSeed) {
+  vec3 source = randomGGX(roughness, additionalRandomSeed);
+  return source.x * globalOnb[0] + source.y * globalOnb[1] + source.z * globalOnb[2];
+}
+
+float ggxPdfValue(float NoH, float VoH, float roughness) {
+  return max(D_GGX(NoH, roughness) * NoH / (4.0 * VoH), 0.001f);
+}
+
+float ggxBrdfValue(float NoV, float NoL, float NoH, float VoH, float f0, float roughness) {
+  float F = fresnelSchlick(VoH, f0);
+  float D = D_GGX(NoH, roughness);
+  float G = G_Smith(NoV, NoL, roughness);
+
+  return (F * D * G) / (4.0 * NoV * NoL);
+}
+
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
@@ -134,13 +209,34 @@ void main() {
       surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], objectHit.uv).xyz;
     }
 
+    float NoL = 0.01f, brdf = 0.0f, pdf = 0.0f;
+
+    if (surfaceMaterial.metallicness >= randomFloat(0u)) {
+      vec3 unitViewDirection = normalize(objectHit.dir);
+      vec3[3] globalOnb = buildOnb(reflect(unitViewDirection, objectHit.normal));
+      
+      indirectShadeResult.nextRay.direction = ggxRandomDirection(globalOnb, surfaceMaterial.roughness, 0u);
+      vec3 H = normalize(indirectShadeResult.nextRay.direction - objectHit.dir);
+      float f0 = 0.16 * (surfaceMaterial.fresnelReflect * surfaceMaterial.fresnelReflect);
+
+      NoL = max(dot(objectHit.normal, normalize(indirectShadeResult.nextRay.direction)), 0.01f);
+      float NoV = max(dot(objectHit.normal, -1.0f * unitViewDirection), 0.01f);
+      float NoH = max(dot(objectHit.normal, H), 0.01f);
+      float VoH = max(dot(unitViewDirection, H), 0.01f);
+
+      brdf = ggxBrdfValue(NoV, NoL, NoH, VoH, f0, surfaceMaterial.roughness);
+      pdf = ggxPdfValue(NoH, VoH, surfaceMaterial.roughness);
+    }
+
+    else {
+      indirectShadeResult.nextRay.direction = lambertRandomDirection(buildOnb(objectHit.normal), 0u);
+
+      NoL = max(dot(objectHit.normal, normalize(indirectShadeResult.nextRay.direction)), 0.01f);
+      brdf = lambertBrdfValue();
+      pdf = lambertPdfValue(NoL);
+    }
+
     indirectShadeResult.nextRay.origin = objectHit.point;
-    indirectShadeResult.nextRay.direction = lambertRandomDirection(buildOnb(objectHit.normal), 0u);
-
-    float NoL = max(dot(objectHit.normal, normalize(indirectShadeResult.nextRay.direction)), 0.01f);
-    float brdf = lambertBrdfValue();
-    float pdf = lambertPdfValue(NoL);
-
     indirectShadeResult.radiance = surfaceColor * brdf * NoL;
     indirectShadeResult.pdf = length(indirectShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }

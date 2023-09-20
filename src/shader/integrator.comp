@@ -47,8 +47,7 @@ void main() {
   float totalPdf = indirectRecord.pdf + directRecord.pdf + sunDirectRecord.pdf;
   vec3 totalPrevIndirect = prevRenderResult.totalIndirect / prevRenderResult.pdf;
 
-  vec3 curRadiance = vec3(0.0f);
-  vec3 curIndirect = vec3(1.0f);
+  vec3 curRadiance = vec3(0.0f), curIndirect = vec3(1.0f);
 
   if (missRecord.isMiss) {
     curRadiance = missRecord.radiance * totalPrevIndirect;

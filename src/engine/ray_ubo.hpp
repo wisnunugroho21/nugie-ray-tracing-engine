@@ -134,6 +134,7 @@ namespace nugiEngine {
     uint32_t materialIndex = 0u;
     alignas(16) glm::vec3 normal{0.0f};
     alignas(16) glm::vec2 uv{0.0f};
+    alignas(16) glm::vec3 dir{0.0f};
   };
 
   struct RenderResult {
