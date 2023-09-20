@@ -441,7 +441,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -458,18 +458,18 @@ namespace nugiEngine {
 		vertices->emplace_back(RayTraceVertex{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{0.0f} });
 
 		auto secondBoxesPrimitives = std::make_shared<std::vector<Primitive>>();
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(36u, 37u, 38u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(38u, 39u, 36u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(40u, 41u, 42u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(42u, 43u, 40u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(44u, 45u, 46u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(46u, 47u, 44u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(48u, 49u, 50u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(50u, 51u, 48u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(52u, 53u, 54u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(54u, 55u, 52u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(56u, 57u, 58u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(58u, 59u, 56u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 14u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(14u + 8u, 15u + 8u, 12u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(16u + 8u, 17u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 16u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 16u + 8u, 19u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(19u + 8u, 15u + 8u, 12u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(13u + 8u, 17u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 14u + 8u, 13u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(15u + 8u, 14u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 15u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 17u + 8u), 0u });
+		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(17u + 8u, 16u + 8u, 12u + 8u), 0u });
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives, vertices);
 
@@ -477,7 +477,7 @@ namespace nugiEngine {
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
+		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
