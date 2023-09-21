@@ -41,6 +41,12 @@ layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
 
+// ------------- Basic -------------
+
+float maxComponent(vec3 v) {
+  return max(v.x, max(v.y, v.z));
+}
+
 // ------------- Integrand ------------- 
 
 vec3 integrandOverHemisphere(vec3 color, float brdf, float NoL, float pdf) {
@@ -96,7 +102,7 @@ void main() {
     float pdf = lambertPdfValue(NoL);
 
     directShadeResult.radiance = ubo.sunLight.color * surfaceColor * brdf * NoL / pdf;
-    directShadeResult.pdf = length(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
+    directShadeResult.pdf = maxComponent(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   
   directBuffer.records[gl_GlobalInvocationID.x] = directShadeResult;

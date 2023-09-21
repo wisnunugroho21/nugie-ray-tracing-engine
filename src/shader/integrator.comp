@@ -91,10 +91,7 @@ void main() {
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
   vec3 totalIndirect = totalPrevIndirect * curIndirect;
 
-  float p = max(0.0f, 1.0f - max(totalIndirect.x, max(totalIndirect.y, totalIndirect.z)));
-  totalIndirect /= (1.0f - p);
-
-  bool isRayContinue = indirectRecord.isIlluminate && randomFloat(0u) >= p;
+  bool isRayContinue = indirectRecord.isIlluminate && max(totalIndirect.x, max(totalIndirect.y, totalIndirect.z)) > 0.1f;
   if (!isRayContinue) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
   }

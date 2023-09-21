@@ -28,6 +28,10 @@ layout(push_constant) uniform Push {
 
 // ------------- Basic -------------
 
+float maxComponent(vec3 v) {
+  return max(v.x, max(v.y, v.z));
+}
+
 vec3 rayAt(Ray r, float t) {
   return r.origin + t * r.direction;
 }
@@ -142,7 +146,7 @@ void main() {
     float pdf = lambertPdfValue(NoL);
 
     indirectShadeResult.radiance = surfaceColor * brdf * NoL;
-    indirectShadeResult.pdf = length(indirectShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
+    indirectShadeResult.pdf = maxComponent(indirectShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   
   indirectBuffer.records[gl_GlobalInvocationID.x] = indirectShadeResult;
