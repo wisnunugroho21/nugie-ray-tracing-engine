@@ -34,6 +34,31 @@ layout(set = 0, binding = 7) buffer readonly SunDirectShadeBuffer {
   DirectShadeRecord records[];
 } sunDirectShadeBuffer;
 
+layout(push_constant) uniform Push {
+  uint randomSeed;
+} push;
+
+// ------------- Random ------------- 
+
+// Random number generation using pcg32i_random_t, using inc = 1. Our random state is a uint.
+uint stepRNG(uint rngState) {
+  return rngState * 747796405 + 1;
+}
+
+// Steps the RNG and returns a floating-point value between 0 and 1 inclusive.
+float stepAndOutputRNGFloat(inout uint rngState) {
+  // Condensed version of pcg_output_rxs_m_xs_32_32, with simple conversion to floating-point [0,1].
+  rngState  = stepRNG(rngState);
+  uint word = ((rngState >> ((rngState >> 28u) + 4u)) ^ rngState) * 277803737u;
+  word      = (word >> 22u) ^ word;
+  return float(word) / 4294967295.0f;
+}
+
+float randomFloat(uint additionalRandomSeed) {
+  uint rngState =  gl_GlobalInvocationID.x * (push.randomSeed + 1 + additionalRandomSeed);
+  return stepAndOutputRNGFloat(rngState);
+}
+
 void main() {
   IndirectSamplerData samplerData = indirectSamplerDataBuffer.datas[gl_GlobalInvocationID.x];
   IndirectShadeRecord indirectRecord = indirectShadeBuffer.records[gl_GlobalInvocationID.x];
@@ -65,8 +90,11 @@ void main() {
 
   vec3 totalRadiance = prevRenderResult.totalRadiance + curRadiance;
   vec3 totalIndirect = totalPrevIndirect * curIndirect;
-  bool isRayContinue = indirectRecord.isIlluminate && length(totalIndirect) > 0.1f;
 
+  float p = max(0.0f, 1.0f - max(totalIndirect.x, max(totalIndirect.y, totalIndirect.z)));
+  totalIndirect /= (1.0f - p);
+
+  bool isRayContinue = indirectRecord.isIlluminate && randomFloat(0u) >= p;
   if (!isRayContinue) {
     imageStore(resultImage, pixelCoord, vec4(totalRadiance, 1.0f));
   }
