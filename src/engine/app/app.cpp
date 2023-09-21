@@ -397,11 +397,11 @@ namespace nugiEngine {
 		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0u, 0u });
 		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0u, 0u });
 		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
+		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(-18.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -441,7 +441,7 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -657,8 +657,8 @@ namespace nugiEngine {
 		float sunZ = glm::cos(theta);
 
 		ubo.sunLight.direction = glm::normalize(glm::vec3(sunX, sunY, sunZ));
-		ubo.sunLight.color = glm::vec3(100.0f, 100.0f, 63.0f);
-		ubo.skyColor = glm::vec3(0.52f, 0.8f, 0.92f);
+		ubo.sunLight.color = glm::vec3(0.0f, 0.0f, 0.0f);
+		ubo.skyColor = glm::vec3(0.0f, 0.0f, 0.0f);
 
 		return ubo;
 	}
