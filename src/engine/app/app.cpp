@@ -776,8 +776,10 @@ namespace nugiEngine {
 			this->indirectLightHitRecordBuffer->getBuffersInfo()
 		};
 
-		VkDescriptorBufferInfo indirectShadeModelInfos[1] {
-			this->materialModel->getMaterialInfo()
+		VkDescriptorBufferInfo indirectShadeModelInfos[3] {
+			this->materialModel->getMaterialInfo(),
+			this->lightModel->getLightInfo(),
+			this->rayTraceVertexModels->getVertexnfo()
 		};
 
 		VkDescriptorBufferInfo directShadeModelInfos[3] {
@@ -831,7 +833,7 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos, shadeTexturesInfo);
+		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(),  this->globalUniforms->getBuffersInfo(), indirectShadeBufferInfos, indirectShadeModelInfos, shadeTexturesInfo);
 		this->directShadeDescSet = std::make_unique<EngineDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos, shadeTexturesInfo);
 		this->sunDirectShadeDescSet = std::make_unique<EngineSunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos, shadeTexturesInfo);
 		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);

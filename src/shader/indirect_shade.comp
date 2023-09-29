@@ -4,23 +4,42 @@
 
 layout(local_size_x = 32) in;
 
-layout(set = 0, binding = 0) buffer writeonly IndirectBuffer {
+layout(set = 0, binding = 0) uniform readonly GlobalUniform {
+  vec3 origin;
+  vec3 horizontal;
+  vec3 vertical;
+  vec3 lowerLeftCorner;
+  uvec2 imgSize;
+  uint numLights;
+  SunLight sunLight;
+  vec3 skyColor;
+} ubo;
+
+layout(set = 0, binding = 1) buffer writeonly IndirectBuffer {
   IndirectShadeRecord records[];
 } indirectBuffer;
 
-layout(set = 0, binding = 1) buffer readonly ObjectHitBuffer {
+layout(set = 0, binding = 2) buffer readonly ObjectHitBuffer {
   HitRecord records[];
 } objectHitBuffer;
 
-layout(set = 0, binding = 2) buffer readonly LightHitBuffer {
+layout(set = 0, binding = 3) buffer readonly LightHitBuffer {
   HitRecord records[];
 } lightHitBuffer;
 
-layout(set = 0, binding = 3) buffer readonly MaterialModel {
+layout(set = 0, binding = 4) buffer readonly MaterialModel {
   Material materials[];
 };
 
-layout(set = 0, binding = 4) uniform sampler2D colorTextureSampler[1];
+layout(set = 0, binding = 5) buffer readonly LightModel {
+  TriangleLight lights[];
+};
+
+layout(set = 0, binding = 6) buffer readonly VertexModel {
+  Vertex vertices[];
+};
+
+layout(set = 0, binding = 7) uniform sampler2D colorTextureSampler[1];
 
 layout(push_constant) uniform Push {
   uint randomSeed;
@@ -85,6 +104,14 @@ float randomFloat(uint additionalRandomSeed) {
   return stepAndOutputRNGFloat(rngState);
 }
 
+float randomFloatAt(float min, float max, uint additionalRandomSeed) {
+  return min + (max - min) * randomFloat(additionalRandomSeed);
+}
+
+uint randomUint(uint min, uint max, uint additionalRandomSeed) {
+  return uint(randomFloatAt(min, max + 1u, additionalRandomSeed));
+}
+
 // ------------- Lambert ------------- 
 
 vec3 randomCosineDirection(uint additionalRandomSeed) {
@@ -116,6 +143,33 @@ float lambertBrdfValue() {
   return 1.0f / pi;
 }
 
+// ------------- Triangle -------------
+
+vec3 triangleRandomDirection(uvec3 triIndices, vec3 origin, uint additionalRandomSeed) {
+  Vertex vectex1 = vertices[triIndices.x];
+  Vertex vectex2 = vertices[triIndices.y];
+  Vertex vectex3 = vertices[triIndices.z];
+
+  vec3 a = vectex2.position - vectex1.position;
+  vec3 b = vectex3.position - vectex1.position;
+
+  float u1 = randomFloat(additionalRandomSeed);
+  float u2 = randomFloat(additionalRandomSeed + 1);
+
+  if (u1 + u2 > 1) {
+    u1 = 1 - u1;
+    u2 = 1 - u2;
+  }
+
+  vec3 randomTriangle = u1 * a + u2 * b + vectex1.position;
+  return randomTriangle - origin;
+}
+
+vec3 trianglesRandomDirection(vec3 origin, uint additionalRandomSeed) {
+  uint lightIndex = randomUint(0u, ubo.numLights - 1u, additionalRandomSeed);
+  return triangleRandomDirection(lights[lightIndex].indices, origin, additionalRandomSeed + 1u);
+}
+
 void main() {
   HitRecord objectHit = objectHitBuffer.records[gl_GlobalInvocationID.x];
   HitRecord lightHit = lightHitBuffer.records[gl_GlobalInvocationID.x];
@@ -139,7 +193,9 @@ void main() {
     }
 
     indirectShadeResult.nextRay.origin = objectHit.point;
-    indirectShadeResult.nextRay.direction = lambertRandomDirection(buildOnb(objectHit.normal), 0u);
+    indirectShadeResult.nextRay.direction = objectHit.rayBounce <= 2u
+      ? lambertRandomDirection(buildOnb(objectHit.normal), 0u) 
+      : trianglesRandomDirection(objectHit.point, objectHit.rayBounce);
 
     float NoL = max(dot(objectHit.normal, normalize(indirectShadeResult.nextRay.direction)), 0.01f);
     float brdf = lambertBrdfValue();
