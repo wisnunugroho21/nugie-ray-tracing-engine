@@ -39,9 +39,11 @@ namespace nugiEngine {
   std::shared_ptr<std::vector<IndirectSamplerData>> sortPixelByMorton(uint32_t width, uint32_t height) {
     auto pixels = std::make_shared<std::vector<IndirectSamplerData>>();
 
+    Ray newRay{};
+
     for (uint32_t i = 0; i < width; i++) {
       for (uint32_t j = 0; j < height; j++) {
-        IndirectSamplerData pixel{ i, j, 0.0f, glm::vec3{0.0f}, glm::vec3{0.0f} };
+        IndirectSamplerData pixel{ i, j, 0u, newRay };
         pixels->emplace_back(pixel);
       }
     }
