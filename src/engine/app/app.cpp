@@ -42,8 +42,7 @@ namespace nugiEngine {
 
 				// ----------- Indirect Sampler -----------
 				
-				auto x = this->indirectSamplerDescSet->getDescriptorSets(frameIndex);
-				this->indirectSamplerRender->render(commandBuffer, x, this->randomSeed);
+				this->indirectSamplerRender->render(commandBuffer, this->indirectSamplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
 
 				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
@@ -51,8 +50,7 @@ namespace nugiEngine {
 
 				// ----------- Intersect Object -----------
 
-				x = this->indirectIntersectObjectDescSet->getDescriptorSets(frameIndex);
-				this->intersectObjectRender->render(commandBuffer, x);
+				this->intersectObjectRender->render(commandBuffer, this->indirectIntersectObjectDescSet->getDescriptorSets(frameIndex));
 
 				this->indirectObjectHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->objectRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
