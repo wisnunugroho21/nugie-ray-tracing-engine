@@ -14,7 +14,7 @@ namespace nugiEngine {
 		
 	this->descriptorSets.clear();
 	for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			VkDescriptorSet descSet{};
+			VkDescriptorSet descSet;
 
 			EngineDescriptorWriter(*this->descSetLayout, *descriptorPool)
 				.writeImage(0, &samplingResourcesInfo[0][i])

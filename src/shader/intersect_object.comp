@@ -39,8 +39,6 @@ layout(set = 0, binding = 8) buffer readonly TransformationModel {
   Transformation transformations[];
 };
 
-layout(set = 0, binding = 9) uniform sampler2D normalTextureSampler[1];
-
 #define KEPSILON 0.00001
 
 // ------------- Basic -------------
@@ -103,13 +101,8 @@ HitRecord hitTriangle(uvec3 triIndices, Ray r, float dirMin, vec3 dirMax, uint t
   hit.uv = getTotalTextureCoordinate(triIndices, vec2(u, v));
   hit.point = (transformations[transformIndex].pointMatrix * vec4(rayAt(r, t), 1.0f)).xyz;
 
-  if (materials[materialIndex].normalTextureIndex == 0u) {
-    vec3 outwardNormal = normalize(cross(v0v1, v0v2));
-    hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
-  } else {
-    vec3 outwardNormal = texture(normalTextureSampler[materials[materialIndex].normalTextureIndex - 1u], hit.uv).xyz;
-    hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * outwardNormal);
-  }
+  vec3 outwardNormal = normalize(cross(v0v1, v0v2));
+  hit.normal = normalize(mat3(transformations[transformIndex].normalMatrix) * setFaceNormal(r.direction, outwardNormal));
 
   return hit;
 }

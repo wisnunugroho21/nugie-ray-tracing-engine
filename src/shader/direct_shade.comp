@@ -32,8 +32,6 @@ layout(set = 0, binding = 6) buffer readonly VertexModel {
   Vertex vertices[];
 };
 
-layout(set = 0, binding = 7) uniform sampler2D colorTextureSampler[1];
-
 layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
@@ -102,14 +100,6 @@ void main() {
   directShadeResult.pdf = 0.0f;
 
   if (directShadeResult.isIlluminate) {
-    vec3 surfaceColor;
-    
-    if (surfaceMaterial.colorTextureIndex == 0u) {
-      surfaceColor = surfaceMaterial.baseColor;
-    } else {
-      surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], directData.uv).xyz;
-    }
-
     vec3 unitLightDirection = normalize(lightHit.dir);
 
     float NloL = max(dot(lightHit.normal, -1.0f * unitLightDirection), 0.01f);
@@ -120,7 +110,7 @@ void main() {
     float area = triangleArea(hittedLight.indices);
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = hittedLight.color * surfaceColor * brdf * NoL * NloL * area / max(squareDistance, 0.001f);
+    directShadeResult.radiance = hittedLight.color * surfaceMaterial.baseColor * brdf * NoL * NloL * area / max(squareDistance, 0.001f);
     directShadeResult.pdf = maxComponent(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

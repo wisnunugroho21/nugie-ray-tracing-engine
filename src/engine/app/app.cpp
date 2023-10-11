@@ -34,7 +34,7 @@ namespace nugiEngine {
 			auto oldTime = std::chrono::high_resolution_clock::now();
 
 			if (this->renderer->acquireFrame()) {
-				uint32_t frameIndex = this->renderer->getFrameIndex();
+				uint32_t frameIndex = 0u; // this->renderer->getFrameIndex();
 				uint32_t imageIndex = this->renderer->getImageIndex();
 
 				auto commandBuffer = this->renderer->beginCommand();
@@ -42,7 +42,8 @@ namespace nugiEngine {
 
 				// ----------- Indirect Sampler -----------
 				
-				this->indirectSamplerRender->render(commandBuffer, this->indirectSamplerDescSet->getDescriptorSets(frameIndex), this->randomSeed);
+				auto x = this->indirectSamplerDescSet->getDescriptorSets(frameIndex);
+				this->indirectSamplerRender->render(commandBuffer, x, this->randomSeed);
 
 				this->objectRayDataBuffer->transferToRead(commandBuffer, frameIndex);
 				this->lightRayDataBuffer->transferToRead(commandBuffer, frameIndex);
@@ -50,7 +51,8 @@ namespace nugiEngine {
 
 				// ----------- Intersect Object -----------
 
-				this->intersectObjectRender->render(commandBuffer, this->indirectIntersectObjectDescSet->getDescriptorSets(frameIndex));
+				x = this->indirectIntersectObjectDescSet->getDescriptorSets(frameIndex);
+				this->intersectObjectRender->render(commandBuffer, x);
 
 				this->indirectObjectHitRecordBuffer->transferToRead(commandBuffer, frameIndex);
 				this->objectRayDataBuffer->transferToWrite(commandBuffer, frameIndex);
@@ -512,9 +514,6 @@ namespace nugiEngine {
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
 
-		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-
 		this->numLights = static_cast<uint32_t>(triangleLights->size());
 	}
 
@@ -604,9 +603,6 @@ namespace nugiEngine {
 
 		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
-
-		this->colorTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
-		this->normalTextures.emplace_back(std::make_unique<EngineTexture>(this->device, "textures/viking_room.png"));
 
 		this->numLights = 0u;
 	}
@@ -816,29 +812,19 @@ namespace nugiEngine {
 			this->rayTraceVertexModels->getVertexnfo()
 		};
 
-		std::vector<VkDescriptorImageInfo> shadeTexturesInfo[1];
-		for (int i = 0; i < this->colorTextures.size(); i++) {
-			shadeTexturesInfo[0].emplace_back(this->colorTextures[i]->getDescriptorInfo());
-		}
-
-		std::vector<VkDescriptorImageInfo> intersectObjectTexturesInfo[1];
-		for (int i = 0; i < this->normalTextures.size(); i++) {
-			intersectObjectTexturesInfo[0].emplace_back(this->normalTextures[i]->getDescriptorInfo());
-		}
-
 		std::vector<VkDescriptorImageInfo> imagesInfo[2] {
 			this->indirectImage->getImagesInfo(),
 			this->accumulateImages->getImagesInfo()
 		};
 
-		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos, shadeTexturesInfo);
-		this->directShadeDescSet = std::make_unique<EngineDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos, shadeTexturesInfo);
-		this->sunDirectShadeDescSet = std::make_unique<EngineSunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos, shadeTexturesInfo);
+		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos);
+		this->directShadeDescSet = std::make_unique<EngineDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos);
+		this->sunDirectShadeDescSet = std::make_unique<EngineSunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos);
 		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
 		this->directIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
-		this->directIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
+		this->directIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos);
 		this->indirectIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
-		this->indirectIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos, intersectObjectTexturesInfo);
+		this->indirectIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos);
 		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
 		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
 		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);

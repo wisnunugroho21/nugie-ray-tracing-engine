@@ -35,8 +35,6 @@ layout(set = 0, binding = 5) buffer readonly MaterialModel {
   Material materials[];
 };
 
-layout(set = 0, binding = 6) uniform sampler2D colorTextureSampler[1];
-
 layout(push_constant) uniform Push {
   uint randomSeed;
 } push;
@@ -88,20 +86,13 @@ void main() {
   directShadeResult.pdf = 0.0f;
 
   if (directShadeResult.isIlluminate) {
-    vec3 surfaceColor;
-    if (surfaceMaterial.colorTextureIndex == 0u) {
-      surfaceColor = surfaceMaterial.baseColor;
-    } else {
-      surfaceColor = texture(colorTextureSampler[surfaceMaterial.colorTextureIndex - 1u], directData.uv).xyz;
-    }
-
     vec3 unitLightDirection = normalize(ubo.sunLight.direction);
       
     float NoL = max(dot(directData.normal, unitLightDirection), 0.01f);
     float brdf = lambertBrdfValue();
     float pdf = lambertPdfValue(NoL);
 
-    directShadeResult.radiance = ubo.sunLight.color * surfaceColor * brdf * NoL / pdf;
+    directShadeResult.radiance = ubo.sunLight.color * surfaceMaterial.baseColor * brdf * NoL / pdf;
     directShadeResult.pdf = maxComponent(directShadeResult.radiance) > 0.00001f ? pdf : 0.0f;
   }
   

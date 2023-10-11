@@ -141,9 +141,6 @@ namespace nugiEngine {
 			std::unique_ptr<EngineSunDirectSamplerDescSet> sunDirectSamplerDescSet{};
 			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
 
-			std::vector<std::unique_ptr<EngineTexture>> colorTextures{};
-			std::vector<std::unique_ptr<EngineTexture>> normalTextures{};
-
 			std::shared_ptr<EngineCamera> camera{};
 			std::shared_ptr<EngineKeyboardController> keyboardController{};
 			std::shared_ptr<EngineMouseController> mouseController{};

@@ -11,7 +11,7 @@ namespace nugiEngine {
 		public:
 			EngineSunDirectShadeDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4], 
-				VkDescriptorBufferInfo modelsInfo[1], std::vector<VkDescriptorImageInfo> texturesInfo[1]);
+				VkDescriptorBufferInfo modelsInfo[1]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
 			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
@@ -22,7 +22,7 @@ namespace nugiEngine {
 
 			void createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
 				std::vector<VkDescriptorBufferInfo> uniformBufferInfo, std::vector<VkDescriptorBufferInfo> buffersInfo[4], 
-				VkDescriptorBufferInfo modelsInfo[1], std::vector<VkDescriptorImageInfo> texturesInfo[1]);
+				VkDescriptorBufferInfo modelsInfo[1]);
 	};
 	
 }
