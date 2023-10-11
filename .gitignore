@@ -1,5 +1,11 @@
 /bin
 /build
+/shader
+/shaders
+/model
+/models
+/texture
+/textures
 /.vscode
 
 .DS_Store
