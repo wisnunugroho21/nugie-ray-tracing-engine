@@ -4,17 +4,17 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace nugiEngine {
-	EngineComputePipeline::Builder::Builder(EngineDevice& appDevice, VkPipelineLayout pipelineLayout) : appDevice{appDevice} {
-		this->configInfo.pipelineLayout = pipelineLayout;
+namespace NugieVulkan {
+	ComputePipeline::Builder::Builder(Device* device, VkPipelineLayout pipelineLayout) : device{device} {
+		this->pipelineLayout = pipelineLayout;
 	}
 
-	EngineComputePipeline::Builder EngineComputePipeline::Builder::setDefault(const std::string& compFilePath) {
+	ComputePipeline::Builder& ComputePipeline::Builder::setDefault(const std::string& compFilePath) {
 		VkShaderModule compShaderModule;
 
-		auto compCode = EngineComputePipeline::readFile(compFilePath);
+		auto compCode = ComputePipeline::readFile(compFilePath);
 
-		EngineComputePipeline::createShaderModule(this->appDevice, compCode, &compShaderModule);
+		ComputePipeline::createShaderModule(this->device, compCode, &compShaderModule);
 
 		VkPipelineShaderStageCreateInfo computeShaderStageInfo{};
 		computeShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -25,42 +25,53 @@ namespace nugiEngine {
 		computeShaderStageInfo.pNext = nullptr;
 		computeShaderStageInfo.pSpecializationInfo = nullptr;
 
-		this->configInfo.shaderStageInfo = computeShaderStageInfo;
+		this->shaderStageInfo = computeShaderStageInfo;
 		return *this;
 	}
 
-  EngineComputePipeline::Builder EngineComputePipeline::Builder::setShaderStageInfo(VkPipelineShaderStageCreateInfo shaderStageInfo) {
-		this->configInfo.shaderStageInfo = shaderStageInfo;
+  ComputePipeline::Builder& ComputePipeline::Builder::setShaderStageInfo(VkPipelineShaderStageCreateInfo shaderStageInfo) {
+		this->shaderStageInfo = shaderStageInfo;
 		return *this;
 	}
 
-  EngineComputePipeline::Builder EngineComputePipeline::Builder::setBasePipelineHandleInfo(VkPipeline basePipeline) {
-    this->configInfo.basePipelineHandleInfo = basePipeline;
+  ComputePipeline::Builder& ComputePipeline::Builder::setBasePipelineHandleInfo(VkPipeline basePipeline) {
+    this->basePipelineHandleInfo = basePipeline;
 		return *this;
   }
 
-  EngineComputePipeline::Builder EngineComputePipeline::Builder::setBasePipelineIndex(int32_t basePipelineIndex) {
-    this->configInfo.basePipelineIndex = basePipelineIndex;
+  ComputePipeline::Builder& ComputePipeline::Builder::setBasePipelineIndex(int32_t basePipelineIndex) {
+    this->basePipelineIndex = basePipelineIndex;
 		return *this;
   }
 
-	std::unique_ptr<EngineComputePipeline> EngineComputePipeline::Builder::build() {
-		return std::make_unique<EngineComputePipeline>(
-			this->appDevice,
-			this->configInfo
+	std::unique_ptr<ComputePipeline> ComputePipeline::Builder::build() {
+		return std::make_unique<ComputePipeline>(
+			this->device, 
+			this->pipelineLayout,
+			this->shaderStageInfo, 
+			this->basePipelineHandleInfo,
+			this->basePipelineIndex
 		);
 	}
 
-	EngineComputePipeline::EngineComputePipeline(EngineDevice& device, const ComputePipelineConfigInfo& configInfo) : engineDevice{device} {
-		this->createGraphicPipeline(configInfo);
+	ComputePipeline::ComputePipeline(Device* device, VkPipelineLayout pipelineLayout, 
+		VkPipelineShaderStageCreateInfo shaderStageInfo, VkPipeline basePipelineHandleInfo, 
+		int32_t basePipelineIndex) : device{device} 
+	{
+		this->createGraphicPipeline(
+			pipelineLayout,
+			shaderStageInfo, 
+			basePipelineHandleInfo,
+			basePipelineIndex
+		);
 	}
 
-	EngineComputePipeline::~EngineComputePipeline() {
-		vkDestroyShaderModule(this->engineDevice.getLogicalDevice(), this->shaderModule, nullptr);
-		vkDestroyPipeline(this->engineDevice.getLogicalDevice(), this->computePipeline, nullptr);
+	ComputePipeline::~ComputePipeline() {
+		vkDestroyShaderModule(this->device->getLogicalDevice(), this->shaderModule, nullptr);
+		vkDestroyPipeline(this->device->getLogicalDevice(), this->computePipeline, nullptr);
 	}
 
-	std::vector<char> EngineComputePipeline::readFile(const std::string& filepath) {
+	std::vector<char> ComputePipeline::readFile(const std::string& filepath) {
 		std::ifstream file{filepath, std::ios::ate | std::ios::binary};
 
 		if (!file.is_open()) {
@@ -77,39 +88,42 @@ namespace nugiEngine {
 		return buffer;
 	}
 
-	void EngineComputePipeline::createGraphicPipeline(const ComputePipelineConfigInfo& configInfo) {
+	void ComputePipeline::createGraphicPipeline(VkPipelineLayout pipelineLayout, 
+		VkPipelineShaderStageCreateInfo shaderStageInfo, 
+		VkPipeline basePipelineHandleInfo, int32_t basePipelineIndex) 
+	{
     VkComputePipelineCreateInfo pipelineInfo{};
 
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-		pipelineInfo.layout = configInfo.pipelineLayout;
-		pipelineInfo.basePipelineIndex = configInfo.basePipelineIndex;
-		pipelineInfo.basePipelineHandle = configInfo.basePipelineHandleInfo;
-		pipelineInfo.stage = configInfo.shaderStageInfo;
+		pipelineInfo.layout = pipelineLayout;
+		pipelineInfo.basePipelineIndex = basePipelineIndex;
+		pipelineInfo.basePipelineHandle = basePipelineHandleInfo;
+		pipelineInfo.stage = shaderStageInfo;
 
-		if (vkCreateComputePipelines(this->engineDevice.getLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->computePipeline) != VK_SUCCESS) {
+		if (vkCreateComputePipelines(this->device->getLogicalDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->computePipeline) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create compute pipelines");
 		}
 
-    this->shaderModule = configInfo.shaderStageInfo.module;
+    this->shaderModule = shaderStageInfo.module;
 	}
 
-	void EngineComputePipeline::createShaderModule(EngineDevice& appDevice, const std::vector<char>& code, VkShaderModule* shaderModule) {
+	void ComputePipeline::createShaderModule(Device* device, const std::vector<char>& code, VkShaderModule* shaderModule) {
 		VkShaderModuleCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		createInfo.codeSize = code.size();
 		createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
 
-		if (vkCreateShaderModule(appDevice.getLogicalDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
+		if (vkCreateShaderModule(device->getLogicalDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create shader module");
 		}
 	}
 
-	void EngineComputePipeline::bind(VkCommandBuffer commandBuffer) {
+	void ComputePipeline::bind(VkCommandBuffer commandBuffer) {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, this->computePipeline);
 	}
 
-	void EngineComputePipeline::dispatch(VkCommandBuffer commandBuffer, uint32_t xSize, uint32_t ySize, uint32_t zSize) {
+	void ComputePipeline::dispatch(VkCommandBuffer commandBuffer, uint32_t xSize, uint32_t ySize, uint32_t zSize) {
 		vkCmdDispatch(commandBuffer, xSize, ySize, zSize);
 	}
 
-} // namespace nugiEngine
+} // namespace NugieVulkan

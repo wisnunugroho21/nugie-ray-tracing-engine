@@ -12,17 +12,17 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineMaterialModel {
+namespace NugieApp {
+	class MaterialModel {
 		public:
-			EngineMaterialModel(EngineDevice &device, std::shared_ptr<std::vector<Material>> materials);
+			MaterialModel(NugieVulkan::Device* device, std::vector<Material> materials);
 
 			VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo();  }
 			
 		private:
-			EngineDevice &engineDevice;
-			std::shared_ptr<EngineBuffer> materialBuffer;
+			NugieVulkan::Device* device;
+			std::unique_ptr<NugieVulkan::Buffer> materialBuffer;
 
-			void createBuffers(std::shared_ptr<std::vector<Material>> materials);
+			void createBuffers(std::vector<Material> materials);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
+namespace NugieApp {
 	struct Vertex {
 		glm::vec3 position{};
 
@@ -29,20 +29,20 @@ namespace nugiEngine {
 		std::vector<uint32_t> indices{};
 	};
 
-	class EngineVertexModel {
+	class VertexModel {
 	public:
-		EngineVertexModel(EngineDevice &device, const VertexModelData &data);
+		VertexModel(NugieVulkan::Device* device, const VertexModelData &data);
 
-		void bind(std::shared_ptr<EngineCommandBuffer> commandBuffer);
-		void draw(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+		void bind(NugieVulkan::CommandBuffer* commandBuffer);
+		void draw(NugieVulkan::CommandBuffer* commandBuffer);
 		
 	private:
-		EngineDevice &engineDevice;
+		NugieVulkan::Device* device;
 		
-		std::unique_ptr<EngineBuffer> vertexBuffer;
+		std::unique_ptr<NugieVulkan::Buffer> vertexBuffer;
 		uint32_t vertextCount;
 
-		std::unique_ptr<EngineBuffer> indexBuffer;
+		std::unique_ptr<NugieVulkan::Buffer> indexBuffer;
 		uint32_t indexCount;
 
 		bool hasIndexBuffer = false;
@@ -50,4 +50,4 @@ namespace nugiEngine {
 		void createVertexBuffers(const std::vector<Vertex> &vertices);
 		void createIndexBuffer(const std::vector<uint32_t> &indices);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

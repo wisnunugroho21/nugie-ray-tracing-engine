@@ -4,7 +4,8 @@
 #include "../../vulkan/device/device.hpp"
 #include "../../vulkan/swap_chain/swap_chain.hpp"
 #include "../../vulkan/buffer/buffer.hpp"
-#include "../../vulkan/descriptor/descriptor.hpp"
+#include "../../vulkan/descriptor/descriptor_pool.hpp"
+#include "../../vulkan/command/command_pool.hpp"
 #include "../../vulkan/command/command_buffer.hpp"
 #include "../ray_ubo.hpp"
 
@@ -12,15 +13,15 @@
 #include <vector>
 #include <cassert>
 
-namespace nugiEngine {
-	class EngineHybridRenderer
+namespace NugieApp {
+	class HybridRenderer
 	{
 		public:
-			EngineHybridRenderer(EngineWindow& window, EngineDevice& device);
-			~EngineHybridRenderer();
+			HybridRenderer(NugieVulkan::Window* window, NugieVulkan::Device* device);
+			~HybridRenderer();
 
-			std::shared_ptr<EngineSwapChain> getSwapChain() const { return this->swapChain; }
-			std::shared_ptr<EngineDescriptorPool> getDescriptorPool() const { return this->descriptorPool; }
+			NugieVulkan::SwapChain* getSwapChain() const { return this->swapChain.get(); }
+			NugieVulkan::DescriptorPool* getDescriptorPool() const { return this->descriptorPool.get(); }
 			bool isFrameInProgress() const { return this->isFrameStarted; }
 
 			VkCommandBuffer getCommandBuffer() const { 
@@ -28,21 +29,21 @@ namespace nugiEngine {
 				return this->commandBuffers[this->currentFrameIndex]->getCommandBuffer();
 			}
 
-			uint32_t getFrameIndex() {
+			uint32_t getFrameIndex() const {
 				assert(this->isFrameStarted && "cannot get frame index when frame is not in progress");
 				return this->currentFrameIndex;
 			}
 
-			uint32_t getImageIndex() {
+			uint32_t getImageIndex() const {
 				assert(this->isFrameStarted && "cannot get frame index when frame is not in progress");
 				return this->currentImageIndex;
 			}
 
-			std::shared_ptr<EngineCommandBuffer> beginCommand();
-			void endCommand(std::shared_ptr<EngineCommandBuffer>);
+			NugieVulkan::CommandBuffer* beginCommand();
+			void endCommand(NugieVulkan::CommandBuffer*);
 
-			void submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffer);
-			void submitCommand(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+			void submitCommands(std::vector<NugieVulkan::CommandBuffer*> commandBuffer);
+			void submitCommand(NugieVulkan::CommandBuffer* commandBuffer);
 
 			bool acquireFrame();
 			bool presentFrame();
@@ -51,14 +52,16 @@ namespace nugiEngine {
 			void recreateSwapChain();
 			void createSyncObjects(uint32_t imageCount);
 			void createDescriptorPool();
+			void createCommandPool();
 
-			EngineWindow& appWindow;
-			EngineDevice& appDevice;
+			NugieVulkan::Window* window;
+			NugieVulkan::Device* device;
 
-			std::shared_ptr<EngineSwapChain> swapChain;
-			std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers;
+			std::vector<std::unique_ptr<NugieVulkan::CommandBuffer>> commandBuffers;
 
-			std::shared_ptr<EngineDescriptorPool> descriptorPool;
+			std::unique_ptr<NugieVulkan::CommandPool> commandPool;
+			std::unique_ptr<NugieVulkan::DescriptorPool> descriptorPool;
+			std::unique_ptr<NugieVulkan::SwapChain> swapChain;
 
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;

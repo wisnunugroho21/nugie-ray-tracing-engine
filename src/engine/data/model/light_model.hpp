@@ -13,20 +13,20 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineLightModel {
+namespace NugieApp {
+	class LightModel {
     public:
-      EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
+      LightModel(NugieVulkan::Device* device, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices);
 
       VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
       
     private:
-      EngineDevice &engineDevice;
+      NugieVulkan::Device* device;
       
-      std::shared_ptr<EngineBuffer> lightBuffer;
-      std::shared_ptr<EngineBuffer> bvhBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> lightBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
 
-      void createBuffers(std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<BvhNode>> bvhNodes);
+      void createBuffers(std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

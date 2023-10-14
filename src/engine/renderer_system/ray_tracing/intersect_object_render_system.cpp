@@ -4,38 +4,40 @@
 #include <array>
 #include <string>
 
-namespace nugiEngine {
-	EngineIntersectObjectRenderSystem::EngineIntersectObjectRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
-		: appDevice{device}, width{width}, height{height}, nSample{nSample}
+namespace NugieApp {
+	IntersectObjectRenderSystem::IntersectObjectRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
+		: device{device}, width{width}, height{height}, nSample{nSample}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayout);
 		this->createPipeline();
 	}
 
-	EngineIntersectObjectRenderSystem::~EngineIntersectObjectRenderSystem() {
-		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
+	IntersectObjectRenderSystem::~IntersectObjectRenderSystem() {
+		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineIntersectObjectRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void IntersectObjectRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
+		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+		
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayouts;
+		pipelineLayoutInfo.pSetLayouts = &setLayout;
 
-		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(this->device->getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
 
-	void EngineIntersectObjectRenderSystem::createPipeline() {
+	void IntersectObjectRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
+		this->pipeline = NugieVulkan::ComputePipeline::Builder(this->device, this->pipelineLayout)
 			.setDefault("shader/intersect_object.comp.spv")
 			.build();
 	}
 
-	void EngineIntersectObjectRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets) {
+	void IntersectObjectRenderSystem::render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

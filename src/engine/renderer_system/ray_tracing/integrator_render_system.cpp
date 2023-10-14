@@ -9,45 +9,47 @@
 #include <array>
 #include <string>
 
-namespace nugiEngine {
-	EngineIntegratorRenderSystem::EngineIntegratorRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
-		: appDevice{device}, width{width}, height{height}, nSample{nSample}
+namespace NugieApp {
+	IntegratorRenderSystem::IntegratorRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
+		: device{device}, width{width}, height{height}, nSample{nSample}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayout);
 		this->createPipeline();
 	}
 
-	EngineIntegratorRenderSystem::~EngineIntegratorRenderSystem() {
-		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
+	IntegratorRenderSystem::~IntegratorRenderSystem() {
+		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineIntegratorRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void IntegratorRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(RayTracePushConstant);
 
+		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayouts;
+		pipelineLayoutInfo.pSetLayouts = &setLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(this->device->getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
 
-	void EngineIntegratorRenderSystem::createPipeline() {
+	void IntegratorRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
+		this->pipeline = NugieVulkan::ComputePipeline::Builder(this->device, this->pipelineLayout)
 			.setDefault("shader/integrator.comp.spv")
 			.build();
 	}
 
-	void EngineIntegratorRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void IntegratorRenderSystem::render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

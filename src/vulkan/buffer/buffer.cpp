@@ -11,7 +11,7 @@
 #include <cassert>
 #include <cstring>
  
-namespace nugiEngine {
+namespace NugieVulkan {
   /**
    * Returns the minimum instance size required to be compatible with devices minOffsetAlignment
    *
@@ -21,22 +21,22 @@ namespace nugiEngine {
    *
    * @return VkResult of the buffer mapping call
    */
-  VkDeviceSize EngineBuffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
+  VkDeviceSize Buffer::getAlignment(VkDeviceSize instanceSize, VkDeviceSize minOffsetAlignment) {
     if (minOffsetAlignment > 0) {
       return (instanceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1);
     }
     return instanceSize;
   }
   
-  EngineBuffer::EngineBuffer(
-      EngineDevice &device,
+  Buffer::Buffer(
+      Device* device,
       VkDeviceSize instanceSize,
       uint32_t instanceCount,
       VkBufferUsageFlags usageFlags,
       VkMemoryPropertyFlags memoryPropertyFlags,
       VkDeviceSize minOffsetAlignment
     )
-      : engineDevice{device},
+      : device{device},
         instanceSize{instanceSize},
         instanceCount{instanceCount},
         usageFlags{usageFlags},
@@ -48,10 +48,10 @@ namespace nugiEngine {
     this->createBuffer(bufferSize, usageFlags, memoryPropertyFlags);
   }
   
-  EngineBuffer::~EngineBuffer() {
+  Buffer::~Buffer() {
     this->unmap();
-    vkDestroyBuffer(this->engineDevice.getLogicalDevice(), this->buffer, nullptr);
-    vkFreeMemory(this->engineDevice.getLogicalDevice(), this->memory, nullptr);
+    vkDestroyBuffer(this->device->getLogicalDevice(), this->buffer, nullptr);
+    vkFreeMemory(this->device->getLogicalDevice(), this->memory, nullptr);
   }
   
   /**
@@ -63,9 +63,9 @@ namespace nugiEngine {
    *
    * @return VkResult of the buffer mapping call
    */
-  VkResult EngineBuffer::map(VkDeviceSize size, VkDeviceSize offset) {
+  VkResult Buffer::map(VkDeviceSize size, VkDeviceSize offset) {
     assert(this->buffer && this->memory && "Called map on buffer before create");
-    return vkMapMemory(this->engineDevice.getLogicalDevice(), this->memory, offset, size, 0, &this->mapped);
+    return vkMapMemory(this->device->getLogicalDevice(), this->memory, offset, size, 0, &this->mapped);
   }
   
   /**
@@ -73,9 +73,9 @@ namespace nugiEngine {
    *
    * @note Does not return a result as vkUnmapMemory can't fail
    */
-  void EngineBuffer::unmap() {
+  void Buffer::unmap() {
     if (this->mapped) {
-      vkUnmapMemory(this->engineDevice.getLogicalDevice(), this->memory);
+      vkUnmapMemory(this->device->getLogicalDevice(), this->memory);
       this->mapped = nullptr;
     }
   }
@@ -89,7 +89,7 @@ namespace nugiEngine {
    * @param offset (Optional) Byte offset from beginning of mapped region
    *
    */
-  void EngineBuffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset) {
+  void Buffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset) {
     assert(this->mapped && "Cannot copy to unmapped buffer");
   
     if (size == VK_WHOLE_SIZE) {
@@ -110,7 +110,7 @@ namespace nugiEngine {
    * @param offset (Optional) Byte offset from beginning of mapped region
    *
    */
-  void EngineBuffer::readFromBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
+  void Buffer::readFromBuffer(void* data, VkDeviceSize size, VkDeviceSize offset) {
     assert(this->mapped && "Cannot copy from unmapped buffer");
   
     if (size == VK_WHOLE_SIZE) {
@@ -133,13 +133,13 @@ namespace nugiEngine {
    *
    * @return VkResult of the flush call
    */
-  VkResult EngineBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
+  VkResult Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = this->memory;
     mappedRange.offset = offset;
     mappedRange.size = size;
-    return vkFlushMappedMemoryRanges(this->engineDevice.getLogicalDevice(), 1, &mappedRange);
+    return vkFlushMappedMemoryRanges(this->device->getLogicalDevice(), 1, &mappedRange);
   }
   
   /**
@@ -153,13 +153,13 @@ namespace nugiEngine {
    *
    * @return VkResult of the invalidate call
    */
-  VkResult EngineBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
+  VkResult Buffer::invalidate(VkDeviceSize size, VkDeviceSize offset) {
     VkMappedMemoryRange mappedRange = {};
     mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
     mappedRange.memory = this->memory;
     mappedRange.offset = offset;
     mappedRange.size = size;
-    return vkInvalidateMappedMemoryRanges(this->engineDevice.getLogicalDevice(), 1, &mappedRange);
+    return vkInvalidateMappedMemoryRanges(this->device->getLogicalDevice(), 1, &mappedRange);
   }
   
   /**
@@ -170,7 +170,7 @@ namespace nugiEngine {
    *
    * @return VkDescriptorBufferInfo of specified offset and range
    */
-  VkDescriptorBufferInfo EngineBuffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
+  VkDescriptorBufferInfo Buffer::descriptorInfo(VkDeviceSize size, VkDeviceSize offset) {
     return VkDescriptorBufferInfo{
         this->buffer,
         offset,
@@ -185,7 +185,7 @@ namespace nugiEngine {
    * @param index Used in offset calculation
    *
    */
-  void EngineBuffer::writeToIndex(void *data, int index) {
+  void Buffer::writeToIndex(void *data, int index) {
     this->writeToBuffer(data, this->instanceSize, index * this->alignmentSize);
   }
 
@@ -196,7 +196,7 @@ namespace nugiEngine {
    * @param index Used in offset calculation
    *
    */
-  void EngineBuffer::readFromIndex(void* data, int index) {
+  void Buffer::readFromIndex(void* data, int index) {
     this->readFromBuffer(data, this->instanceSize, index * this->alignmentSize);
   }
   
@@ -206,7 +206,7 @@ namespace nugiEngine {
    * @param index Used in offset calculation
    *
    */
-  VkResult EngineBuffer::flushIndex(int index) { 
+  VkResult Buffer::flushIndex(int index) { 
     return this->flush(this->alignmentSize, index * this->alignmentSize); 
   }
   
@@ -217,7 +217,7 @@ namespace nugiEngine {
    *
    * @return VkDescriptorBufferInfo for instance at index
    */
-  VkDescriptorBufferInfo EngineBuffer::descriptorInfoForIndex(int index) {
+  VkDescriptorBufferInfo Buffer::descriptorInfoForIndex(int index) {
     return this->descriptorInfo(this->alignmentSize, index * this->alignmentSize);
   }
   
@@ -230,19 +230,18 @@ namespace nugiEngine {
    *
    * @return VkResult of the invalidate call
    */
-  VkResult EngineBuffer::invalidateIndex(int index) {
+  VkResult Buffer::invalidateIndex(int index) {
     return this->invalidate(this->alignmentSize, index * this->alignmentSize);
   }
 
-  void EngineBuffer::transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+  void Buffer::transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
     VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, 
-    uint32_t dstQueueFamilyIndex, std::shared_ptr<EngineCommandBuffer> commandBuffer, 
-    EngineDevice *appDevice)
+    uint32_t dstQueueFamilyIndex, CommandBuffer* commandBuffer)
   {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(this->engineDevice);
+      commandBuffer = new CommandBuffer(this->device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;
@@ -275,19 +274,20 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->engineDevice.getTransferQueue(0));
+      commandBuffer->submitCommand(this->device->getTransferQueue(0));
+
+      delete commandBuffer;
     }
   }
 
-  void EngineBuffer::transitionBuffer(std::vector<std::shared_ptr<EngineBuffer>> buffers, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
-    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, 
-    uint32_t dstQueueFamilyIndex, std::shared_ptr<EngineCommandBuffer> commandBuffer, 
-    EngineDevice *appDevice) 
+  void Buffer::transitionBuffer(std::vector<Buffer*> buffers, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+    VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, uint32_t dstQueueFamilyIndex, 
+    CommandBuffer* commandBuffer, Device* device) 
   {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(*appDevice);
+      commandBuffer = new CommandBuffer(device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;
@@ -327,53 +327,95 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(appDevice->getTransferQueue(0));
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
     }
   }
 
-  void EngineBuffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
+  void Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties) {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
     bufferInfo.usage = usage;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateBuffer(this->engineDevice.getLogicalDevice(), &bufferInfo, nullptr, &this->buffer) != VK_SUCCESS) {
+    if (vkCreateBuffer(this->device->getLogicalDevice(), &bufferInfo, nullptr, &this->buffer) != VK_SUCCESS) {
       throw std::runtime_error("failed to create vertex buffer!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(this->engineDevice.getLogicalDevice(), this->buffer, &memRequirements);
+    vkGetBufferMemoryRequirements(this->device->getLogicalDevice(), this->buffer, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = this->engineDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = this->device->findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->engineDevice.getLogicalDevice(), &allocInfo, nullptr, &this->memory) != VK_SUCCESS) {
+    if (vkAllocateMemory(this->device->getLogicalDevice(), &allocInfo, nullptr, &this->memory) != VK_SUCCESS) {
       throw std::runtime_error("failed to allocate vertex buffer memory!");
     }
 
-    vkBindBufferMemory(this->engineDevice.getLogicalDevice(), this->buffer, this->memory, 0);
+    vkBindBufferMemory(this->device->getLogicalDevice(), this->buffer, this->memory, 0);
   }
 
-  void EngineBuffer::copyBuffer(VkBuffer srcBuffer, VkDeviceSize size) {
-    EngineCommandBuffer commandBuffer{this->engineDevice};
-    commandBuffer.beginSingleTimeCommand();
+  void Buffer::copyFromAnotherBuffer(Buffer* srcBuffer, CommandBuffer* commandBuffer = nullptr) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
 
     VkBufferCopy copyRegion{};
     copyRegion.srcOffset = 0;  // Optional
     copyRegion.dstOffset = 0;  // Optional
-    copyRegion.size = size;
-    vkCmdCopyBuffer(commandBuffer.getCommandBuffer(), srcBuffer, this->buffer, 1, &copyRegion);
+    copyRegion.size = srcBuffer->getBufferSize();
+    vkCmdCopyBuffer(commandBuffer->getCommandBuffer(), srcBuffer->getBuffer(), this->buffer, 1, &copyRegion);
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->engineDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
   }
 
-  void EngineBuffer::copyBufferToImage(VkImage image, uint32_t width, uint32_t height, uint32_t layerCount) {
-    EngineCommandBuffer commandBuffer{this->engineDevice};
-    commandBuffer.beginSingleTimeCommand();
+  void Buffer::copyToAnotherBuffer(Buffer* destBuffer, CommandBuffer* commandBuffer = nullptr) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    VkBufferCopy copyRegion{};
+    copyRegion.srcOffset = 0;  // Optional
+    copyRegion.dstOffset = 0;  // Optional
+    copyRegion.size = this->bufferSize;
+    vkCmdCopyBuffer(commandBuffer->getCommandBuffer(), this->buffer, destBuffer->getBuffer(), 1, &copyRegion);
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
+  }
+
+  void Buffer::copyBufferToImage(Image* destImage, CommandBuffer* commandBuffer = nullptr) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
 
     VkBufferImageCopy region{};
     region.bufferOffset = 0;
@@ -383,22 +425,66 @@ namespace nugiEngine {
     region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     region.imageSubresource.mipLevel = 0;
     region.imageSubresource.baseArrayLayer = 0;
-    region.imageSubresource.layerCount = layerCount;
+    region.imageSubresource.layerCount = 1u;
 
     region.imageOffset = {0, 0, 0};
-    region.imageExtent = {width, height, 1};
+    region.imageExtent = {destImage->getWidth(), destImage->getHeight(), 1};
 
     vkCmdCopyBufferToImage(
-      commandBuffer.getCommandBuffer(),
+      commandBuffer->getCommandBuffer(),
       this->buffer,
-      image,
+      destImage->getImage(),
       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
       1,
       &region
     );
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->engineDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
+  }
+
+  void Buffer::copyImageToBuffer(Image* srcImage, CommandBuffer* commandBuffer = nullptr) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1u;
+
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {srcImage->getWidth(), srcImage->getHeight(), 1};
+
+    vkCmdCopyImageToBuffer(
+      commandBuffer->getCommandBuffer(),
+      srcImage->getImage(),
+      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+      this->buffer,
+      1,
+      &region
+    );
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
   }
   
  

@@ -9,12 +9,12 @@
 #include <array>
 #include <string>
 
-namespace nugiEngine {
-	EngineGlobalUniform::EngineGlobalUniform(EngineDevice& device) : appDevice{device} {
+namespace NugieApp {
+	GlobalUniform::GlobalUniform(NugieVulkan::Device* device) : device{device} {
 		this->createUniformBuffer();
 	}
 
-	std::vector<VkDescriptorBufferInfo> EngineGlobalUniform::getBuffersInfo() const {
+	std::vector<VkDescriptorBufferInfo> GlobalUniform::getBuffersInfo() const {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->uniformBuffers.size(); i++) {
@@ -24,12 +24,12 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineGlobalUniform::createUniformBuffer() {
+	void GlobalUniform::createUniformBuffer() {
 		this->uniformBuffers.clear();
 
-		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto uniformBuffer = std::make_shared<EngineBuffer>(
-				this->appDevice,
+		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
+			auto uniformBuffer = std::make_unique<NugieVulkan::Buffer>(
+				this->device,
 				sizeof(RayTraceUbo),
 				1u,
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
@@ -41,7 +41,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineGlobalUniform::writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo) {
+	void GlobalUniform::writeGlobalData(uint32_t frameIndex, RayTraceUbo ubo) {
 		this->uniformBuffers[frameIndex]->writeToBuffer(&ubo);
 		this->uniformBuffers[frameIndex]->flush();
 	}

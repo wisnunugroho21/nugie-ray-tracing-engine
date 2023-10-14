@@ -6,7 +6,7 @@
 #include <memory>
 #include <algorithm>
 
-namespace nugiEngine {
+namespace NugieApp {
   uint32_t part1By1(uint32_t x);
   uint32_t part1By2(uint32_t x);
 
@@ -15,7 +15,7 @@ namespace nugiEngine {
 
   bool mortonComparator(IndirectSamplerData a, IndirectSamplerData b);
 
-  std::shared_ptr<std::vector<IndirectSamplerData>> sortPixelByMorton(uint32_t width, uint32_t height);
+  std::vector<IndirectSamplerData> sortPixelByMorton(uint32_t width, uint32_t height);
   
 } // namespace name
 

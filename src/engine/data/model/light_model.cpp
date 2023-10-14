@@ -7,23 +7,26 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace nugiEngine {
-	EngineLightModel::EngineLightModel(EngineDevice &device, std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<RayTraceVertex>> vertices) : engineDevice{device} {
-		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (int i = 0; i < triangleLights->size(); i++) {
-			boundBoxes.push_back(std::make_shared<TriangleLightBoundBox>(TriangleLightBoundBox{ i + 1, triangleLights->at(i), vertices }));
+namespace NugieApp {
+	LightModel::LightModel(NugieVulkan::Device* device, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices) : device{device} {
+		std::vector<BoundBox*> boundBoxes;
+		for (int i = 0; i < triangleLights.size(); i++) {
+			boundBoxes.push_back(new TriangleLightBoundBox(i + 1, &triangleLights[i], vertices));
 		}
 
 		this->createBuffers(triangleLights, createBvh(boundBoxes));
+
+		for (auto &&boundBox : boundBoxes) {
+			delete boundBox;
+		}
 	}
 
-	void EngineLightModel::createBuffers(std::shared_ptr<std::vector<TriangleLight>> triangleLights, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+	void LightModel::createBuffers(std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(TriangleLight));
-		auto instanceCount = static_cast<uint32_t>(triangleLights->size());
-		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		auto instanceCount = static_cast<uint32_t>(triangleLights.size());
 		
-		EngineBuffer lightStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer lightStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -31,26 +34,25 @@ namespace nugiEngine {
 		};
 
 		lightStagingBuffer.map();
-		lightStagingBuffer.writeToBuffer(triangleLights->data());
+		lightStagingBuffer.writeToBuffer(triangleLights.data());
 
-		this->lightBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->lightBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->lightBuffer->copyBuffer(lightStagingBuffer.getBuffer(), totalSize);
+		this->lightBuffer->copyFromAnotherBuffer(&lightStagingBuffer);
 
 		// -------------------------------------------------
 
 		bufferSize = static_cast<VkDeviceSize>(sizeof(BvhNode));
-		instanceCount = static_cast<uint32_t>(bvhNodes->size());
-		totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		instanceCount = static_cast<uint32_t>(bvhNodes.size());
 
-		EngineBuffer bvhStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer bvhStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -58,18 +60,18 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(bvhNodes->data());
+		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
 
-		this->bvhBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), totalSize);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
 	}
     
-} // namespace nugiEngine
+} // namespace NugieApp
 

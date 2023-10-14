@@ -1,17 +1,17 @@
 #include "camera.hpp"
 
-namespace nugiEngine {
-  EngineCamera::EngineCamera(uint32_t width, uint32_t height) : width{width}, height{height} {}
+namespace NugieApp {
+  Camera::Camera(uint32_t width, uint32_t height) : width{width}, height{height} {}
 
-  void EngineCamera::setViewDirection(glm::vec3 position, glm::vec3 direction, float vfov, glm::vec3 vup) {
+  void Camera::setViewDirection(glm::vec3 position, glm::vec3 direction, float vfov, glm::vec3 vup) {
 		this->setViewTarget(position, direction + position, vfov, vup);
   }
 
-	void EngineCamera::setViewTransformation(CameraTransformation cameraTransf, float vfov, glm::vec3 vup) {
+	void Camera::setViewTransformation(CameraTransformation cameraTransf, float vfov, glm::vec3 vup) {
 		this->setViewTarget(cameraTransf.origin, cameraTransf.origin + cameraTransf.direction, vfov, vup);
 	}
 
-  void EngineCamera::setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 vup) {
+  void Camera::setViewTarget(glm::vec3 position, glm::vec3 target, float vfov, glm::vec3 vup) {
 		float aspectRatio = static_cast<float>(this->width) / static_cast<float>(this->height);
 
 		float theta = glm::radians(vfov);
@@ -31,5 +31,5 @@ namespace nugiEngine {
 		this->cameraTransformation.origin = position;
 		this->cameraTransformation.direction = target - position;
   }
-} // namespace nugiEngine
+} // namespace NugieApp
 

@@ -6,12 +6,11 @@
 #include <string>
 #include <stdexcept>
 
-namespace nugiEngine {
-	class EngineWindow
-	{
+namespace NugieVulkan {
+	class Window {
 		public:
-			EngineWindow(int w, int h, std::string name);
-			~EngineWindow();
+			Window(uint32_t w, uint32_t h, std::string name);
+			~Window();
 
 			bool shouldClose();
 			void pollEvents();
@@ -23,8 +22,7 @@ namespace nugiEngine {
 			GLFWwindow* getWindow() const { return this->window; } 
 
 		private:
-			int width;
-			int height;
+			uint32_t width, height;
 			bool frameBufferResized = false;
 
 			std::string name;

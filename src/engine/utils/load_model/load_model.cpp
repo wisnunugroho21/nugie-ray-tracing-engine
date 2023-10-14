@@ -3,7 +3,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "../../../../libraries/tiny_obj/tiny_obj_loader.h"
 
-namespace nugiEngine
+namespace NugieApp
 {
   LoadedModel loadModelFromFile(const std::string &filePath, uint32_t materialIndex, uint32_t offsetIndex) {
 		tinyobj::attrib_t attrib{};
@@ -16,8 +16,8 @@ namespace nugiEngine
 			throw std::runtime_error(warn + err);
 		}
 		
-		auto primitives = std::make_shared<std::vector<Primitive>>();
-		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
+		auto primitives = std::vector<Primitive>();
+		auto vertices = std::vector<RayTraceVertex>();
 
 		for (const auto &shape: shapes) {
 			uint32_t numTriangle = static_cast<uint32_t>(shape.mesh.indices.size()) / 3;
@@ -69,34 +69,34 @@ namespace nugiEngine
 				};
 
 				/* if (uniqueVertices.count(vertex0) == 0) {
-					uniqueVertices[vertex0] = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex0);
+					uniqueVertices[vertex0] = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+					vertices.emplace_back(vertex0);
 				}
 
 				if (uniqueVertices.count(vertex1) == 0) {
-					uniqueVertices[vertex1] = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex1);
+					uniqueVertices[vertex1] = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+					vertices.emplace_back(vertex1);
 				}
 
 				if (uniqueVertices.count(vertex2) == 0) {
-					uniqueVertices[vertex2] = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-					vertices->emplace_back(vertex2);
+					uniqueVertices[vertex2] = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+					vertices.emplace_back(vertex2);
 				}
 
 				uint32_t index0 = uniqueVertices[vertex0];
 				uint32_t index1 = uniqueVertices[vertex1];
 				uint32_t index2 = uniqueVertices[vertex2]; */
 
-				uint32_t index0 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-				vertices->emplace_back(vertex0);
+				uint32_t index0 = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+				vertices.emplace_back(vertex0);
 
-				uint32_t index1 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-				vertices->emplace_back(vertex1);
+				uint32_t index1 = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+				vertices.emplace_back(vertex1);
 
-				uint32_t index2 = static_cast<uint32_t>(vertices->size()) + offsetIndex;
-				vertices->emplace_back(vertex2);
+				uint32_t index2 = static_cast<uint32_t>(vertices.size()) + offsetIndex;
+				vertices.emplace_back(vertex2);
 
-				primitives->emplace_back(Primitive{
+				primitives.emplace_back(Primitive{
 					glm::uvec3{ index0, index1, index2 },
 					materialIndex
 				});
@@ -106,4 +106,4 @@ namespace nugiEngine
 		return LoadedModel{ primitives, vertices };
 	}
   
-} // namespace nugiEngine
+} // namespace NugieApp

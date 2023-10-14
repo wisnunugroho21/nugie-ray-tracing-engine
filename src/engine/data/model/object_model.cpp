@@ -4,18 +4,17 @@
 #include <iostream>
 #include <unordered_map>
 
-namespace nugiEngine {
-	EngineObjectModel::EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes) : engineDevice{device} {
+namespace NugieApp {
+	ObjectModel::ObjectModel(NugieVulkan::Device* device, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes) : device{device} {
 		this->createBuffers(objects, createBvh(boundBoxes));
 	}
 
-	void EngineObjectModel::createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes) {
+	void ObjectModel::createBuffers(std::vector<Object> objects, std::vector<BvhNode> bvhNodes) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Object));
-		auto instanceCount = static_cast<uint32_t>(objects->size());
-		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		auto instanceCount = static_cast<uint32_t>(objects.size());
 
-		EngineBuffer objectStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer objectStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -23,26 +22,25 @@ namespace nugiEngine {
 		};
 
 		objectStagingBuffer.map();
-		objectStagingBuffer.writeToBuffer(objects->data());
+		objectStagingBuffer.writeToBuffer(objects.data());
 
-		this->objectBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->objectBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyBuffer(objectStagingBuffer.getBuffer(), totalSize);
+		this->objectBuffer->copyFromAnotherBuffer(&objectStagingBuffer);
 
 		// -------------------------------------------------
 
 		bufferSize = static_cast<VkDeviceSize>(sizeof(BvhNode));
-		instanceCount = static_cast<uint32_t>(bvhNodes->size());
-		totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		instanceCount = static_cast<uint32_t>(bvhNodes.size());
 
-		EngineBuffer bvhStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer bvhStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -50,17 +48,17 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(bvhNodes->data());
+		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
 
-		this->bvhBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), totalSize);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
 	} 
-} // namespace nugiEngine
+} // namespace NugieApp
 

@@ -13,19 +13,19 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineTransformationModel {
+namespace NugieApp {
+	class TransformationModel {
 		public:
-			EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations);
-			EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents);
+			TransformationModel(NugieVulkan::Device* device, std::vector<Transformation> transformations);
+			TransformationModel(NugieVulkan::Device* device, std::vector<TransformComponent> transformationComponents);
 
 			VkDescriptorBufferInfo getTransformationInfo() { return this->transformationBuffer->descriptorInfo();  }
 			
 		private:
-			EngineDevice &engineDevice;
-			std::shared_ptr<EngineBuffer> transformationBuffer;
+			NugieVulkan::Device* device;
+			std::unique_ptr<NugieVulkan::Buffer> transformationBuffer;
 
-			std::shared_ptr<std::vector<Transformation>> convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations);
-			void createBuffers(std::shared_ptr<std::vector<Transformation>> transformations);
+			std::vector<Transformation> convertToMatrix(std::vector<TransformComponent> transformations);
+			void createBuffers(std::vector<Transformation> transformations);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

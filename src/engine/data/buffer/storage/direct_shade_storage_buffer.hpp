@@ -13,20 +13,20 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineDirectShadeStorageBuffer {
+namespace NugieApp {
+	class DirectShadeStorageBuffer {
 		public:
-			EngineDirectShadeStorageBuffer(EngineDevice &device, uint32_t dataCount);
+			DirectShadeStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
-			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
-			void transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void transferToRead(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
+			void transferToWrite(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
 			
 		private:
-			EngineDevice &engineDevice;
-			std::vector<std::shared_ptr<EngineBuffer>> buffers;
+			NugieVulkan::Device* device;
+			std::vector<std::unique_ptr<NugieVulkan::Buffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<DirectShadeRecord>> datas);
+			void createBuffers(std::vector<DirectShadeRecord> datas);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

@@ -3,8 +3,8 @@
 #include "../../utils/camera/camera.hpp"
 #include "../../../vulkan/window/window.hpp"
 
-namespace nugiEngine {
-  class EngineKeyboardController
+namespace NugieApp {
+  class KeyboardController
   {
   public:
     struct KeyMappings {
@@ -26,4 +26,4 @@ namespace nugiEngine {
     float moveSpeed{10.0f};
   };
   
-} // namespace nugiEngine
+} // namespace NugieApp

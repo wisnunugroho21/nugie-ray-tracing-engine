@@ -7,37 +7,36 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace nugiEngine {
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::shared_ptr<std::vector<Transformation>> transformations) : engineDevice{device} {
+namespace NugieApp {
+	TransformationModel::TransformationModel(NugieVulkan::Device* device, std::vector<Transformation> transformations) : device{device} {
 		this->createBuffers(transformations);
 	}
 
-	EngineTransformationModel::EngineTransformationModel(EngineDevice &device, std::vector<std::shared_ptr<TransformComponent>> transformationComponents) : engineDevice{device} {
+	TransformationModel::TransformationModel(NugieVulkan::Device* device, std::vector<TransformComponent> transformationComponents) : device{device} {
 		this->createBuffers(this->convertToMatrix(transformationComponents));
 	}
 
-	std::shared_ptr<std::vector<Transformation>> EngineTransformationModel::convertToMatrix(std::vector<std::shared_ptr<TransformComponent>> transformations) {
-		auto newTransforms = std::make_shared<std::vector<Transformation>>();
+	std::vector<Transformation> TransformationModel::convertToMatrix(std::vector<TransformComponent> transformations) {
+		auto newTransforms = std::vector<Transformation>();
 		for (auto &&transform : transformations) {
-			newTransforms->emplace_back(Transformation{ 
-				transform->getPointMatrix(),
-				transform->getDirMatrix(), 
-				transform->getPointInverseMatrix(), 
-				transform->getDirInverseMatrix(), 
-				transform->getNormalMatrix() 
+			newTransforms.emplace_back(Transformation{ 
+				transform.getPointMatrix(),
+				transform.getDirMatrix(), 
+				transform.getPointInverseMatrix(), 
+				transform.getDirInverseMatrix(), 
+				transform.getNormalMatrix() 
 			});
 		}
 
 		return newTransforms;
 	}
 
-	void EngineTransformationModel::createBuffers(std::shared_ptr<std::vector<Transformation>> transformations) {
+	void TransformationModel::createBuffers(std::vector<Transformation> transformations) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Transformation));
-		auto instanceCount = static_cast<uint32_t>(transformations->size());
-		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		auto instanceCount = static_cast<uint32_t>(transformations.size());
 
-		EngineBuffer transformationStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer transformationStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -45,17 +44,17 @@ namespace nugiEngine {
 		};
 
 		transformationStagingBuffer.map();
-		transformationStagingBuffer.writeToBuffer(transformations->data());
+		transformationStagingBuffer.writeToBuffer(transformations.data());
 
-		this->transformationBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->transformationBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->transformationBuffer->copyBuffer(transformationStagingBuffer.getBuffer(), totalSize);
+		this->transformationBuffer->copyFromAnotherBuffer(&transformationStagingBuffer);
 	} 
-} // namespace nugiEngine
+} // namespace NugieApp
 

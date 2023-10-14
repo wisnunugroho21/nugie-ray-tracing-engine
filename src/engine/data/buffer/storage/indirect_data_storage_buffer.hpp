@@ -13,17 +13,20 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineIndirectDataStorageBuffer {
+namespace NugieApp {
+	class IndirectDataStorageBuffer {
 		public:
-			EngineIndirectDataStorageBuffer(EngineDevice &device, uint32_t dataCount);
+			IndirectDataStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
+
+			void transferToRead(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
+			void transferToWrite(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
 			
 		private:
-			EngineDevice &engineDevice;
-			std::vector<std::shared_ptr<EngineBuffer>> buffers;
+			NugieVulkan::Device* device;
+			std::vector<std::unique_ptr<NugieVulkan::Buffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<RenderResult>> datas);
+			void createBuffers(std::vector<RenderResult> datas);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

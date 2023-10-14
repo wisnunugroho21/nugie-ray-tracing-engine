@@ -7,24 +7,25 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-  class EngineSwapChainSubRenderer {
+namespace NugieApp {
+  class SwapChainSubRenderer {
     public:
-      EngineSwapChainSubRenderer(EngineDevice &device, std::vector<std::shared_ptr<EngineImage>> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height);
-      std::shared_ptr<EngineRenderPass> getRenderPass() const { return this->renderPass; }
+      SwapChainSubRenderer(NugieVulkan::Device* device, std::vector<NugieVulkan::Image*> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height);
+      
+      NugieVulkan::RenderPass* getRenderPass() const { return this->renderPass.get(); }
 
-      void beginRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer, int currentImageIndex);
-			void endRenderPass(std::shared_ptr<EngineCommandBuffer> commandBuffer);
+      void beginRenderPass(NugieVulkan::CommandBuffer* commandBuffer, int currentImageIndex);
+			void endRenderPass(NugieVulkan::CommandBuffer* commandBuffer);
       
     private:
       int width, height;
-      EngineDevice &device;
+      NugieVulkan::Device* device;
 
-      std::vector<std::shared_ptr<EngineImage>> colorImages;
-      std::vector<std::shared_ptr<EngineImage>> depthImages;
-      std::vector<std::shared_ptr<EngineImage>> swapChainImages;
+      std::vector<NugieVulkan::Image> colorImages;
+      std::vector<NugieVulkan::Image> depthImages;
+      std::vector<NugieVulkan::Image*> swapChainImages;
       
-      std::shared_ptr<EngineRenderPass> renderPass;
+      std::unique_ptr<NugieVulkan::RenderPass> renderPass;
 
       VkFormat findDepthFormat();
 
@@ -33,4 +34,4 @@ namespace nugiEngine {
       void createRenderPass(VkFormat swapChainImageFormat, int imageCount);
   };
   
-} // namespace nugiEngine
+} // namespace NugieApp

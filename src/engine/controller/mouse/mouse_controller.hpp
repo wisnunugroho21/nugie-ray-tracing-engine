@@ -3,8 +3,8 @@
 #include "../../utils/camera/camera.hpp"
 #include "../../../vulkan/window/window.hpp"
 
-namespace nugiEngine {
-  class EngineMouseController
+namespace NugieApp {
+  class MouseController
   {
   public:
     struct KeyMappings {
@@ -22,4 +22,4 @@ namespace nugiEngine {
     bool isFirstPressed = true;
   };
   
-} // namespace nugiEngine
+} // namespace NugieApp

@@ -1,6 +1,6 @@
 #include "morton.hpp"
 
-namespace nugiEngine {
+namespace NugieApp {
   // "Insert" a 0 bit after each of the 16 low bits of x
   uint32_t part1By1(uint32_t x) {
     x &= 0x0000ffff;                  // x = ---- ---- ---- ---- fedc ba98 7654 3210
@@ -36,19 +36,19 @@ namespace nugiEngine {
     return aValue < bValue;
   }
 
-  std::shared_ptr<std::vector<IndirectSamplerData>> sortPixelByMorton(uint32_t width, uint32_t height) {
-    auto pixels = std::make_shared<std::vector<IndirectSamplerData>>();
+  std::vector<IndirectSamplerData> sortPixelByMorton(uint32_t width, uint32_t height) {
+    auto pixels = std::vector<IndirectSamplerData>();
 
     Ray newRay{};
 
     for (uint32_t i = 0; i < width; i++) {
       for (uint32_t j = 0; j < height; j++) {
         IndirectSamplerData pixel{ i, j, 0u, newRay };
-        pixels->emplace_back(pixel);
+        pixels.emplace_back(pixel);
       }
     }
 
-    std::sort(pixels->begin(), pixels->end(), mortonComparator);
+    std::sort(pixels.begin(), pixels.end(), mortonComparator);
     return pixels;
   }
 }

@@ -1,15 +1,15 @@
 #include "window.hpp"
 
-namespace nugiEngine {
-  EngineWindow::EngineWindow(int w, int h, std::string name) : width{w}, height{h}, name{name} {
+namespace NugieVulkan {
+  Window::Window(uint32_t w, uint32_t h, std::string name) : width{w}, height{h}, name{name} {
     this->init();
   }
 
-  EngineWindow::~EngineWindow() {
+  Window::~Window() {
     this->destroy();
   }
 
-  void EngineWindow::init() {
+  void Window::init() {
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -19,35 +19,35 @@ namespace nugiEngine {
     glfwSetFramebufferSizeCallback(this->window, this->frameBufferResizedCallback);
   }
 
-  void EngineWindow::destroy() {
+  void Window::destroy() {
     glfwDestroyWindow(this->window);
     glfwTerminate();
   }
 
-  bool EngineWindow::shouldClose() {
+  bool Window::shouldClose() {
     return glfwWindowShouldClose(this->window);
   }
 
-  void EngineWindow::pollEvents() {
+  void Window::pollEvents() {
     glfwPollEvents();
   }
 
-  void EngineWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
+  void Window::createWindowSurface(VkInstance instance, VkSurfaceKHR* surface) {
     if (glfwCreateWindowSurface(instance, this->window, nullptr, surface) != VK_SUCCESS) {
       throw std::runtime_error("failed to create window surface");
     }
   }
 
-  void EngineWindow::resetResizedFlag() {
+  void Window::resetResizedFlag() {
     this->frameBufferResized = false;
   }
 
-  VkExtent2D EngineWindow::getExtent() {
+  VkExtent2D Window::getExtent() {
     return { static_cast<uint32_t>(this->width), static_cast<uint32_t>(this->height) };
   }
 
-  void EngineWindow::frameBufferResizedCallback(GLFWwindow *window, int width, int height) {
-    auto currentWindow = reinterpret_cast<EngineWindow*>(glfwGetWindowUserPointer(window));
+  void Window::frameBufferResizedCallback(GLFWwindow *window, int width, int height) {
+    auto currentWindow = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
     currentWindow->frameBufferResized = true;
     currentWindow->width = width;
     currentWindow->height = height;

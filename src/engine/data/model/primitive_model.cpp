@@ -3,40 +3,39 @@
 #include <cstring>
 #include <iostream>
 
-namespace nugiEngine {
-	EnginePrimitiveModel::EnginePrimitiveModel(EngineDevice &device) : engineDevice{device} {
-		this->primitives = std::make_shared<std::vector<Primitive>>();
-		this->bvhNodes = std::make_shared<std::vector<BvhNode>>();
+namespace NugieApp {
+	PrimitiveModel::PrimitiveModel(NugieVulkan::Device* device) : device{device} {
+		this->primitives = std::vector<Primitive>();
+		this->bvhNodes = std::vector<BvhNode>();
 	}
 
-	void EnginePrimitiveModel::addPrimitive(std::shared_ptr<std::vector<Primitive>> curPrimitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices) {
+	void PrimitiveModel::addPrimitive(std::vector<Primitive> curPrimitives, std::vector<RayTraceVertex> vertices) {
 		auto curBvhNodes = this->createBvhData(curPrimitives, vertices);
 
-		for (int i = 0; i < curBvhNodes->size(); i++) {
-			this->bvhNodes->emplace_back(curBvhNodes->at(i));
+		for (int i = 0; i < curBvhNodes.size(); i++) {
+			this->bvhNodes.emplace_back(curBvhNodes.at(i));
 		}
 
-		for (int i = 0; i < curPrimitives->size(); i++) {
-			this->primitives->emplace_back(curPrimitives->at(i));
+		for (int i = 0; i < curPrimitives.size(); i++) {
+			this->primitives.emplace_back(curPrimitives.at(i));
 		}
 	}
 
-	std::shared_ptr<std::vector<BvhNode>> EnginePrimitiveModel::createBvhData(std::shared_ptr<std::vector<Primitive>> primitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices) {
-		std::vector<std::shared_ptr<BoundBox>> boundBoxes;
-		for (uint32_t i = 0; i < primitives->size(); i++) {
-			boundBoxes.push_back(std::make_shared<PrimitiveBoundBox>(PrimitiveBoundBox{ i + 1, primitives->at(i), vertices }));
+	std::vector<BvhNode> PrimitiveModel::createBvhData(std::vector<Primitive> primitives, std::vector<RayTraceVertex> vertices) {
+		std::vector<BoundBox*> boundBoxes;
+		for (uint32_t i = 0; i < primitives.size(); i++) {
+			boundBoxes.push_back(new PrimitiveBoundBox(i + 1, &primitives.at(i), vertices));
 		}
 
 		return createBvh(boundBoxes);
 	}
 
-	void EnginePrimitiveModel::createBuffers() {
+	void PrimitiveModel::createBuffers() {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Primitive));
-		auto instanceCount = static_cast<uint32_t>(primitives->size());
-		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		auto instanceCount = static_cast<uint32_t>(this->primitives.size());
 
-		EngineBuffer primitiveStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer primitiveStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -44,26 +43,25 @@ namespace nugiEngine {
 		};
 
 		primitiveStagingBuffer.map();
-		primitiveStagingBuffer.writeToBuffer(this->primitives->data());
+		primitiveStagingBuffer.writeToBuffer(this->primitives.data());
 
-		this->primitiveBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->primitiveBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->primitiveBuffer->copyBuffer(primitiveStagingBuffer.getBuffer(), totalSize);
+		this->primitiveBuffer->copyFromAnotherBuffer(&primitiveStagingBuffer);
 
 		// -------------------------------------------------
 
 		bufferSize = static_cast<VkDeviceSize>(sizeof(BvhNode));
-		instanceCount = static_cast<uint32_t>(bvhNodes->size());
-		totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		instanceCount = static_cast<uint32_t>(bvhNodes.size());
 
-		EngineBuffer bvhStagingBuffer {
-			this->engineDevice,
+		NugieVulkan::Buffer bvhStagingBuffer {
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -71,20 +69,20 @@ namespace nugiEngine {
 		};
 
 		bvhStagingBuffer.map();
-		bvhStagingBuffer.writeToBuffer(this->bvhNodes->data());
+		bvhStagingBuffer.writeToBuffer(this->bvhNodes.data());
 
-		this->bvhBuffer = std::make_shared<EngineBuffer>(
-			this->engineDevice,
+		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+			this->device,
 			bufferSize,
 			instanceCount,
 			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyBuffer(bvhStagingBuffer.getBuffer(), totalSize);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
 	}
 
-	/* std::shared_ptr<std::vector<Primitive>> EnginePrimitiveModel::createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex) {
+	/* std::shared_ptr<std::vector<Primitive>> PrimitiveModel::createPrimitivesFromFile(NugieVulkan::Device* device, const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;
@@ -144,5 +142,5 @@ namespace nugiEngine {
 
 		return primitives;
 	} */ 
-} // namespace nugiEngine
+} // namespace NugieApp
 

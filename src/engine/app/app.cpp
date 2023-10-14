@@ -16,20 +16,23 @@
 
 #include "../utils/sort/morton.hpp"
 
-namespace nugiEngine {
-	EngineApp::EngineApp() {
-		this->renderer = std::make_unique<EngineHybridRenderer>(this->window, this->device);
-		this->keyboardController = std::make_shared<EngineKeyboardController>();
-		this->mouseController = std::make_shared<EngineMouseController>();
+namespace NugieApp {
+	App::App() {
+		this->window = std::make_unique<NugieVulkan::Window>(WIDTH, HEIGHT, APP_TITLE);
+		this->device = std::make_unique<NugieVulkan::Device>(this->window.get());
+
+		this->renderer = std::make_unique<HybridRenderer>(this->window, this->device);
+		this->keyboardController = std::make_shared<KeyboardController>();
+		this->mouseController = std::make_shared<MouseController>();
 
 		this->loadCornellBox();
 		this->loadQuadModels();
 		this->recreateSubRendererAndSubsystem();
 	}
 
-	EngineApp::~EngineApp() {}
+	App::~App() {}
 
-	void EngineApp::renderLoop() {
+	void App::renderLoop() {
 		while (this->isRendering) {
 			auto oldTime = std::chrono::high_resolution_clock::now();
 
@@ -165,7 +168,7 @@ namespace nugiEngine {
 				this->accumulateImages->prepareFrame(commandBuffer, frameIndex);
 				
 				this->swapChainSubRenderer->beginRenderPass(commandBuffer, imageIndex);
-				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels, this->randomSeed);
+				this->samplingRayRender->render(commandBuffer, this->samplingDescSet->getDescriptorSets(frameIndex), this->quadModels.get(), this->randomSeed);
 				this->swapChainSubRenderer->endRenderPass(commandBuffer);
 
 				this->indirectImage->finishFrame(commandBuffer, frameIndex);
@@ -181,12 +184,12 @@ namespace nugiEngine {
 					continue;
 				}				
 
-				if (frameIndex + 1 == EngineDevice::MAX_FRAMES_IN_FLIGHT) {
+				if (frameIndex + 1 == NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT) {
 					if (this->isCameraMoved) {
 						this->isCameraMoved = false;
 						this->randomSeed = 0;
 
-						for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+						for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
 							this->globalUniforms->writeGlobalData(i, this->globalUbo);
 						}
 					} else {
@@ -201,19 +204,19 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineApp::run() {
+	void App::run() {
 		auto oldTime = std::chrono::high_resolution_clock::now();
 		uint32_t t = 0;
 
 		this->globalUbo = this->initUbo(this->renderer->getSwapChain()->width(), this->renderer->getSwapChain()->height());
-		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
 			this->globalUniforms->writeGlobalData(i, this->globalUbo);
 		}
 
-		std::thread renderThread(&EngineApp::renderLoop, std::ref(*this));
+		std::thread renderThread(&App::renderLoop, std::ref(*this));
 
-		while (!this->window.shouldClose()) {
-			this->window.pollEvents();
+		while (!this->window->shouldClose()) {
+			this->window->pollEvents();
 
 			auto newTime = std::chrono::high_resolution_clock::now();
 			float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - oldTime).count();
@@ -223,8 +226,8 @@ namespace nugiEngine {
 			bool isMousePressed = false;
 			bool isKeyboardPressed = false;
 
-			cameraTransformation = this->mouseController->rotateInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isMousePressed);
-			cameraTransformation = this->keyboardController->moveInPlaceXZ(this->window.getWindow(), deltaTime, cameraTransformation, &isKeyboardPressed);
+			cameraTransformation = this->mouseController->rotateInPlaceXZ(this->window->getWindow(), deltaTime, cameraTransformation, &isMousePressed);
+			cameraTransformation = this->keyboardController->moveInPlaceXZ(this->window->getWindow(), deltaTime, cameraTransformation, &isKeyboardPressed);
 
 			if (isMousePressed || isKeyboardPressed) {
 				this->camera->setViewTransformation(cameraTransformation, 40.0f);
@@ -240,7 +243,7 @@ namespace nugiEngine {
 
 			if (t == 10) {
 				std::string appTitle = std::string(APP_TITLE) + std::string(" | FPS: ") + std::to_string((1.0f / this->frameTime));
-				glfwSetWindowTitle(this->window.getWindow(), appTitle.c_str());
+				glfwSetWindowTitle(this->window->getWindow(), appTitle.c_str());
 
 				t = 0;
 			} else {
@@ -253,16 +256,16 @@ namespace nugiEngine {
 		this->isRendering = false;
 		renderThread.join();
 
-		vkDeviceWaitIdle(this->device.getLogicalDevice());
+		vkDeviceWaitIdle(this->device->getLogicalDevice());
 	}
 
-	void EngineApp::loadCornellBox() {
-		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
+	void App::loadCornellBox() {
+		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device);
 
-		auto objects = std::make_shared<std::vector<Object>>();
-		auto materials = std::make_shared<std::vector<Material>>();
-		auto triangleLights = std::make_shared<std::vector<TriangleLight>>();
-		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
+		auto objects = std::vector<Object>();
+		auto materials = std::vector<Material>();
+		auto triangleLights = std::vector<TriangleLight>();
+		auto vertices = std::vector<RayTraceVertex>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		std::vector<std::shared_ptr<TransformComponent>> transforms{};
@@ -273,21 +276,21 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 		
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		uint32_t objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 
-		auto rightWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
-		rightWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
+		auto rightWallPrimitives = std::vector<Primitive>();
+		rightWallPrimitives.emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u), 1u });
+		rightWallPrimitives.emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u), 1u });
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), rightWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), rightWallPrimitives, transforms[transformIndex], vertices));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -299,21 +302,21 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 555.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 		
-		auto leftWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
-		leftWallPrimitives->emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
+		auto leftWallPrimitives = std::vector<Primitive>();
+		leftWallPrimitives.emplace_back(Primitive{ glm::uvec3(4u, 5u, 6u), 2u });
+		leftWallPrimitives.emplace_back(Primitive{ glm::uvec3(6u, 7u, 4u), 2u });
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), leftWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), leftWallPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -325,16 +328,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(4u, 0u, 3u), 0u });
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(3u, 7u, 4u), 0u });
+		auto bottomWallPrimitives = std::vector<Primitive>();
+		bottomWallPrimitives.emplace_back(Primitive{ glm::uvec3(4u, 0u, 3u), 0u });
+		bottomWallPrimitives.emplace_back(Primitive{ glm::uvec3(3u, 7u, 4u), 0u });
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -346,16 +349,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		auto topWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(5u, 1u, 2u), 0u });
-		topWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 6u, 5u), 0u });
+		auto topWallPrimitives = std::vector<Primitive>();
+		topWallPrimitives.emplace_back(Primitive{ glm::uvec3(5u, 1u, 2u), 0u });
+		topWallPrimitives.emplace_back(Primitive{ glm::uvec3(2u, 6u, 5u), 0u });
 
 		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), topWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), topWallPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -367,16 +370,16 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		auto frontWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(7u, 6u, 2u), 0u });
-		frontWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 7u), 0u });
+		auto frontWallPrimitives = std::vector<Primitive>();
+		frontWallPrimitives.emplace_back(Primitive{ glm::uvec3(7u, 6u, 2u), 0u });
+		frontWallPrimitives.emplace_back(Primitive{ glm::uvec3(2u, 3u, 7u), 0u });
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), frontWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), frontWallPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -384,56 +387,56 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 227.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{343.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{213.0f, 554.0f, 332.0f}, glm::vec3{0.0f} });
 
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
-
-		// ----------------------------------------------------------------------------
-
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		triangleLights.emplace_back(TriangleLight{ glm::uvec3(8u, 9u, 10u), glm::vec3(100.0f, 100.0f, 100.0f) });
+		triangleLights.emplace_back(TriangleLight{ glm::uvec3(10u, 11u, 8u), glm::vec3(100.0f, 100.0f, 100.0f) });
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(-18.0f), 0.0f)}));
+		materials.emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+
+		// ----------------------------------------------------------------------------
+
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{130.0f, 0.0f, 65.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{295.0f, 0.0f, 65.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{295.0f, 165.0f, 65.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{130.0f, 165.0f, 65.0f}, glm::vec3{0.0f} });
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{130.0f, 0.0f, 230.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{295.0f, 0.0f, 230.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{295.0f, 165.0f, 230.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{130.0f, 165.0f, 230.0f}, glm::vec3{0.0f} });
 
-		auto firstBoxesPrimitives = std::make_shared<std::vector<Primitive>>();
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(14u, 15u, 12u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 19u, 16u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 16u, 19u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(19u, 15u, 12u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(13u, 17u, 18u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 14u, 13u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(15u, 14u, 18u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u, 19u, 15u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u, 13u, 17u), 0u });
-		firstBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(17u, 16u, 12u), 0u });
+		auto firstBoxesPrimitives = std::vector<Primitive>();
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u, 13u, 14u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(14u, 15u, 12u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(16u, 17u, 18u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u, 19u, 16u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u, 16u, 19u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(19u, 15u, 12u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(13u, 17u, 18u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u, 14u, 13u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(15u, 14u, 18u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u, 19u, 15u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u, 13u, 17u), 0u });
+		firstBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(17u, 16u, 12u), 0u });
 
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), firstBoxesPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), firstBoxesPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -441,39 +444,39 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(15.0f), 0.0f) }));
+		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f) }));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{265.0f, 0.0f, 295.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{430.0f, 0.0f, 295.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{430.0f, 330.0f, 295.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{265.0f, 330.0f, 295.0f}, glm::vec3{0.0f} });
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{265.0f, 0.0f, 460.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{430.0f, 0.0f, 460.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{430.0f, 330.0f, 460.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{265.0f, 330.0f, 460.0f}, glm::vec3{0.0f} });
 
-		auto secondBoxesPrimitives = std::make_shared<std::vector<Primitive>>();
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 14u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(14u + 8u, 15u + 8u, 12u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(16u + 8u, 17u + 8u, 18u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 16u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 16u + 8u, 19u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(19u + 8u, 15u + 8u, 12u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(13u + 8u, 17u + 8u, 18u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 14u + 8u, 13u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(15u + 8u, 14u + 8u, 18u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 15u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 17u + 8u), 0u });
-		secondBoxesPrimitives->emplace_back(Primitive{ glm::uvec3(17u + 8u, 16u + 8u, 12u + 8u), 0u });
+		auto secondBoxesPrimitives = std::vector<Primitive>();
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 14u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(14u + 8u, 15u + 8u, 12u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(16u + 8u, 17u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 16u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u + 8u, 16u + 8u, 19u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(19u + 8u, 15u + 8u, 12u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(13u + 8u, 17u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u + 8u, 14u + 8u, 13u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(15u + 8u, 14u + 8u, 18u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(18u + 8u, 19u + 8u, 15u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(12u + 8u, 13u + 8u, 17u + 8u), 0u });
+		secondBoxesPrimitives.emplace_back(Primitive{ glm::uvec3(17u + 8u, 16u + 8u, 12u + 8u), 0u });
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), secondBoxesPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), secondBoxesPrimitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -485,17 +488,17 @@ namespace nugiEngine {
 		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
+		auto loadedModel = loadModelFromFile("../models/viking_room.obj", 3u, static_cast<uint32_t>(vertices.size()));
 		for (auto &&vertex : *loadedModel.vertices) {
-			vertices->emplace_back(vertex);
+			vertices.emplace_back(vertex);
 		}
 
 		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -503,25 +506,25 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
+		this->objectModel = std::make_unique<ObjectModel>(this->device, objects, boundBoxes);
+		this->materialModel = std::make_unique<MaterialModel>(this->device, materials);
+		this->lightModel = std::make_unique<LightModel>(this->device, triangleLights, vertices);
+		this->transformationModel = std::make_unique<TransformationModel>(this->device, transforms);
+		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device, vertices);
 
-		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
+		this->globalUniforms = std::make_unique<GlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
 
-		this->numLights = static_cast<uint32_t>(triangleLights->size());
+		this->numLights = static_cast<uint32_t>(triangleLights.size());
 	}
 
-	void EngineApp::loadSkyLight() {
-		this->primitiveModel = std::make_unique<EnginePrimitiveModel>(this->device);
+	void App::loadSkyLight() {
+		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device);
 
-		auto objects = std::make_shared<std::vector<Object>>();
-		auto materials = std::make_shared<std::vector<Material>>();
-		auto triangleLights = std::make_shared<std::vector<TriangleLight>>();
-		auto vertices = std::make_shared<std::vector<RayTraceVertex>>();
+		auto objects = std::vector<Object>();
+		auto materials = std::vector<Material>();
+		auto triangleLights = std::vector<TriangleLight>();
+		auto vertices = std::vector<RayTraceVertex>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
 		std::vector<std::shared_ptr<TransformComponent>> transforms{};
@@ -532,21 +535,21 @@ namespace nugiEngine {
 		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		uint32_t objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		uint32_t objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 0.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{555.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{0.0f, 0.0f, 555.0f}, glm::vec3{0.0f} });
 
-		auto bottomWallPrimitives = std::make_shared<std::vector<Primitive>>();
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
-		bottomWallPrimitives->emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
+		auto bottomWallPrimitives = std::vector<Primitive>();
+		bottomWallPrimitives.emplace_back(Primitive{ glm::uvec3(0u, 1u, 2u) });
+		bottomWallPrimitives.emplace_back(Primitive{ glm::uvec3(2u, 3u, 0u) });
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -554,20 +557,20 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		materials->emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0u, 0u });
-		materials->emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.73f, 0.73f, 0.73f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.12f, 0.45f, 0.15f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.65f, 0.05f, 0.05f), 0.0f, 0.1f, 0.5f, 0u, 0u });
+		materials.emplace_back(Material{ glm::vec3(0.0f, 0.0f, 0.0f), 0.0f, 0.1f, 0.5f, 1u, 0u });
 
 		// ----------------------------------------------------------------------------
 
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
-		vertices->emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 22700.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{34300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
+		vertices.emplace_back(RayTraceVertex{ glm::vec3{21300.0f, 55400.0f, 33200.0f}, glm::vec3{0.0f} });
 
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(4u, 5u, 6u), glm::vec3(0.0f, 0.0f, 0.0f) });
-		triangleLights->emplace_back(TriangleLight{ glm::uvec3(6u, 7u, 4u), glm::vec3(0.0f, 0.0f, 0.0f) });
+		triangleLights.emplace_back(TriangleLight{ glm::uvec3(4u, 5u, 6u), glm::vec3(0.0f, 0.0f, 0.0f) });
+		triangleLights.emplace_back(TriangleLight{ glm::uvec3(6u, 7u, 4u), glm::vec3(0.0f, 0.0f, 0.0f) });
 
 		// ----------------------------------------------------------------------------
 
@@ -575,17 +578,17 @@ namespace nugiEngine {
 		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
-		objects->emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
-		objectIndex = static_cast<uint32_t>(objects->size() - 1);
+		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
+		objectIndex = static_cast<uint32_t>(objects.size() - 1);
 
-		auto loadedModel = loadModelFromFile("models/viking_room.obj", 3u, static_cast<uint32_t>(vertices->size()));
+		auto loadedModel = loadModelFromFile("../models/viking_room.obj", 3u, static_cast<uint32_t>(vertices.size()));
 		for (auto &&vertex : *loadedModel.vertices) {
-			vertices->emplace_back(vertex);
+			vertices.emplace_back(vertex);
 		}
 
 		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(ObjectBoundBox{ static_cast<uint32_t>(boundBoxes.size() + 1), objects->at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices }));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
 		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
@@ -593,19 +596,19 @@ namespace nugiEngine {
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<EngineObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<EngineMaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<EngineLightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<EngineTransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<EngineRayTraceVertexModel>(this->device, vertices);
+		this->objectModel = std::make_unique<ObjectModel>(this->device, objects, boundBoxes);
+		this->materialModel = std::make_unique<MaterialModel>(this->device, materials);
+		this->lightModel = std::make_unique<LightModel>(this->device, triangleLights, vertices);
+		this->transformationModel = std::make_unique<TransformationModel>(this->device, transforms);
+		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device, vertices);
 
-		this->globalUniforms = std::make_unique<EngineGlobalUniform>(this->device);
+		this->globalUniforms = std::make_unique<GlobalUniform>(this->device);
 		this->primitiveModel->createBuffers();
 
 		this->numLights = 0u;
 	}
 
-	void EngineApp::loadQuadModels() {
+	void App::loadQuadModels() {
 		VertexModelData modelData{};
 
 		std::vector<Vertex> vertices;
@@ -627,10 +630,10 @@ namespace nugiEngine {
 			0, 1, 2, 2, 3, 0
 		};
 
-		this->quadModels = std::make_shared<EngineVertexModel>(this->device, modelData);
+		this->quadModels = std::make_shared<VertexModel>(this->device, modelData);
 	}
 
-	RayTraceUbo EngineApp::initUbo(uint32_t width, uint32_t height) {
+	RayTraceUbo App::initUbo(uint32_t width, uint32_t height) {
 		RayTraceUbo ubo{};
 
 		this->camera->setViewDirection(glm::vec3{278.0f, 278.0f, -800.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, 40.0f);
@@ -657,34 +660,34 @@ namespace nugiEngine {
 		return ubo;
 	}
 
-	void EngineApp::recreateSubRendererAndSubsystem() {
+	void App::recreateSubRendererAndSubsystem() {
 		uint32_t width = this->renderer->getSwapChain()->width();
 		uint32_t height = this->renderer->getSwapChain()->height();
 
-		std::shared_ptr<EngineDescriptorPool> descriptorPool = this->renderer->getDescriptorPool();
-		std::vector<std::shared_ptr<EngineImage>> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
+		NugieVulkan::DescriptorPool* descriptorPool = this->renderer->getDescriptorPool();
+		std::vector<NugieVulkan::Image*> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		this->swapChainSubRenderer = std::make_unique<EngineSwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+		this->swapChainSubRenderer = std::make_unique<SwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
 
-		this->indirectImage = std::make_unique<EngineRayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<EngineAccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->indirectImage = std::make_unique<RayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->accumulateImages = std::make_unique<AccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
-		this->objectRayDataBuffer = std::make_shared<EngineRayDataStorageBuffer>(this->device, width * height);
-		this->lightRayDataBuffer = std::make_shared<EngineRayDataStorageBuffer>(this->device, width * height);
-		this->directObjectHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
-		this->directLightHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
-		this->indirectObjectHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
-		this->indirectLightHitRecordBuffer = std::make_shared<EngineHitRecordStorageBuffer>(this->device, width * height);
-		this->indirectShadeShadeBuffer = std::make_shared<EngineIndirectShadeStorageBuffer>(this->device, width * height);
-		this->directShadeShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
-		this->lightShadeBuffer = std::make_shared<EngineLightShadeStorageBuffer>(this->device, width * height);
-		this->missBuffer = std::make_shared<EngineMissRecordStorageBuffer>(this->device, width * height);
-		this->indirectSamplerBuffer = std::make_shared<EngineIndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
-		this->indirectDataBuffer = std::make_shared<EngineIndirectDataStorageBuffer>(this->device, width * height);
-		this->directDataBuffer = std::make_shared<EngineDirectDataStorageBuffer>(this->device, width * height);
-		this->sunDirectShadeShadeBuffer = std::make_shared<EngineDirectShadeStorageBuffer>(this->device, width * height);
+		this->objectRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device, width * height);
+		this->lightRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device, width * height);
+		this->directObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
+		this->directLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
+		this->indirectObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
+		this->indirectLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
+		this->indirectShadeShadeBuffer = std::make_shared<IndirectShadeStorageBuffer>(this->device, width * height);
+		this->directShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device, width * height);
+		this->lightShadeBuffer = std::make_shared<LightShadeStorageBuffer>(this->device, width * height);
+		this->missBuffer = std::make_shared<MissRecordStorageBuffer>(this->device, width * height);
+		this->indirectSamplerBuffer = std::make_shared<IndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
+		this->indirectDataBuffer = std::make_shared<IndirectDataStorageBuffer>(this->device, width * height);
+		this->directDataBuffer = std::make_shared<DirectDataStorageBuffer>(this->device, width * height);
+		this->sunDirectShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device, width * height);
 
 		std::vector<VkDescriptorBufferInfo> indirectShadeBufferInfos[3] {
 			this->indirectShadeShadeBuffer->getBuffersInfo(),
@@ -815,35 +818,35 @@ namespace nugiEngine {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		this->indirectShadeDescSet = std::make_unique<EngineIndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos);
-		this->directShadeDescSet = std::make_unique<EngineDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos);
-		this->sunDirectShadeDescSet = std::make_unique<EngineSunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos);
-		this->integratorDescSet = std::make_unique<EngineIntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
-		this->directIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
-		this->directIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos);
-		this->indirectIntersectLightDescSet = std::make_unique<EngineIntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
-		this->indirectIntersectObjectDescSet = std::make_unique<EngineIntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos);
-		this->lightShadeDescSet = std::make_unique<EngineLightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
-		this->missDescSet = std::make_unique<EngineMissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
-		this->indirectSamplerDescSet = std::make_unique<EngineIndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
-		this->directSamplerDescSet = std::make_unique<EngineDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
-		this->sunDirectSamplerDescSet = std::make_unique<EngineSunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
-		this->samplingDescSet = std::make_unique<EngineSamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
+		this->indirectShadeDescSet = std::make_unique<IndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos);
+		this->directShadeDescSet = std::make_unique<DirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos);
+		this->sunDirectShadeDescSet = std::make_unique<SunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos);
+		this->integratorDescSet = std::make_unique<IntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
+		this->directIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
+		this->directIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos);
+		this->indirectIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
+		this->indirectIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos);
+		this->lightShadeDescSet = std::make_unique<LightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
+		this->missDescSet = std::make_unique<MissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
+		this->indirectSamplerDescSet = std::make_unique<IndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
+		this->directSamplerDescSet = std::make_unique<DirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
+		this->sunDirectSamplerDescSet = std::make_unique<SunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
+		this->samplingDescSet = std::make_unique<SamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
 
-		this->indirectShadeRender = std::make_unique<EngineIndirectShadeRenderSystem>(this->device, this->indirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->directShadeRender = std::make_unique<EngineDirectShadeRenderSystem>(this->device, this->directShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->sunDirectShadeRender = std::make_unique<EngineSunDirectShadeRenderSystem>(this->device, this->sunDirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->integratorRender = std::make_unique<EngineIntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->intersectLightRender = std::make_unique<EngineIntersectLightRenderSystem>(this->device, this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->intersectObjectRender = std::make_unique<EngineIntersectObjectRenderSystem>(this->device, this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->lightShadeRender = std::make_unique<EngineLightShadeRenderSystem>(this->device, this->lightShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->missRender = std::make_unique<EngineMissRenderSystem>(this->device, this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->indirectSamplerRender = std::make_unique<EngineIndirectSamplerRenderSystem>(this->device, this->indirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->directSamplerRender = std::make_unique<EngineDirectSamplerRenderSystem>(this->device, this->directSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->sunDirectSamplerRender = std::make_unique<EngineSunDirectSamplerRenderSystem>(this->device, this->sunDirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->samplingRayRender = std::make_unique<EngineSamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
+		this->indirectShadeRender = std::make_unique<IndirectShadeRenderSystem>(this->device, this->indirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->directShadeRender = std::make_unique<DirectShadeRenderSystem>(this->device, this->directShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectShadeRender = std::make_unique<SunDirectShadeRenderSystem>(this->device, this->sunDirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->integratorRender = std::make_unique<IntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectLightRender = std::make_unique<IntersectLightRenderSystem>(this->device, this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectObjectRender = std::make_unique<IntersectObjectRenderSystem>(this->device, this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->lightShadeRender = std::make_unique<LightShadeRenderSystem>(this->device, this->lightShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->missRender = std::make_unique<MissRenderSystem>(this->device, this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->indirectSamplerRender = std::make_unique<IndirectSamplerRenderSystem>(this->device, this->indirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->directSamplerRender = std::make_unique<DirectSamplerRenderSystem>(this->device, this->directSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectSamplerRender = std::make_unique<SunDirectSamplerRenderSystem>(this->device, this->sunDirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->samplingRayRender = std::make_unique<SamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
 			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
-		this->camera = std::make_shared<EngineCamera>(width, height);
+		this->camera = std::make_shared<Camera>(width, height);
 	}
 }

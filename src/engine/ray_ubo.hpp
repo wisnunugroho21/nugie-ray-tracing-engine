@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-namespace nugiEngine {
+namespace NugieApp {
   struct RayTraceVertex {
     alignas(16) glm::vec3 position{0.0f};
     alignas(16) glm::vec2 textCoord{0.0f};

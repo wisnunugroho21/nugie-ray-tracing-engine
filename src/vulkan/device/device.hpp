@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace nugiEngine {
+namespace NugieVulkan {
   struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities;
     std::vector<VkSurfaceFormatKHR> formats;
@@ -27,7 +27,7 @@ namespace nugiEngine {
     bool isComplete() { return graphicsFamilyHasValue && presentFamilyHasValue && computeFamilyHasValue && transferFamilyHasValue; }
   };
 
-  class EngineDevice {
+  class Device {
     public:
     #ifdef NDEBUG
       const bool enableValidationLayers = false;
@@ -37,27 +37,25 @@ namespace nugiEngine {
 
       static constexpr int MAX_FRAMES_IN_FLIGHT = 1;
 
-      EngineDevice(EngineWindow &window);
-      ~EngineDevice();
+      Device(Window* window);
+      ~Device();
       
-      VkDevice getLogicalDevice() { return this->device; }
-      VkPhysicalDevice getPhysicalDevice() { return this->physicalDevice; }
+      VkDevice getLogicalDevice() const { return this->device; }
+      VkPhysicalDevice getPhysicalDevice() const { return this->physicalDevice; }
+      VkSurfaceKHR getSurface() const { return this->surface; }
 
-      VkCommandPool getCommandPool() { return this->commandPool; }
-      VkSurfaceKHR getSurface() { return this->surface; }
+      VkQueue getGraphicsQueue(uint32_t index) const { return this->graphicsQueue[index]; }
+      VkQueue getPresentQueue(uint32_t index) const { return this->presentQueue[index]; }
+      VkQueue getComputeQueue(uint32_t index) const { return this->computeQueue[index]; }
+      VkQueue getTransferQueue(uint32_t index) const { return this->transferQueue[index]; }
 
-      VkQueue getGraphicsQueue(uint32_t index) { return this->graphicsQueue[index]; }
-      VkQueue getPresentQueue(uint32_t index) { return this->presentQueue[index]; }
-      VkQueue getComputeQueue(uint32_t index) { return this->computeQueue[index]; }
-      VkQueue getTransferQueue(uint32_t index) { return this->transferQueue[index]; }
-
-      QueueFamilyIndices getFamilyIndices() { return this->familyIndices; }
+      QueueFamilyIndices getFamilyIndices() const { return this->familyIndices; }
       
-      VkPhysicalDeviceProperties getProperties() { return this->properties; }
-      VkSampleCountFlagBits getMSAASamples() { return this->msaaSamples; }
+      VkPhysicalDeviceProperties getProperties() const { return this->properties; }
+      VkSampleCountFlagBits getMSAASamples() const { return this->msaaSamples; }
 
       SwapChainSupportDetails getSwapChainSupport() { return this->querySwapChainSupport(this->physicalDevice); }
-      QueueFamilyIndices findPhysicalQueueFamilies() { return this->findQueueFamilies(this->physicalDevice); }
+      QueueFamilyIndices getPhysicalQueueFamilies() { return this->findQueueFamilies(this->physicalDevice); }
       uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
       VkFormat findSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
@@ -68,7 +66,6 @@ namespace nugiEngine {
       void createSurface();
       void pickPhysicalDevice();
       void createLogicalDevice();
-      void createCommandPool();
 
       // helper creation functions
       bool isDeviceSuitable(VkPhysicalDevice device);
@@ -79,7 +76,7 @@ namespace nugiEngine {
       std::vector<const char *> getRequiredExtensions();
       QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
       SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-      VkSampleCountFlagBits getMaxUsableFlagsCount();
+      VkSampleCountFlagBits getMaxSampleNumber();
 
       // instance
       VkInstance instance;
@@ -91,11 +88,8 @@ namespace nugiEngine {
       VkPhysicalDeviceProperties properties;
 
       // window system
-      EngineWindow &window;
+      Window* window;
       VkSurfaceKHR surface;
-
-      // command pool
-      VkCommandPool commandPool;
 
       // queue
       std::vector<VkQueue> graphicsQueue;

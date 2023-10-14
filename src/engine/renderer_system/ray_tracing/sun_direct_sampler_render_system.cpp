@@ -9,45 +9,47 @@
 #include <array>
 #include <string>
 
-namespace nugiEngine {
-	EngineSunDirectSamplerRenderSystem::EngineSunDirectSamplerRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, uint32_t width, uint32_t height, uint32_t nSample) 
-		: appDevice{device}, width{width}, height{height}, nSample{nSample}
+namespace NugieApp {
+	SunDirectSamplerRenderSystem::SunDirectSamplerRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
+		: device{device}, width{width}, height{height}, nSample{nSample}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayout);
 		this->createPipeline();
 	}
 
-	EngineSunDirectSamplerRenderSystem::~EngineSunDirectSamplerRenderSystem() {
-		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
+	SunDirectSamplerRenderSystem::~SunDirectSamplerRenderSystem() {
+		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineSunDirectSamplerRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void SunDirectSamplerRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(RayTracePushConstant);
 
+		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayouts;
+		pipelineLayoutInfo.pSetLayouts = &setLayout;
 		pipelineLayoutInfo.pushConstantRangeCount = 1;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(this->device->getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
 
-	void EngineSunDirectSamplerRenderSystem::createPipeline() {
+	void SunDirectSamplerRenderSystem::createPipeline() {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EngineComputePipeline::Builder(this->appDevice, this->pipelineLayout)
+		this->pipeline = NugieVulkan::ComputePipeline::Builder(this->device, this->pipelineLayout)
 			.setDefault("shader/sun_direct_sampler.comp.spv")
 			.build();
 	}
 
-	void EngineSunDirectSamplerRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
+	void SunDirectSamplerRenderSystem::render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

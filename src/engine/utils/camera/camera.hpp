@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace nugiEngine {
+namespace NugieApp {
   struct CameraTransformation {
     alignas(16) glm::vec3 origin{0.0f};
     alignas(16) glm::vec3 direction{0.0f};
@@ -15,9 +15,9 @@ namespace nugiEngine {
     alignas(16) glm::vec3 lowerLeftCorner{0.0f};
   };
   
-  class EngineCamera {
+  class Camera {
     public:
-      EngineCamera(uint32_t width, uint32_t height);
+      Camera(uint32_t width, uint32_t height);
 
       void setViewDirection(glm::vec3 position, glm::vec3 direction, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f});
       void setViewTransformation(CameraTransformation cameraTransformation, float vfov, glm::vec3 vup = glm::vec3{0.0f, 1.0f, 0.0f});
@@ -32,5 +32,5 @@ namespace nugiEngine {
 
       uint32_t width, height;
   };
-} // namespace nugiEngine
+} // namespace NugieApp
 

@@ -1,6 +1,6 @@
 #include "bvh.hpp"
 
-namespace nugiEngine {
+namespace NugieApp {
   float Aabb::area() {
     auto diff = this->max - this->min;
     return diff.x * diff.y + diff.y * diff.z + diff.z * diff.x;
@@ -29,19 +29,19 @@ namespace nugiEngine {
 
   Aabb PrimitiveBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->vertices->at(this->primitive.indices.x).position, this->vertices->at(this->primitive.indices.y).position), this->vertices->at(this->primitive.indices.z).position) - eps,
-      glm::max(glm::max(this->vertices->at(this->primitive.indices.x).position, this->vertices->at(this->primitive.indices.y).position), this->vertices->at(this->primitive.indices.z).position) + eps
+      glm::min(glm::min(this->vertices.at(this->primitive->indices.x).position, this->vertices.at(this->primitive->indices.y).position), this->vertices.at(this->primitive->indices.z).position) - eps,
+      glm::max(glm::max(this->vertices.at(this->primitive->indices.x).position, this->vertices.at(this->primitive->indices.y).position), this->vertices.at(this->primitive->indices.z).position) + eps
     };
   }
 
   Aabb TriangleLightBoundBox::boundingBox() {
     return Aabb { 
-      glm::min(glm::min(this->vertices->at(this->light.indices.x).position, this->vertices->at(this->light.indices.y).position), this->vertices->at(this->light.indices.z).position) - eps,
-      glm::max(glm::max(this->vertices->at(this->light.indices.x).position, this->vertices->at(this->light.indices.y).position), this->vertices->at(this->light.indices.z).position) + eps
+      glm::min(glm::min(this->vertices.at(this->light->indices.x).position, this->vertices.at(this->light->indices.y).position), this->vertices.at(this->light->indices.z).position) - eps,
+      glm::max(glm::max(this->vertices.at(this->light->indices.x).position, this->vertices.at(this->light->indices.y).position), this->vertices.at(this->light->indices.z).position) + eps
     };
   }
 
-  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), object{o}, primitives{p}, transformation{t}, vertices{v} {
+  ObjectBoundBox::ObjectBoundBox(uint32_t i, Object *o, std::vector<Primitive> p, TransformComponent* t, std::vector<RayTraceVertex> v) : BoundBox(i), object{o}, primitives{p}, transformation{t}, vertices{v} {
     this->originalMin = glm::vec3(this->findMin(0), this->findMin(1), this->findMin(2));
     this->originalMax = glm::vec3(this->findMax(0), this->findMax(1), this->findMax(2));
   }
@@ -87,10 +87,10 @@ namespace nugiEngine {
 
   float ObjectBoundBox::findMax(uint32_t index) {
     float max = FLT_MIN;
-    for (auto &&primitive : *this->primitives) {
-      if (this->vertices->at(primitive.indices.x).position[index] > max) max = this->vertices->at(primitive.indices.x).position[index];
-      if (this->vertices->at(primitive.indices.y).position[index] > max) max = this->vertices->at(primitive.indices.y).position[index];
-      if (this->vertices->at(primitive.indices.z).position[index] > max) max = this->vertices->at(primitive.indices.z).position[index];
+    for (auto &&primitive : this->primitives) {
+      if (this->vertices.at(primitive.indices.x).position[index] > max) max = this->vertices.at(primitive.indices.x).position[index];
+      if (this->vertices.at(primitive.indices.y).position[index] > max) max = this->vertices.at(primitive.indices.y).position[index];
+      if (this->vertices.at(primitive.indices.z).position[index] > max) max = this->vertices.at(primitive.indices.z).position[index];
     }
 
     return max;
@@ -98,10 +98,10 @@ namespace nugiEngine {
 
   float ObjectBoundBox::findMin(uint32_t index) {
     float min = FLT_MAX;
-    for (auto &&primitive : *this->primitives) {
-      if (this->vertices->at(primitive.indices.x).position[index] < min) min = this->vertices->at(primitive.indices.x).position[index];
-      if (this->vertices->at(primitive.indices.y).position[index] < min) min = this->vertices->at(primitive.indices.y).position[index];
-      if (this->vertices->at(primitive.indices.z).position[index] < min) min = this->vertices->at(primitive.indices.z).position[index];
+    for (auto &&primitive : this->primitives) {
+      if (this->vertices.at(primitive.indices.x).position[index] < min) min = this->vertices.at(primitive.indices.x).position[index];
+      if (this->vertices.at(primitive.indices.y).position[index] < min) min = this->vertices.at(primitive.indices.y).position[index];
+      if (this->vertices.at(primitive.indices.z).position[index] < min) min = this->vertices.at(primitive.indices.z).position[index];
     }
 
     return min;
@@ -154,7 +154,7 @@ namespace nugiEngine {
     return outputBox;
   }
 
-  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis) {
+  bool boxCompare(BoundBox* a, BoundBox* b, int axis) {
     Aabb boxA = a->boundingBox();
     Aabb boxB = b->boundingBox();
 
@@ -164,15 +164,15 @@ namespace nugiEngine {
     return Apos < Bpos;
   }
 
-  bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+  bool boxXCompare(BoundBox* a, BoundBox* b) {
     return boxCompare(a, b, 0);
   }
 
-  bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+  bool boxYCompare(BoundBox* a, BoundBox* b) {
     return boxCompare(a, b, 1);
   }
 
-  bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b) {
+  bool boxZCompare(BoundBox* a, BoundBox* b) {
     return boxCompare(a, b, 2);
   }
 
@@ -232,7 +232,7 @@ namespace nugiEngine {
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::shared_ptr<std::vector<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes) {
+  std::vector<BvhNode> createBvh(std::vector<BoundBox*> boundedBoxes) {
     uint32_t nodeCounter = 1;
     std::vector<BvhItemBuild> intermediate;
     std::stack<BvhItemBuild> nodeStack;
@@ -308,10 +308,10 @@ namespace nugiEngine {
     }
 
     std::sort(intermediate.begin(), intermediate.end(), nodeCompare);
-    auto output = std::make_shared<std::vector<BvhNode>>();
+    auto output = std::vector<BvhNode>();
 
     for (int i = 0; i < intermediate.size(); i++) {
-      output->emplace_back(intermediate[i].getGpuModel());
+      output.emplace_back(intermediate[i].getGpuModel());
     }
 
     return output;

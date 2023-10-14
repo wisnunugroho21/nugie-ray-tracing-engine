@@ -2,34 +2,34 @@
 
 #include <array>
 
-namespace nugiEngine {
-  EngineRenderPass::Builder::Builder(EngineDevice &appDevice, uint32_t width, uint32_t height) : 
-    appDevice{appDevice}, width{width}, height{height} 
+namespace NugieVulkan {
+  RenderPass::Builder::Builder(Device* device, uint32_t width, uint32_t height) : 
+    device{device}, width{width}, height{height} 
   {
 
   }
 
-  EngineRenderPass::Builder EngineRenderPass::Builder::addSubpass(VkSubpassDescription subpass) {
+  RenderPass::Builder& RenderPass::Builder::addSubpass(VkSubpassDescription subpass) {
     this->subpasses.push_back(subpass);
     return *this;
   }
 
-  EngineRenderPass::Builder EngineRenderPass::Builder::addAttachments(VkAttachmentDescription attachment) {
+  RenderPass::Builder& RenderPass::Builder::addAttachments(VkAttachmentDescription attachment) {
     this->attachments.push_back(attachment);
     return *this;
   }
 
-  EngineRenderPass::Builder EngineRenderPass::Builder::addDependency(VkSubpassDependency dependency) {
+  RenderPass::Builder& RenderPass::Builder::addDependency(VkSubpassDependency dependency) {
     this->dependencies.push_back(dependency);
     return *this;
   }
 
-  EngineRenderPass::Builder EngineRenderPass::Builder::addViewImages(std::vector<VkImageView> viewImages) {
+  RenderPass::Builder& RenderPass::Builder::addViewImages(std::vector<VkImageView> viewImages) {
     this->viewImages.push_back(viewImages);
     return *this;
   }
 
-  std::shared_ptr<EngineRenderPass> EngineRenderPass::Builder::build() {
+  std::unique_ptr<RenderPass> RenderPass::Builder::build() {
     VkRenderPassCreateInfo renderPassInfo = {};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(this->attachments.size());
@@ -39,29 +39,29 @@ namespace nugiEngine {
     renderPassInfo.dependencyCount = static_cast<uint32_t>(this->dependencies.size());
     renderPassInfo.pDependencies = this->dependencies.data();
 
-    return std::make_shared<EngineRenderPass>(this->appDevice, this->viewImages, renderPassInfo, this->width, this->height);
+    return std::make_unique<RenderPass>(this->device, this->viewImages, renderPassInfo, this->width, this->height);
   }
 
-  EngineRenderPass::EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height) : appDevice{appDevice} {
+  RenderPass::RenderPass(Device* device, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height) : device{device} {
     this->createRenderPass(renderPassInfo);
     this->createFramebuffers(viewImages, width, height);
   }
 
-  EngineRenderPass::~EngineRenderPass() {
+  RenderPass::~RenderPass() {
     for (auto framebuffer : this->framebuffers) {
-      vkDestroyFramebuffer(this->appDevice.getLogicalDevice(), framebuffer, nullptr);
+      vkDestroyFramebuffer(this->device->getLogicalDevice(), framebuffer, nullptr);
     }
 
-    vkDestroyRenderPass(this->appDevice.getLogicalDevice(), this->renderPass, nullptr);
+    vkDestroyRenderPass(this->device->getLogicalDevice(), this->renderPass, nullptr);
   }
   
-  void EngineRenderPass::createRenderPass(VkRenderPassCreateInfo renderPassInfo) {
-    if (vkCreateRenderPass(this->appDevice.getLogicalDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+  void RenderPass::createRenderPass(VkRenderPassCreateInfo renderPassInfo) {
+    if (vkCreateRenderPass(this->device->getLogicalDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
       throw std::runtime_error("failed to create render pass!");
     }
   }
 
-  void EngineRenderPass::createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, uint32_t width, uint32_t height) {
+  void RenderPass::createFramebuffers(std::vector<std::vector<VkImageView>> viewImages, uint32_t width, uint32_t height) {
     this->framebuffers.resize(viewImages.size());
 
     for (size_t i = 0; i < viewImages.size(); i++) {
@@ -72,10 +72,10 @@ namespace nugiEngine {
       framebufferInfo.pAttachments = viewImages[i].data();
       framebufferInfo.width = width;
       framebufferInfo.height = height;
-      framebufferInfo.layers = 1;
+      framebufferInfo.layers = 1u;
 
       if (vkCreateFramebuffer(
-        this->appDevice.getLogicalDevice(),
+        this->device->getLogicalDevice(),
         &framebufferInfo,
         nullptr,
         &this->framebuffers[i]) != VK_SUCCESS) 
@@ -84,4 +84,4 @@ namespace nugiEngine {
       }
     }
   }
-} // namespace nugiEngine
+} // namespace NugieVulkan

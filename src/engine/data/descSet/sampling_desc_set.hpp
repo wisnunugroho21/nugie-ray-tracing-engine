@@ -2,23 +2,24 @@
 
 #include "../../../vulkan/device/device.hpp"
 #include "../../../vulkan/buffer/buffer.hpp"
-#include "../../../vulkan/descriptor/descriptor.hpp"
+#include "../../../vulkan/descriptor/descriptor_pool.hpp"
+#include "../../../vulkan/descriptor/descriptor_set_layout.hpp"
 
 #include <memory>
 
-namespace nugiEngine {
-	class EngineSamplingDescSet {
+namespace NugieApp {
+	class SamplingDescSet {
 		public:
-			EngineSamplingDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorImageInfo> samplingResourcesInfo[2]);
+			SamplingDescSet(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool, std::vector<VkDescriptorImageInfo> samplingResourcesInfo[2]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
-			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
+			NugieVulkan::DescriptorSetLayout* getDescSetLayout() const { return this->descSetLayout.get(); }
 
 		private:
-      std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
+      std::unique_ptr<NugieVulkan::DescriptorSetLayout> descSetLayout;
 			std::vector<VkDescriptorSet> descriptorSets;
 
-			void createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool, std::vector<VkDescriptorImageInfo> samplingResourcesInfo[2]);
+			void createDescriptor(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool, std::vector<VkDescriptorImageInfo> samplingResourcesInfo[2]);
 	};
 	
 }

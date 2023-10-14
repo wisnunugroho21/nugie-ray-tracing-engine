@@ -59,15 +59,15 @@
 
 #define APP_TITLE "Testing Vulkan"
 
-namespace nugiEngine {
-	class EngineApp
+namespace NugieApp {
+	class App
 	{
 		public:
 			static constexpr int WIDTH = 800;
 			static constexpr int HEIGHT = 800;
 
-			EngineApp();
-			~EngineApp();
+			App();
+			~App();
 
 			void run();
 			void renderLoop();
@@ -80,70 +80,70 @@ namespace nugiEngine {
 			RayTraceUbo initUbo(uint32_t width, uint32_t height);
 			void recreateSubRendererAndSubsystem();
 
-			EngineWindow window{WIDTH, HEIGHT, APP_TITLE};
-			EngineDevice device{window};
+			std::unique_ptr<NugieVulkan::Window> window;
+			std::unique_ptr<NugieVulkan::Device> device;
 			
-			std::unique_ptr<EngineHybridRenderer> renderer{};
-			std::unique_ptr<EngineSwapChainSubRenderer> swapChainSubRenderer{};
+			std::unique_ptr<HybridRenderer> renderer{};
+			std::unique_ptr<SwapChainSubRenderer> swapChainSubRenderer{};
 
-			std::unique_ptr<EngineIndirectShadeRenderSystem> indirectShadeRender{};
-			std::unique_ptr<EngineDirectShadeRenderSystem> directShadeRender{};
-			std::unique_ptr<EngineSunDirectShadeRenderSystem> sunDirectShadeRender{};
-			std::unique_ptr<EngineIntegratorRenderSystem> integratorRender{};
-			std::unique_ptr<EngineIntersectObjectRenderSystem> intersectObjectRender{};
-			std::unique_ptr<EngineIntersectLightRenderSystem> intersectLightRender{};
-			std::unique_ptr<EngineLightShadeRenderSystem> lightShadeRender{};
-			std::unique_ptr<EngineMissRenderSystem> missRender{};
-			std::unique_ptr<EngineIndirectSamplerRenderSystem> indirectSamplerRender{};
-			std::unique_ptr<EngineDirectSamplerRenderSystem> directSamplerRender{};
-			std::unique_ptr<EngineSunDirectSamplerRenderSystem> sunDirectSamplerRender{};
-			std::unique_ptr<EngineSamplingRayRasterRenderSystem> samplingRayRender{};
+			std::unique_ptr<IndirectShadeRenderSystem> indirectShadeRender{};
+			std::unique_ptr<DirectShadeRenderSystem> directShadeRender{};
+			std::unique_ptr<SunDirectShadeRenderSystem> sunDirectShadeRender{};
+			std::unique_ptr<IntegratorRenderSystem> integratorRender{};
+			std::unique_ptr<IntersectObjectRenderSystem> intersectObjectRender{};
+			std::unique_ptr<IntersectLightRenderSystem> intersectLightRender{};
+			std::unique_ptr<LightShadeRenderSystem> lightShadeRender{};
+			std::unique_ptr<MissRenderSystem> missRender{};
+			std::unique_ptr<IndirectSamplerRenderSystem> indirectSamplerRender{};
+			std::unique_ptr<DirectSamplerRenderSystem> directSamplerRender{};
+			std::unique_ptr<SunDirectSamplerRenderSystem> sunDirectSamplerRender{};
+			std::unique_ptr<SamplingRayRasterRenderSystem> samplingRayRender{};
 
-			std::unique_ptr<EngineAccumulateImage> accumulateImages{};
-			std::unique_ptr<EngineRayTraceImage> indirectImage{};
-			std::unique_ptr<EngineGlobalUniform> globalUniforms{};
+			std::unique_ptr<AccumulateImage> accumulateImages{};
+			std::unique_ptr<RayTraceImage> indirectImage{};
+			std::unique_ptr<GlobalUniform> globalUniforms{};
 
-			std::unique_ptr<EnginePrimitiveModel> primitiveModel{};
-			std::unique_ptr<EngineObjectModel> objectModel{};
-			std::unique_ptr<EngineLightModel> lightModel{};
-			std::unique_ptr<EngineMaterialModel> materialModel{};
-			std::unique_ptr<EngineTransformationModel> transformationModel{};
-			std::shared_ptr<EngineVertexModel> quadModels{};
-			std::shared_ptr<EngineRayTraceVertexModel> rayTraceVertexModels{};
+			std::unique_ptr<PrimitiveModel> primitiveModel{};
+			std::unique_ptr<ObjectModel> objectModel{};
+			std::unique_ptr<LightModel> lightModel{};
+			std::unique_ptr<MaterialModel> materialModel{};
+			std::unique_ptr<TransformationModel> transformationModel{};
+			std::shared_ptr<VertexModel> quadModels{};
+			std::shared_ptr<RayTraceVertexModel> rayTraceVertexModels{};
 
-			std::shared_ptr<EngineRayDataStorageBuffer> objectRayDataBuffer{};
-			std::shared_ptr<EngineRayDataStorageBuffer> lightRayDataBuffer{};
-			std::shared_ptr<EngineHitRecordStorageBuffer> directObjectHitRecordBuffer{};
-			std::shared_ptr<EngineHitRecordStorageBuffer> directLightHitRecordBuffer{};
-			std::shared_ptr<EngineHitRecordStorageBuffer> indirectObjectHitRecordBuffer{};
-			std::shared_ptr<EngineHitRecordStorageBuffer> indirectLightHitRecordBuffer{};
-			std::shared_ptr<EngineIndirectShadeStorageBuffer> indirectShadeShadeBuffer{};
-			std::shared_ptr<EngineDirectShadeStorageBuffer> directShadeShadeBuffer{};
-			std::shared_ptr<EngineDirectShadeStorageBuffer> sunDirectShadeShadeBuffer{};
-			std::shared_ptr<EngineLightShadeStorageBuffer> lightShadeBuffer{};
-			std::shared_ptr<EngineMissRecordStorageBuffer> missBuffer{};
-			std::shared_ptr<EngineIndirectSamplerStorageBuffer> indirectSamplerBuffer{};
-			std::shared_ptr<EngineIndirectDataStorageBuffer> indirectDataBuffer{};
-			std::shared_ptr<EngineDirectDataStorageBuffer> directDataBuffer{};
+			std::shared_ptr<RayDataStorageBuffer> objectRayDataBuffer{};
+			std::shared_ptr<RayDataStorageBuffer> lightRayDataBuffer{};
+			std::shared_ptr<HitRecordStorageBuffer> directObjectHitRecordBuffer{};
+			std::shared_ptr<HitRecordStorageBuffer> directLightHitRecordBuffer{};
+			std::shared_ptr<HitRecordStorageBuffer> indirectObjectHitRecordBuffer{};
+			std::shared_ptr<HitRecordStorageBuffer> indirectLightHitRecordBuffer{};
+			std::shared_ptr<IndirectShadeStorageBuffer> indirectShadeShadeBuffer{};
+			std::shared_ptr<DirectShadeStorageBuffer> directShadeShadeBuffer{};
+			std::shared_ptr<DirectShadeStorageBuffer> sunDirectShadeShadeBuffer{};
+			std::shared_ptr<LightShadeStorageBuffer> lightShadeBuffer{};
+			std::shared_ptr<MissRecordStorageBuffer> missBuffer{};
+			std::shared_ptr<IndirectSamplerStorageBuffer> indirectSamplerBuffer{};
+			std::shared_ptr<IndirectDataStorageBuffer> indirectDataBuffer{};
+			std::shared_ptr<DirectDataStorageBuffer> directDataBuffer{};
 
-			std::unique_ptr<EngineIndirectShadeDescSet> indirectShadeDescSet{};
-			std::unique_ptr<EngineDirectShadeDescSet> directShadeDescSet{};
-			std::unique_ptr<EngineSunDirectShadeDescSet> sunDirectShadeDescSet{};
-			std::unique_ptr<EngineIntegratorDescSet> integratorDescSet{};
-			std::unique_ptr<EngineIntersectObjectDescSet> directIntersectObjectDescSet{};
-			std::unique_ptr<EngineIntersectLightDescSet> directIntersectLightDescSet{};
-			std::unique_ptr<EngineIntersectObjectDescSet> indirectIntersectObjectDescSet{};
-			std::unique_ptr<EngineIntersectLightDescSet> indirectIntersectLightDescSet{};
-			std::unique_ptr<EngineLightShadeDescSet> lightShadeDescSet{};
-			std::unique_ptr<EngineMissDescSet> missDescSet{};
-			std::unique_ptr<EngineIndirectSamplerDescSet> indirectSamplerDescSet{};
-			std::unique_ptr<EngineDirectSamplerDescSet> directSamplerDescSet{};
-			std::unique_ptr<EngineSunDirectSamplerDescSet> sunDirectSamplerDescSet{};
-			std::unique_ptr<EngineSamplingDescSet> samplingDescSet{};
+			std::unique_ptr<IndirectShadeDescSet> indirectShadeDescSet{};
+			std::unique_ptr<DirectShadeDescSet> directShadeDescSet{};
+			std::unique_ptr<SunDirectShadeDescSet> sunDirectShadeDescSet{};
+			std::unique_ptr<IntegratorDescSet> integratorDescSet{};
+			std::unique_ptr<IntersectObjectDescSet> directIntersectObjectDescSet{};
+			std::unique_ptr<IntersectLightDescSet> directIntersectLightDescSet{};
+			std::unique_ptr<IntersectObjectDescSet> indirectIntersectObjectDescSet{};
+			std::unique_ptr<IntersectLightDescSet> indirectIntersectLightDescSet{};
+			std::unique_ptr<LightShadeDescSet> lightShadeDescSet{};
+			std::unique_ptr<MissDescSet> missDescSet{};
+			std::unique_ptr<IndirectSamplerDescSet> indirectSamplerDescSet{};
+			std::unique_ptr<DirectSamplerDescSet> directSamplerDescSet{};
+			std::unique_ptr<SunDirectSamplerDescSet> sunDirectSamplerDescSet{};
+			std::unique_ptr<SamplingDescSet> samplingDescSet{};
 
-			std::shared_ptr<EngineCamera> camera{};
-			std::shared_ptr<EngineKeyboardController> keyboardController{};
-			std::shared_ptr<EngineMouseController> mouseController{};
+			std::shared_ptr<Camera> camera{};
+			std::shared_ptr<KeyboardController> keyboardController{};
+			std::shared_ptr<MouseController> mouseController{};
 
 			uint32_t randomSeed = 0, numLights = 0;
 			bool isRendering = true, isCameraMoved = false;

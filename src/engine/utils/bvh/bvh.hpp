@@ -16,7 +16,7 @@
 
 #define SPLIT_NUMBER 12
 
-namespace nugiEngine {
+namespace NugieApp {
   const glm::vec3 eps(0.01f);
 
   // Axis-aligned bounding box.
@@ -43,24 +43,24 @@ namespace nugiEngine {
   };
 
   struct PrimitiveBoundBox : BoundBox {
-    Primitive &primitive;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
+    Primitive* primitive;
+    std::vector<RayTraceVertex> vertices;
 
-    PrimitiveBoundBox(uint32_t i, Primitive &p, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), primitive{p}, vertices{v} {}
+    PrimitiveBoundBox(uint32_t i, Primitive *p, std::vector<RayTraceVertex> v) : BoundBox(i), primitive{p}, vertices{v} {}
 
     Aabb boundingBox();
   };
 
   struct ObjectBoundBox : BoundBox {
-    Object &object;
-    std::shared_ptr<TransformComponent> transformation;
-    std::shared_ptr<std::vector<Primitive>> primitives;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
+    Object* object;
+    TransformComponent* transformation;
+    std::vector<Primitive> primitives;
+    std::vector<RayTraceVertex> vertices;
 
     glm::vec3 originalMin{};
     glm::vec3 originalMax{};
 
-    ObjectBoundBox(uint32_t i, Object &o, std::shared_ptr<std::vector<Primitive>> p, std::shared_ptr<TransformComponent> t, std::shared_ptr<std::vector<RayTraceVertex>> v);
+    ObjectBoundBox(uint32_t i, Object *o, std::vector<Primitive> p, TransformComponent* t, std::vector<RayTraceVertex> v);
 
     glm::vec3 getOriginalMin() { return this->originalMin; }
     glm::vec3 getOriginalMax() { return this->originalMax; }
@@ -73,10 +73,10 @@ namespace nugiEngine {
   };
 
   struct TriangleLightBoundBox : BoundBox {
-    TriangleLight &light;
-    std::shared_ptr<std::vector<RayTraceVertex>> vertices;
+    TriangleLight* light;
+    std::vector<RayTraceVertex> vertices;
 
-    TriangleLightBoundBox(int i, TriangleLight &l, std::shared_ptr<std::vector<RayTraceVertex>> v) : BoundBox(i), light{l}, vertices{v} {}
+    TriangleLightBoundBox(int i, TriangleLight* l, std::vector<RayTraceVertex> v) : BoundBox(i), light{l}, vertices{v} {}
 
     Aabb boundingBox();
   };
@@ -92,22 +92,22 @@ namespace nugiEngine {
     uint32_t index = 0; // index refers to the index in the final array of nodes. Used for sorting a flattened Bvh.
     uint32_t leftNodeIndex = 0;
     uint32_t rightNodeIndex = 0;
-    std::vector<std::shared_ptr<BoundBox>> objects;
+    std::vector<BoundBox*> objects;
 
     BvhNode getGpuModel();
   };
 
   bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b);
   Aabb surroundingBox(Aabb box0, Aabb box1);
-  Aabb objectListBoundingBox(std::vector<std::shared_ptr<BoundBox>> &objects);
-  bool boxCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b, int axis);
-  bool boxXCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  bool boxYCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
-  bool boxZCompare(std::shared_ptr<BoundBox> a, std::shared_ptr<BoundBox> b);
+  Aabb objectListBoundingBox(std::vector<BoundBox*> &objects);
+  bool boxCompare(BoundBox* a, BoundBox* b, int axis);
+  bool boxXCompare(BoundBox* a, BoundBox* b);
+  bool boxYCompare(BoundBox* a, BoundBox* b);
+  bool boxZCompare(BoundBox* a, BoundBox* b);
   float findPrimitiveSplitPosition(BvhItemBuild node, int axis, float length);
 
   // Since GPU can't deal with tree structures we need to create a flattened BVH.
   // Stack is used instead of a tree.
-  std::shared_ptr<std::vector<BvhNode>> createBvh(const std::vector<std::shared_ptr<BoundBox>> boundedBoxes);
+  std::vector<BvhNode> createBvh(std::vector<BoundBox*> boundedBoxes);
 
-}// namespace nugiEngine 
+}// namespace NugieApp 

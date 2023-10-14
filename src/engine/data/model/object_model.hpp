@@ -13,20 +13,20 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineObjectModel {
+namespace NugieApp {
+	class ObjectModel {
     public:
-      EngineObjectModel(EngineDevice &device, std::shared_ptr<std::vector<Object>> objects, std::vector<std::shared_ptr<BoundBox>> boundBoxes);
+      ObjectModel(NugieVulkan::Device* device, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes);
 
       VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
     private:
-      EngineDevice &engineDevice;
+      NugieVulkan::Device* device;
       
-      std::shared_ptr<EngineBuffer> objectBuffer;
-      std::shared_ptr<EngineBuffer> bvhBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> objectBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
 
-      void createBuffers(std::shared_ptr<std::vector<Object>> objects, std::shared_ptr<std::vector<BvhNode>> bvhNodes);
+      void createBuffers(std::vector<Object> objects, std::vector<BvhNode> bvhNodes);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

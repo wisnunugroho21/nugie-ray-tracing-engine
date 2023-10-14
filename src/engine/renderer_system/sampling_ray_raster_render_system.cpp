@@ -9,45 +9,49 @@
 #include <array>
 #include <string>
 
-namespace nugiEngine {
-	EngineSamplingRayRasterRenderSystem::EngineSamplingRayRasterRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, VkRenderPass renderPass)
-		: appDevice{device}
+#include "../data/model/vertex_model.hpp"
+
+namespace NugieApp {
+	SamplingRayRasterRenderSystem::SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, NugieVulkan::RenderPass renderPass)
+		: device{device}
 	{
-		this->createPipelineLayout(descriptorSetLayouts);
+		this->createPipelineLayout(descriptorSetLayout);
 		this->createPipeline(renderPass);
 	}
 
-	EngineSamplingRayRasterRenderSystem::~EngineSamplingRayRasterRenderSystem() {
-		vkDestroyPipelineLayout(this->appDevice.getLogicalDevice(), this->pipelineLayout, nullptr);
+	SamplingRayRasterRenderSystem::~SamplingRayRasterRenderSystem() {
+		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts) {
+	void SamplingRayRasterRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(RayTracePushConstant);
 
+		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = 1;
-		pipelineLayoutInfo.pSetLayouts = &descriptorSetLayouts;
-		pipelineLayoutInfo.pushConstantRangeCount = 1;
+		pipelineLayoutInfo.setLayoutCount = 1u;
+		pipelineLayoutInfo.pSetLayouts = &setLayout;
+		pipelineLayoutInfo.pushConstantRangeCount = 1u;
 		pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 
-		if (vkCreatePipelineLayout(this->appDevice.getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
+		if (vkCreatePipelineLayout(this->device->getLogicalDevice(), &pipelineLayoutInfo, nullptr, &this->pipelineLayout) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
 
-	void EngineSamplingRayRasterRenderSystem::createPipeline(VkRenderPass renderPass) {
+	void SamplingRayRasterRenderSystem::createPipeline(NugieVulkan::RenderPass renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
-		this->pipeline = EngineGraphicPipeline::Builder(this->appDevice, this->pipelineLayout, renderPass)
-			.setDefault("shader/sampling.vert.spv", "shader/sampling.frag.spv")
+		this->pipeline = NugieVulkan::GraphicPipeline::Builder(this->device, renderPass, this->pipelineLayout)
+			.setDefault("shader/sampling.vert.spv", "shader/sampling.frag.spv", Vertex::getVertexBindingDescriptions(), Vertex::getVertexAttributeDescriptions())
 			.build();
 	}
 
-	void EngineSamplingRayRasterRenderSystem::render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed) {
+	void SamplingRayRasterRenderSystem::render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, VertexModel* model, uint32_t randomSeed) {
 		this->pipeline->bind(commandBuffer->getCommandBuffer());
 
 		vkCmdBindDescriptorSets(

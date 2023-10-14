@@ -12,17 +12,17 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineRayTraceVertexModel {
+namespace NugieApp {
+	class RayTraceVertexModel {
 		public:
-			EngineRayTraceVertexModel(EngineDevice &device, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
+			RayTraceVertexModel(NugieVulkan::Device* device, std::vector<RayTraceVertex> vertices);
 
 			VkDescriptorBufferInfo getVertexnfo() { return this->vertexBuffer->descriptorInfo(); }
 			
 		private:
-			EngineDevice &engineDevice;
+			NugieVulkan::Device* device;
 			
-			std::unique_ptr<EngineBuffer> vertexBuffer;
-			void createVertexBuffers(std::shared_ptr<std::vector<RayTraceVertex>> vertices);
+			std::unique_ptr<NugieVulkan::Buffer> vertexBuffer;
+			void createVertexBuffers(std::vector<RayTraceVertex> vertices);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

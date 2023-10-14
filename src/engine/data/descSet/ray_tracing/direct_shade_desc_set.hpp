@@ -2,24 +2,25 @@
 
 #include "../../../../vulkan/device/device.hpp"
 #include "../../../../vulkan/buffer/buffer.hpp"
-#include "../../../../vulkan/descriptor/descriptor.hpp"
+#include "../../../vulkan/descriptor/descriptor_pool.hpp"
+#include "../../../vulkan/descriptor/descriptor_set_layout.hpp"
 
 #include <memory>
 
-namespace nugiEngine {
-	class EngineDirectShadeDescSet {
+namespace NugieApp {
+	class DirectShadeDescSet {
 		public:
-			EngineDirectShadeDescSet(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+			DirectShadeDescSet(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool,
 				std::vector<VkDescriptorBufferInfo> buffersInfo[4], VkDescriptorBufferInfo modelsInfo[3]);
 
 			VkDescriptorSet getDescriptorSets(int frameIndex) { return this->descriptorSets[frameIndex]; }
-			std::shared_ptr<EngineDescriptorSetLayout> getDescSetLayout() const { return this->descSetLayout; }
+			NugieVulkan::DescriptorSetLayout* getDescSetLayout() const { return this->descSetLayout.get(); }
 
 		private:
-      std::shared_ptr<EngineDescriptorSetLayout> descSetLayout;
+      std::unique_ptr<NugieVulkan::DescriptorSetLayout> descSetLayout;
 			std::vector<VkDescriptorSet> descriptorSets;
 
-			void createDescriptor(EngineDevice& device, std::shared_ptr<EngineDescriptorPool> descriptorPool,
+			void createDescriptor(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool,
 				std::vector<VkDescriptorBufferInfo> buffersInfo[4], VkDescriptorBufferInfo modelsInfo[3]);
 	};
 	

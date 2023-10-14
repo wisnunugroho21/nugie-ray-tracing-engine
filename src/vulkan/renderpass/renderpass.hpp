@@ -7,37 +7,38 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-  class EngineRenderPass {
+namespace NugieVulkan {
+  class RenderPass {
     public:
       class Builder {
         public:
-          Builder(EngineDevice &appDevice, uint32_t width, uint32_t height);
+          Builder(Device* device, uint32_t width, uint32_t height);
 
-          Builder addSubpass(VkSubpassDescription subpass);
-          Builder addAttachments(VkAttachmentDescription attachment);
-          Builder addDependency(VkSubpassDependency dependency);
-          Builder addViewImages(std::vector<VkImageView> viewImages);
+          Builder& addSubpass(VkSubpassDescription subpass);
+          Builder& addAttachments(VkAttachmentDescription attachment);
+          Builder& addDependency(VkSubpassDependency dependency);
+          Builder& addViewImages(std::vector<VkImageView> viewImages);
 
-          std::shared_ptr<EngineRenderPass> build();
+          std::unique_ptr<RenderPass> build();
 
         private:
+          Device* device;
+          
           uint32_t width, height;
-          EngineDevice &appDevice;
           std::vector<VkSubpassDescription> subpasses;
           std::vector<VkAttachmentDescription> attachments;
           std::vector<VkSubpassDependency> dependencies;
           std::vector<std::vector<VkImageView>> viewImages;
       };
 
-      EngineRenderPass(EngineDevice &appDevice, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height);
-      ~EngineRenderPass();
+      RenderPass(Device* device, std::vector<std::vector<VkImageView>> viewImages, VkRenderPassCreateInfo renderPassInfo, uint32_t width, uint32_t height);
+      ~RenderPass();
 
       VkFramebuffer getFramebuffers(int index) { return this->framebuffers[index]; }
       VkRenderPass getRenderPass() { return this->renderPass; }
 
     private:
-      EngineDevice &appDevice;
+      Device* device;
 
       std::vector<VkFramebuffer> framebuffers;
       VkRenderPass renderPass;

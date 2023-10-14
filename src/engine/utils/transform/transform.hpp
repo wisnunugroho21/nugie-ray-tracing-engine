@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace nugiEngine {
+namespace NugieApp {
 	struct TransformComponent {
 		glm::vec3 translation{0.0f};
 		glm::vec3 scale{1.0f};

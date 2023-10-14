@@ -7,9 +7,9 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
-namespace nugiEngine {
-	EngineIndirectDataStorageBuffer::EngineIndirectDataStorageBuffer(EngineDevice &device, uint32_t dataCount) : engineDevice{device} {
-		auto datas = std::make_shared<std::vector<RenderResult>>();
+namespace NugieApp {
+	IndirectDataStorageBuffer::IndirectDataStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount) : device{device} {
+		auto datas = std::vector<RenderResult>();
 		for (uint32_t i = 0; i < dataCount; i++) {
 			RenderResult data{};
 
@@ -17,13 +17,13 @@ namespace nugiEngine {
 			data.totalIndirect = glm::vec3{1.0f};
 			data.pdf = 1.0f;
 			
-			datas->emplace_back(data);
+			datas.emplace_back(data);
 		}
 
 		this->createBuffers(datas);
 	}
 
-	std::vector<VkDescriptorBufferInfo> EngineIndirectDataStorageBuffer::getBuffersInfo() {
+	std::vector<VkDescriptorBufferInfo> IndirectDataStorageBuffer::getBuffersInfo() {
 		std::vector<VkDescriptorBufferInfo> buffersInfo{};
 		
 		for (int i = 0; i < this->buffers.size(); i++) {
@@ -33,16 +33,15 @@ namespace nugiEngine {
 		return buffersInfo;
 	}
 
-	void EngineIndirectDataStorageBuffer::createBuffers(std::shared_ptr<std::vector<RenderResult>> datas) {
+	void IndirectDataStorageBuffer::createBuffers(std::vector<RenderResult> datas) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(RenderResult));
-		auto instanceCount = static_cast<uint32_t>(datas->size());
-		auto totalSize = static_cast<VkDeviceSize>(bufferSize * instanceCount);
+		auto instanceCount = static_cast<uint32_t>(datas.size());
 		
 		this->buffers.clear();
 
-		for (uint32_t i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
-			EngineBuffer stagingBuffer {
-				this->engineDevice,
+		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
+			NugieVulkan::Buffer stagingBuffer {
+				this->device,
 				bufferSize,
 				instanceCount,
 				VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -50,19 +49,19 @@ namespace nugiEngine {
 			};
 
 			stagingBuffer.map();
-			stagingBuffer.writeToBuffer(datas->data());
+			stagingBuffer.writeToBuffer(datas.data());
 
-			auto buffer = std::make_shared<EngineBuffer>(
-				this->engineDevice,
+			auto buffer = std::make_unique<NugieVulkan::Buffer>(
+				this->device,
 				bufferSize,
 				instanceCount,
 				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			buffer->copyBuffer(stagingBuffer.getBuffer(), totalSize);
+			buffer->copyFromAnotherBuffer(&stagingBuffer);
 			this->buffers.emplace_back(buffer);
 		}
 	}
-} // namespace nugiEngine
+} // namespace NugieApp
 

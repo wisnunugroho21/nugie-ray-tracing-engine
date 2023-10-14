@@ -1,8 +1,8 @@
 #include "mouse_controller.hpp"
 
-namespace nugiEngine {
+namespace NugieApp {
 
-  CameraTransformation EngineMouseController::rotateInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
+  CameraTransformation MouseController::rotateInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
     if (glfwGetMouseButton(window, this->keymaps.rightButton) == GLFW_PRESS) {
       glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
       *isPressed = true;
@@ -38,5 +38,5 @@ namespace nugiEngine {
 
     return cameraTransformation;
   }
-} // namespace nugiEngine
+} // namespace NugieApp
 

@@ -1,6 +1,6 @@
 #include "transform.hpp"
 
-namespace nugiEngine {
+namespace NugieApp {
   glm::mat4 TransformComponent::getPointMatrix() {
     auto curTransf = glm::mat4{1.0f};
     auto originScalePosition = (this->objectMaximum - this->objectMinimum) / 2.0f + this->objectMinimum;
@@ -50,4 +50,4 @@ namespace nugiEngine {
 
     return glm::mat4(glm::inverseTranspose(glm::mat3(curTransf)));
   }
-} // namespace nugiEngine
+} // namespace NugieApp

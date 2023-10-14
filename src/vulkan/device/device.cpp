@@ -6,7 +6,7 @@
 #include <set>
 #include <unordered_set>
 
-namespace nugiEngine {
+namespace NugieVulkan {
 
   // local callback functions
   static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
@@ -49,18 +49,16 @@ namespace nugiEngine {
   }
 
   // class member functions
-  EngineDevice::EngineDevice(EngineWindow &window) : window{window} {
+  Device::Device(Window* window) : window{window} {
     this->createInstance();
     this->setupDebugMessenger();
     this->createSurface();
     this->pickPhysicalDevice();
-    this->msaaSamples = this->getMaxUsableFlagsCount();
+    this->msaaSamples = this->getMaxSampleNumber();
     this->createLogicalDevice();
-    this->createCommandPool();
   }
 
-  EngineDevice::~EngineDevice() {
-    vkDestroyCommandPool(this->device, this->commandPool, nullptr);
+  Device::~Device() {
     vkDestroyDevice(this->device, nullptr);
 
     if (enableValidationLayers) {
@@ -71,7 +69,7 @@ namespace nugiEngine {
     vkDestroyInstance(this->instance, nullptr);
   }
 
-  void EngineDevice::createInstance() {
+  void Device::createInstance() {
     if (enableValidationLayers && !this->checkValidationLayerSupport()) {
       throw std::runtime_error("validation layers requested, but not available!");
     }
@@ -80,7 +78,6 @@ namespace nugiEngine {
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = "Nugie App";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_2;
 
@@ -113,7 +110,7 @@ namespace nugiEngine {
     this->hasGflwRequiredInstanceExtensions();
   }
 
-  void EngineDevice::pickPhysicalDevice() {
+  void Device::pickPhysicalDevice() {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(this->instance, &deviceCount, nullptr);
     if (deviceCount == 0) {
@@ -138,7 +135,7 @@ namespace nugiEngine {
     std::cout << "physical device: " << this->properties.deviceName << std::endl;
   }
 
-  void EngineDevice::createLogicalDevice() {
+  void Device::createLogicalDevice() {
     this->familyIndices = this->findQueueFamilies(this->physicalDevice);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -151,7 +148,7 @@ namespace nugiEngine {
 
     std::vector<float> queuePriority;
 
-    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < Device::MAX_FRAMES_IN_FLIGHT; i++) {
       if (i == 0) {
         queuePriority.emplace_back(1.0f);
       } else {
@@ -196,12 +193,12 @@ namespace nugiEngine {
       throw std::runtime_error("failed to create logical device!");
     }
 
-    this->graphicsQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
-    this->presentQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
-    this->computeQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
-    this->transferQueue.resize(EngineDevice::MAX_FRAMES_IN_FLIGHT);
+    this->graphicsQueue.resize(Device::MAX_FRAMES_IN_FLIGHT);
+    this->presentQueue.resize(Device::MAX_FRAMES_IN_FLIGHT);
+    this->computeQueue.resize(Device::MAX_FRAMES_IN_FLIGHT);
+    this->transferQueue.resize(Device::MAX_FRAMES_IN_FLIGHT);
 
-    for (int i = 0; i < EngineDevice::MAX_FRAMES_IN_FLIGHT; i++) {
+    for (int i = 0; i < Device::MAX_FRAMES_IN_FLIGHT; i++) {
       vkGetDeviceQueue(this->device, this->familyIndices.graphicsFamily, i, &this->graphicsQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.presentFamily, i, &this->presentQueue[i]);
       vkGetDeviceQueue(this->device, this->familyIndices.computeFamily, i, &this->computeQueue[i]);
@@ -209,27 +206,12 @@ namespace nugiEngine {
     }
   }
 
-  void EngineDevice::createCommandPool() {
-    QueueFamilyIndices queueFamilyIndices = this->findPhysicalQueueFamilies();
-
-    VkCommandPoolCreateInfo poolInfo = {};
-    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
-    poolInfo.flags =
-        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-
-    if (vkCreateCommandPool(this->device, &poolInfo, nullptr, &this->commandPool) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create command pool!");
-    }
+  void Device::createSurface() { 
+    this->window->createWindowSurface(this->instance, &this->surface); 
   }
 
-  void EngineDevice::createSurface() { 
-    this->window.createWindowSurface(this->instance, &this->surface); 
-  }
-
-  bool EngineDevice::isDeviceSuitable(VkPhysicalDevice device) {
+  bool Device::isDeviceSuitable(VkPhysicalDevice device) {
     QueueFamilyIndices indices = this->findQueueFamilies(device);
-
     bool extensionsSupported = this->checkDeviceExtensionSupport(device);
 
     bool swapChainAdequate = false;
@@ -245,7 +227,7 @@ namespace nugiEngine {
       supportedFeatures.samplerAnisotropy;
   }
 
-  void EngineDevice::populateDebugMessengerCreateInfo(
+  void Device::populateDebugMessengerCreateInfo(
       VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
     createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -258,7 +240,7 @@ namespace nugiEngine {
     createInfo.pUserData = nullptr;  // Optional
   }
 
-  void EngineDevice::setupDebugMessenger() {
+  void Device::setupDebugMessenger() {
     if (!this->enableValidationLayers) return;
     VkDebugUtilsMessengerCreateInfoEXT createInfo;
     this->populateDebugMessengerCreateInfo(createInfo);
@@ -267,7 +249,7 @@ namespace nugiEngine {
     }
   }
 
-  bool EngineDevice::checkValidationLayerSupport() {
+  bool Device::checkValidationLayerSupport() {
     uint32_t layerCount;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -292,7 +274,7 @@ namespace nugiEngine {
     return true;
   }
 
-  std::vector<const char *> EngineDevice::getRequiredExtensions() {
+  std::vector<const char *> Device::getRequiredExtensions() {
     uint32_t glfwExtensionCount = 0;
     const char **glfwExtensions;
     glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -309,7 +291,7 @@ namespace nugiEngine {
     return extensions;
   }
 
-  void EngineDevice::hasGflwRequiredInstanceExtensions() {
+  void Device::hasGflwRequiredInstanceExtensions() {
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
     std::vector<VkExtensionProperties> extensions(extensionCount);
@@ -332,7 +314,7 @@ namespace nugiEngine {
     }
   }
 
-  bool EngineDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+  bool Device::checkDeviceExtensionSupport(VkPhysicalDevice device) {
     uint32_t extensionCount;
     vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -353,7 +335,7 @@ namespace nugiEngine {
     return requiredExtensions.empty();
   }
 
-  QueueFamilyIndices EngineDevice::findQueueFamilies(VkPhysicalDevice device) {
+  QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices;
 
     uint32_t queueFamilyCount = 0;
@@ -396,7 +378,7 @@ namespace nugiEngine {
     return indices;
   }
 
-  SwapChainSupportDetails EngineDevice::querySwapChainSupport(VkPhysicalDevice device) {
+  SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details;
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, this->surface, &details.capabilities);
 
@@ -423,7 +405,7 @@ namespace nugiEngine {
     return details;
   }
 
-  VkFormat EngineDevice::findSupportedFormat( const std::vector<VkFormat> &candidates, 
+  VkFormat Device::findSupportedFormat( const std::vector<VkFormat> &candidates, 
       VkImageTiling tiling, VkFormatFeatureFlags features) {
     for (VkFormat format : candidates) {
       VkFormatProperties props;
@@ -439,7 +421,7 @@ namespace nugiEngine {
     throw std::runtime_error("failed to find supported format!");
   }
 
-  uint32_t EngineDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+  uint32_t Device::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(this->physicalDevice, &memProperties);
     for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
@@ -452,7 +434,7 @@ namespace nugiEngine {
     throw std::runtime_error("failed to find suitable memory type!");
   }
 
-  VkSampleCountFlagBits EngineDevice::getMaxUsableFlagsCount() {
+  VkSampleCountFlagBits Device::getMaxSampleNumber() {
     VkSampleCountFlags counts = this->properties.limits.framebufferColorSampleCounts & this->properties.limits.framebufferDepthSampleCounts;
 
     if (counts & VK_SAMPLE_COUNT_64_BIT) return VK_SAMPLE_COUNT_64_BIT;

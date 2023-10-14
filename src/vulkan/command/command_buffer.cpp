@@ -2,58 +2,28 @@
 
 #include <iostream>
 
-namespace nugiEngine {
-	EngineCommandBuffer::~EngineCommandBuffer() {
+namespace NugieVulkan {
+	CommandBuffer::~CommandBuffer() {
 		vkFreeCommandBuffers(
-      this->appDevice.getLogicalDevice(), 
-      this->appDevice.getCommandPool(), 
+      this->device->getLogicalDevice(), 
+      this->device->getCommandPool(), 
       1, 
       &this->commandBuffer
     );
 	}
 
-  std::vector<std::shared_ptr<EngineCommandBuffer>> EngineCommandBuffer::createCommandBuffers(EngineDevice &appDevice, uint32_t size) {
-		std::vector<VkCommandBuffer> commandBuffers{size};
-		std::vector<std::shared_ptr<EngineCommandBuffer>> appCommandBuffers;
-
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = appDevice.getCommandPool();
-		allocInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-
-		if (vkAllocateCommandBuffers(appDevice.getLogicalDevice(), &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate command buffer");
-		}
-
-		for (size_t i = 0; i < size; i++) {
-			appCommandBuffers.push_back(
-				std::make_shared<EngineCommandBuffer>(appDevice, commandBuffers[i])
-			);
-		}
-
-		return appCommandBuffers;
-	}
-
-	EngineCommandBuffer::EngineCommandBuffer(EngineDevice& device, VkCommandBuffer commandBuffer) 
-		: appDevice{device}, commandBuffer {commandBuffer} 
+	CommandBuffer::CommandBuffer(Device* device, VkCommandBuffer commandBuffer) 
+		: device{device}, commandBuffer {commandBuffer} 
 	{
 
 	}
 
-	EngineCommandBuffer::EngineCommandBuffer(EngineDevice& device) : appDevice{device} {
-		VkCommandBufferAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-		allocInfo.commandPool = this->appDevice.getCommandPool();
-		allocInfo.commandBufferCount = 1;
-
-		if (vkAllocateCommandBuffers(appDevice.getLogicalDevice(), &allocInfo, &this->commandBuffer) != VK_SUCCESS) {
-			throw std::runtime_error("failed to allocate command buffer");
-		}
+	CommandBuffer::CommandBuffer(Device* device) : device{device} 
+	{
+		
 	}
 
-	void EngineCommandBuffer::beginSingleTimeCommand() {
+	void CommandBuffer::beginSingleTimeCommand() {
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -63,7 +33,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineCommandBuffer::beginReccuringCommand() {
+	void CommandBuffer::beginReccuringCommand() {
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -72,13 +42,13 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineCommandBuffer::endCommand() {
+	void CommandBuffer::endCommand() {
 		if (vkEndCommandBuffer(this->commandBuffer) != VK_SUCCESS) {
 			std::cerr << "Failed to end recording command buffer" << '\n';
 		}
 	}
 
-	void EngineCommandBuffer::submitCommand(VkQueue queue, std::vector<VkSemaphore> waitSemaphores, 
+	void CommandBuffer::submitCommand(VkQueue queue, std::vector<VkSemaphore> waitSemaphores, 
     std::vector<VkPipelineStageFlags> waitStages, std::vector<VkSemaphore> signalSemaphores, VkFence fence) 
 	{
 		VkSubmitInfo submitInfo{};
@@ -113,7 +83,7 @@ namespace nugiEngine {
 		}
 	}
 
-	void EngineCommandBuffer::submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers, VkQueue queue, std::vector<VkSemaphore> waitSemaphores, 
+	void CommandBuffer::submitCommands(std::vector<CommandBuffer*> commandBuffers, VkQueue queue, std::vector<VkSemaphore> waitSemaphores, 
 		std::vector<VkPipelineStageFlags> waitStages, std::vector<VkSemaphore> signalSemaphores, VkFence fence) 
 	{
 		std::vector<VkCommandBuffer> buffers{};
@@ -153,4 +123,4 @@ namespace nugiEngine {
 		}
 		
 	}
-} // namespace nugiEngine
+} // namespace NugieVulkan

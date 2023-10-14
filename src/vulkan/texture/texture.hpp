@@ -9,19 +9,19 @@
 
 #include <memory>
 
-namespace nugiEngine
+namespace NugieVulkan
 {
-  class EngineTexture
+  class Texture
   {
     public:
-      EngineTexture(EngineDevice &appDevice, const char* textureFileName);
-      ~EngineTexture();
+      Texture(Device* device, const char* textureFileName);
+      ~Texture();
 
       VkDescriptorImageInfo getDescriptorInfo();
 
     private:
-      EngineDevice &appDevice;
-      std::unique_ptr<EngineImage> image;
+      Device* device;
+      std::unique_ptr<Image> image;
 
       VkSampler sampler;
       uint32_t mipLevels;
@@ -31,4 +31,4 @@ namespace nugiEngine
   };
   
   
-} // namespace nugiEngine
+} // namespace NugieVulkan

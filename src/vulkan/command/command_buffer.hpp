@@ -1,20 +1,19 @@
 #pragma once
 
 #include "../device/device.hpp"
+#include "command_pool.hpp"
 
 #include <vector>
 #include <memory>
 
-namespace nugiEngine
+namespace NugieVulkan
 {
-  class EngineCommandBuffer {
+  class CommandBuffer {
     public:
-      EngineCommandBuffer(EngineDevice& device, VkCommandBuffer commandBuffer);
-      EngineCommandBuffer(EngineDevice& device);
+      CommandBuffer(Device* device, VkCommandBuffer commandBuffer);
+      CommandBuffer(Device* device);
 
-      ~EngineCommandBuffer();
-
-      static std::vector<std::shared_ptr<EngineCommandBuffer>> createCommandBuffers(EngineDevice &appDevice, uint32_t size);
+      ~CommandBuffer();
 
       void beginSingleTimeCommand();
       void beginReccuringCommand();
@@ -23,16 +22,16 @@ namespace nugiEngine
         std::vector<VkPipelineStageFlags> waitStages = {}, std::vector<VkSemaphore> signalSemaphores = {}, 
         VkFence fence = VK_NULL_HANDLE);
 
-      static void submitCommands(std::vector<std::shared_ptr<EngineCommandBuffer>> commandBuffers, VkQueue queue, std::vector<VkSemaphore> waitSemaphores = {}, 
+      static void submitCommands(std::vector<CommandBuffer*> commandBuffers, VkQueue queue, std::vector<VkSemaphore> waitSemaphores = {}, 
         std::vector<VkPipelineStageFlags> waitStages = {}, std::vector<VkSemaphore> signalSemaphores = {}, 
         VkFence fence = VK_NULL_HANDLE);
 
       VkCommandBuffer getCommandBuffer() const { return this->commandBuffer; }
 
     private:
-      EngineDevice& appDevice;
+      Device* device;
       VkCommandBuffer commandBuffer;
   };
   
-} // namespace nugiEngine
+} // namespace NugieVulkan
 

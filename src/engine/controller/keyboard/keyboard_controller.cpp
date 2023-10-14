@@ -1,8 +1,8 @@
 #include "keyboard_controller.hpp"
 
-namespace nugiEngine {
+namespace NugieApp {
 
-  CameraTransformation EngineKeyboardController::moveInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
+  CameraTransformation KeyboardController::moveInPlaceXZ(GLFWwindow* window, float dt, CameraTransformation cameraTransformation, bool* isPressed) {
     glm::vec3 a = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glm::vec3 forwardDir = glm::normalize(cameraTransformation.direction);

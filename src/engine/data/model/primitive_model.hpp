@@ -13,31 +13,31 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EnginePrimitiveModel {
+namespace NugieApp {
+	class PrimitiveModel {
     public:
-      EnginePrimitiveModel(EngineDevice &device);
+      PrimitiveModel(NugieVulkan::Device* device);
 
       VkDescriptorBufferInfo getPrimitiveInfo() { return this->primitiveBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
 
-      uint32_t getPrimitiveSize() const { return static_cast<uint32_t>(this->primitives->size()); }
-      uint32_t getBvhSize() const { return static_cast<uint32_t>(this->bvhNodes->size()); }
+      uint32_t getPrimitiveSize() const { return static_cast<uint32_t>(this->primitives.size()); }
+      uint32_t getBvhSize() const { return static_cast<uint32_t>(this->bvhNodes.size()); }
 
-      void addPrimitive(std::shared_ptr<std::vector<Primitive>> primitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
+      void addPrimitive(std::vector<Primitive> primitives, std::vector<RayTraceVertex> vertices);
       void createBuffers();
 
-      // static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(EngineDevice &device, const std::string &filePath, uint32_t materialIndex);
+      // static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(NugieVulkan::Device* device, const std::string &filePath, uint32_t materialIndex);
       
     private:
-      EngineDevice &engineDevice;
+      NugieVulkan::Device* device;
 
-      std::shared_ptr<std::vector<Primitive>> primitives{};
-      std::shared_ptr<std::vector<BvhNode>> bvhNodes{};
+      std::vector<Primitive> primitives{};
+      std::vector<BvhNode> bvhNodes{};
       
-      std::shared_ptr<EngineBuffer> primitiveBuffer;
-      std::shared_ptr<EngineBuffer> bvhBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> primitiveBuffer;
+      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
       
-      std::shared_ptr<std::vector<BvhNode>> createBvhData(std::shared_ptr<std::vector<Primitive>> primitives, std::shared_ptr<std::vector<RayTraceVertex>> vertices);
+      std::vector<BvhNode> createBvhData(std::vector<Primitive> primitives, std::vector<RayTraceVertex> vertices);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

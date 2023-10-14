@@ -4,8 +4,9 @@
 #include "../../vulkan/device/device.hpp"
 #include "../../vulkan/pipeline/graphic_pipeline.hpp"
 #include "../../vulkan/buffer/buffer.hpp"
-#include "../../vulkan/descriptor/descriptor.hpp"
+#include "../../vulkan/descriptor/descriptor_set_layout.hpp"
 #include "../../vulkan/swap_chain/swap_chain.hpp"
+#include "../../vulkan/renderpass/renderpass.hpp"
 #include "../data/model/vertex_model.hpp"
 #include "../utils/camera/camera.hpp"
 #include "../ray_ubo.hpp"
@@ -13,21 +14,21 @@
 #include <memory>
 #include <vector>
 
-namespace nugiEngine {
-	class EngineSamplingRayRasterRenderSystem {
+namespace NugieApp {
+	class SamplingRayRasterRenderSystem {
 		public:
-			EngineSamplingRayRasterRenderSystem(EngineDevice& device, VkDescriptorSetLayout descriptorSetLayouts, VkRenderPass renderPass);
-			~EngineSamplingRayRasterRenderSystem();
+			SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, NugieVulkan::RenderPass renderPass);
+			~SamplingRayRasterRenderSystem();
 
-			void render(std::shared_ptr<EngineCommandBuffer> commandBuffer, VkDescriptorSet descriptorSets, std::shared_ptr<EngineVertexModel> model, uint32_t randomSeed = 1);
+			void render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, VertexModel* model, uint32_t randomSeed = 1);
 		
 		private:
-			void createPipelineLayout(VkDescriptorSetLayout descriptorSetLayouts);
-			void createPipeline(VkRenderPass renderPass);
+			void createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout);
+			void createPipeline(NugieVulkan::RenderPass renderPass);
 
-			EngineDevice& appDevice;
+			NugieVulkan::Device* device;
 			
 			VkPipelineLayout pipelineLayout;
-			std::unique_ptr<EngineGraphicPipeline> pipeline;
+			std::unique_ptr<NugieVulkan::GraphicPipeline> pipeline;
 	};
 }

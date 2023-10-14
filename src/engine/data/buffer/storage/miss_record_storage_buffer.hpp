@@ -13,20 +13,20 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
-	class EngineMissRecordStorageBuffer {
+namespace NugieApp {
+	class MissRecordStorageBuffer {
 		public:
-			EngineMissRecordStorageBuffer(EngineDevice &device, uint32_t dataCount);
+			MissRecordStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
-			void transferToRead(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
-			void transferToWrite(std::shared_ptr<EngineCommandBuffer> commandBuffer, uint32_t frameIndex);
+			void transferToRead(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
+			void transferToWrite(NugieVulkan::CommandBuffer* commandBuffer, uint32_t frameIndex);
 			
 		private:
-			EngineDevice &engineDevice;
-			std::vector<std::shared_ptr<EngineBuffer>> buffers;
+			NugieVulkan::Device* device;
+			std::vector<std::unique_ptr<NugieVulkan::Buffer>> buffers;
 
 			void createBuffers(std::shared_ptr<std::vector<MissRecord>> datas);
 	};
-} // namespace nugiEngine
+} // namespace NugieApp

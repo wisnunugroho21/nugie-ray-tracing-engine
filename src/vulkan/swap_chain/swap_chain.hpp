@@ -12,30 +12,30 @@
 #include <vector>
 #include <memory>
 
-namespace nugiEngine {
+namespace NugieVulkan {
 
-  class EngineSwapChain {
+  class SwapChain {
   public:
-    EngineSwapChain(EngineDevice &deviceRef, VkExtent2D windowExtent);
-    EngineSwapChain(EngineDevice &deviceref, VkExtent2D windowExtent, std::shared_ptr<EngineSwapChain> previous);
+    SwapChain(Device* device, VkExtent2D windowExtent);
+    SwapChain(Device* device, VkExtent2D windowExtent, std::shared_ptr<SwapChain> previous);
 
-    ~EngineSwapChain();
-
-    std::vector<std::shared_ptr<EngineImage>> getswapChainImages() const { return this->swapChainImages; }
+    ~SwapChain();
+    
     VkFormat getSwapChainImageFormat() const { return this->swapChainImageFormat; }
     VkExtent2D getSwapChainExtent() { return this->swapChainExtent; }
     size_t imageCount() const { return this->swapChainImages.size(); }
     uint32_t width() const { return this->swapChainExtent.width; }
     uint32_t height() const { return this->swapChainExtent.height; }
+    std::vector<Image*> getswapChainImages() const;
 
     float extentAspectRatio() {
       return static_cast<float>(this->swapChainExtent.width) / static_cast<float>(this->swapChainExtent.height);
     }
 
-    VkResult acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFences, VkSemaphore imageAvailableSemaphore);
-    VkResult presentRenders(VkQueue queue, uint32_t *imageIndex, std::vector<VkSemaphore> waitSemaphores);
+    VkResult acquireNextImage(uint32_t* imageIndex, std::vector<VkFence> inFlightFences, VkSemaphore imageAvailableSemaphore);
+    VkResult presentRenders(VkQueue queue, uint32_t* imageIndex, std::vector<VkSemaphore> waitSemaphores);
 
-    bool compareSwapFormat(const EngineSwapChain& swapChain) {
+    bool compareSwapFormat(const SwapChain& swapChain) {
       return swapChain.swapChainImageFormat == this->swapChainImageFormat;
     }
 
@@ -49,14 +49,14 @@ namespace nugiEngine {
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
 
     VkSwapchainKHR swapChain;
-    std::shared_ptr<EngineSwapChain> oldSwapChain;
+    std::shared_ptr<SwapChain> oldSwapChain;
 
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
 
-    std::vector<std::shared_ptr<EngineImage>> swapChainImages;
+    std::vector<std::unique_ptr<Image>> swapChainImages;
 
-    EngineDevice &device;
+    Device* device;
     VkExtent2D windowExtent;
 
     size_t currentFrame = 0;

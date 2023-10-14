@@ -1,10 +1,10 @@
 #include "image.hpp"
 
-namespace nugiEngine {
-  EngineImage::EngineImage(EngineDevice &appDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, 
+namespace NugieVulkan {
+  Image::Image(Device* device, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, 
     VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
     VkImageAspectFlags aspectFlags) 
-    : appDevice{appDevice}, height{height}, width{width}, mipLevels{mipLevels}, format{format}, aspectFlags{aspectFlags} 
+    : device{device}, height{height}, width{width}, mipLevels{mipLevels}, format{format}, aspectFlags{aspectFlags} 
   {
     this->createImage(numSamples, tiling, usage, properties);
     this->createImageView();
@@ -12,23 +12,23 @@ namespace nugiEngine {
     this->isImageCreatedByUs = true;
   }
 
-  EngineImage::EngineImage(EngineDevice &appDevice, uint32_t width, uint32_t height, VkImage image, uint32_t mipLevels, VkFormat format, VkImageAspectFlags aspectFlags) : appDevice{appDevice}, mipLevels{mipLevels}, format{format}, aspectFlags{aspectFlags}, height{ height }, width{ width } {
+  Image::Image(Device* device, uint32_t width, uint32_t height, VkImage image, uint32_t mipLevels, VkFormat format, VkImageAspectFlags aspectFlags) : device{device}, mipLevels{mipLevels}, format{format}, aspectFlags{aspectFlags}, height{ height }, width{ width } {
     this->image = image;
     this->createImageView();
 
     this->isImageCreatedByUs = false;
   }
 
-  EngineImage::~EngineImage() {
-    vkDestroyImageView(this->appDevice.getLogicalDevice(), this->imageView, nullptr);
+  Image::~Image() {
+    vkDestroyImageView(this->device->getLogicalDevice(), this->imageView, nullptr);
 
     if (this->isImageCreatedByUs) {
-      vkDestroyImage(this->appDevice.getLogicalDevice(), this->image, nullptr);
-      vkFreeMemory(this->appDevice.getLogicalDevice(), this->imageMemory, nullptr);
+      vkDestroyImage(this->device->getLogicalDevice(), this->image, nullptr);
+      vkFreeMemory(this->device->getLogicalDevice(), this->imageMemory, nullptr);
     }
   }
 
-  void EngineImage::createImage(VkSampleCountFlagBits numSamples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties) {
+  void Image::createImage(VkSampleCountFlagBits numSamples, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties) {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -44,28 +44,28 @@ namespace nugiEngine {
     imageInfo.samples = numSamples;
     imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-    if (vkCreateImage(this->appDevice.getLogicalDevice(), &imageInfo, nullptr, &this->image) != VK_SUCCESS) {
+    if (vkCreateImage(this->device->getLogicalDevice(), &imageInfo, nullptr, &this->image) != VK_SUCCESS) {
       throw std::runtime_error("failed to create image!");
     }
 
     VkMemoryRequirements memRequirements;
-    vkGetImageMemoryRequirements(this->appDevice.getLogicalDevice(), this->image, &memRequirements);
+    vkGetImageMemoryRequirements(this->device->getLogicalDevice(), this->image, &memRequirements);
 
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
-    allocInfo.memoryTypeIndex = this->appDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
+    allocInfo.memoryTypeIndex = this->device->findMemoryType(memRequirements.memoryTypeBits, properties);
 
-    if (vkAllocateMemory(this->appDevice.getLogicalDevice(), &allocInfo, nullptr, &this->imageMemory) != VK_SUCCESS) {
+    if (vkAllocateMemory(this->device->getLogicalDevice(), &allocInfo, nullptr, &this->imageMemory) != VK_SUCCESS) {
       throw std::runtime_error("failed to allocate image memory!");
     }
 
-    if (vkBindImageMemory(this->appDevice.getLogicalDevice(), this->image, this->imageMemory, 0) != VK_SUCCESS) {
+    if (vkBindImageMemory(this->device->getLogicalDevice(), this->image, this->imageMemory, 0) != VK_SUCCESS) {
       throw std::runtime_error("failed to bind image memory!");
     }
   }
 
-  void EngineImage::createImageView() {
+  void Image::createImageView() {
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = this->image;
@@ -81,19 +81,19 @@ namespace nugiEngine {
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
-    if (vkCreateImageView(appDevice.getLogicalDevice(), &viewInfo, nullptr, &this->imageView) != VK_SUCCESS) {
+    if (vkCreateImageView(this->device->getLogicalDevice(), &viewInfo, nullptr, &this->imageView) != VK_SUCCESS) {
         throw std::runtime_error("failed to create texture image view!");
     }
   }
 
-  void EngineImage::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
+  void Image::transitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
     VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex, uint32_t dstQueueFamilyIndex,
-    std::shared_ptr<EngineCommandBuffer> commandBuffer, EngineDevice *appDevice) 
+    CommandBuffer* commandBuffer, Device* device) 
   {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(this->appDevice);
+      commandBuffer = new CommandBuffer(this->device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;  
@@ -131,19 +131,19 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getTransferQueue(0));
+      commandBuffer->submitCommand(this->device->getTransferQueue(0));
     }
   }
   
-  void EngineImage::transitionImageLayout(std::vector<std::shared_ptr<EngineImage>> images, VkImageLayout oldLayout, VkImageLayout newLayout, 
+  void Image::transitionImageLayout(std::vector<Image*> images, VkImageLayout oldLayout, VkImageLayout newLayout, 
     VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, VkAccessFlags srcAccess, VkAccessFlags dstAccess,
     uint32_t srcQueueFamilyIndex, uint32_t dstQueueFamilyIndex,
-    std::shared_ptr<EngineCommandBuffer> commandBuffer, EngineDevice *appDevice) 
+    CommandBuffer* commandBuffer, Device* device) 
   {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(*appDevice);
+      commandBuffer = new CommandBuffer(device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;  
@@ -187,15 +187,95 @@ namespace nugiEngine {
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(appDevice->getTransferQueue(0));
+      commandBuffer->submitCommand(device->getTransferQueue(0));
     }
   }
 
-  void EngineImage::copyImageFromOther(std::shared_ptr<EngineImage> srcImage, VkImageLayout srcLayout, VkImageLayout dstLayout, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+  void Image::copyBufferToImage(Buffer* srcBuffer, CommandBuffer* commandBuffer = nullptr) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(this->appDevice);
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1u;
+
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {this->width, this->height, 1};
+
+    vkCmdCopyBufferToImage(
+      commandBuffer->getCommandBuffer(),
+      srcBuffer->getBuffer(),
+      this->image,
+      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+      1,
+      &region
+    );
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
+  }
+
+  void Image::copyImageToBuffer(Buffer* destBuffer, CommandBuffer* commandBuffer = nullptr) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;
+    }
+
+    VkBufferImageCopy region{};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1u;
+
+    region.imageOffset = {0, 0, 0};
+    region.imageExtent = {this->width, this->height, 1};
+
+    vkCmdCopyImageToBuffer(
+      commandBuffer->getCommandBuffer(),
+      this->image,
+      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+      destBuffer->getBuffer(),
+      1,
+      &region
+    );
+
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
+  }
+
+  void Image::copyImageFromOther(Image* srcImage, CommandBuffer* commandBuffer) {
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;  
@@ -209,19 +289,21 @@ namespace nugiEngine {
 		copyInfo.dstOffset      = {0, 0, 0};
 		copyInfo.extent         = {this->width, this->height, 1};
 
-    vkCmdCopyImage(commandBuffer->getCommandBuffer(), srcImage->getImage(), srcLayout, this->image, dstLayout, 1, &copyInfo);
+    vkCmdCopyImage(commandBuffer->getCommandBuffer(), srcImage->getImage(), srcImage->getLayout(), this->image, this->layout, 1u, &copyInfo);
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getTransferQueue(0));
+      commandBuffer->submitCommand(this->device->getTransferQueue(0));
+
+      delete commandBuffer;
     }
   }
 
-  void EngineImage::copyImageToOther(std::shared_ptr<EngineImage> dstImage, VkImageLayout srcLayout, VkImageLayout dstLayout, std::shared_ptr<EngineCommandBuffer> commandBuffer) {
+  void Image::copyImageToOther(Image* dstImage, CommandBuffer* commandBuffer) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
-      commandBuffer = std::make_shared<EngineCommandBuffer>(this->appDevice);
+      commandBuffer = new CommandBuffer(this->device);
       commandBuffer->beginSingleTimeCommand();
 
       isCommandBufferCreatedHere = true;  
@@ -235,29 +317,37 @@ namespace nugiEngine {
 		copyInfo.dstOffset      = {0, 0, 0};
 		copyInfo.extent         = {this->width, this->height, 1};
 
-    vkCmdCopyImage(commandBuffer->getCommandBuffer(), this->image, srcLayout, dstImage->getImage(), dstLayout, 1, &copyInfo);
+    vkCmdCopyImage(commandBuffer->getCommandBuffer(), this->image, this->layout, dstImage->getImage(), dstImage->getLayout(), 1u, &copyInfo);
 
     if (isCommandBufferCreatedHere) {
       commandBuffer->endCommand();
-      commandBuffer->submitCommand(this->appDevice.getTransferQueue(0));
+      commandBuffer->submitCommand(this->device->getTransferQueue(0));
+
+      delete commandBuffer;
     }
   }
 
-  void EngineImage::generateMipMap() {
+  void Image::generateMipMap(CommandBuffer* commandBuffer) {
     if (!this->isImageCreatedByUs) {
       throw std::runtime_error("cannot generate mipmap if the image is not created by this class => image directly assigned to this class via second constructor");
     }
 
     // Check if image format supports linear blitting
     VkFormatProperties formatProperties;
-    vkGetPhysicalDeviceFormatProperties(this->appDevice.getPhysicalDevice(), this->format, &formatProperties);
+    vkGetPhysicalDeviceFormatProperties(this->device->getPhysicalDevice(), this->format, &formatProperties);
 
     if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
       throw std::runtime_error("texture image format does not support linear blitting!");
     }
 
-    EngineCommandBuffer commandBuffer{this->appDevice};
-    commandBuffer.beginSingleTimeCommand();
+    bool isCommandBufferCreatedHere = false;
+    
+    if (commandBuffer == nullptr) {
+      commandBuffer = new CommandBuffer(this->device);
+      commandBuffer->beginSingleTimeCommand();
+
+      isCommandBufferCreatedHere = true;  
+    }
 
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -280,7 +370,7 @@ namespace nugiEngine {
       barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 
       vkCmdPipelineBarrier(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
         0, nullptr,
         0, nullptr,
@@ -303,7 +393,7 @@ namespace nugiEngine {
       blit.dstSubresource.layerCount = 1;
 
       vkCmdBlitImage(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         this->image, 
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         this->image, 
@@ -319,7 +409,7 @@ namespace nugiEngine {
       barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
       vkCmdPipelineBarrier(
-        commandBuffer.getCommandBuffer(),
+        commandBuffer->getCommandBuffer(),
         VK_PIPELINE_STAGE_TRANSFER_BIT, 
         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
         0,
@@ -340,22 +430,26 @@ namespace nugiEngine {
     barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
     vkCmdPipelineBarrier(
-      commandBuffer.getCommandBuffer(),
+      commandBuffer->getCommandBuffer(),
       VK_PIPELINE_STAGE_TRANSFER_BIT, 
       VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0,
       0, nullptr,
       0, nullptr,
       1, &barrier);
 
-    commandBuffer.endCommand();
-    commandBuffer.submitCommand(this->appDevice.getTransferQueue(0));
+    if (isCommandBufferCreatedHere) {
+      commandBuffer->endCommand();
+      commandBuffer->submitCommand(this->device->getTransferQueue(0));
+
+      delete commandBuffer;
+    }
   }
 
-  VkDescriptorImageInfo EngineImage::getDescriptorInfo(VkImageLayout desiredImageLayout) {
+  VkDescriptorImageInfo Image::getDescriptorInfo(VkImageLayout desiredImageLayout) {
     VkDescriptorImageInfo imageInfo{};
     imageInfo.imageLayout = desiredImageLayout;
     imageInfo.imageView = this->imageView;
 
     return imageInfo;
   }
-} // namespace nugiEngine
+} // namespace NugieVulkan
