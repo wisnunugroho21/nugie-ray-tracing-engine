@@ -21,7 +21,7 @@ namespace NugieApp {
 		this->window = std::make_unique<NugieVulkan::Window>(WIDTH, HEIGHT, APP_TITLE);
 		this->device = std::make_unique<NugieVulkan::Device>(this->window.get());
 
-		this->renderer = std::make_unique<HybridRenderer>(this->window, this->device);
+		this->renderer = std::make_unique<HybridRenderer>(this->window.get(), this->device.get());
 		this->keyboardController = std::make_shared<KeyboardController>();
 		this->mouseController = std::make_shared<MouseController>();
 
@@ -260,7 +260,7 @@ namespace NugieApp {
 	}
 
 	void App::loadCornellBox() {
-		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device);
+		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device.get());
 
 		auto objects = std::vector<Object>();
 		auto materials = std::vector<Material>();
@@ -268,12 +268,12 @@ namespace NugieApp {
 		auto vertices = std::vector<RayTraceVertex>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
-		std::vector<std::shared_ptr<TransformComponent>> transforms{};
+		std::vector<TransformComponent> transforms{};
 
 		// ----------------------------------------------------------------------------
 
 		// kanan
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 		
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -290,16 +290,16 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(rightWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), rightWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), rightWallPrimitives, &transforms[transformIndex], vertices));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
 		// kiri
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -316,16 +316,16 @@ namespace NugieApp {
 		
 		this->primitiveModel->addPrimitive(leftWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), leftWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), leftWallPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
 		// bawah
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -337,16 +337,16 @@ namespace NugieApp {
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), bottomWallPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
 		// atas
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -358,16 +358,16 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(topWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), topWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), topWallPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 		
 		// depan
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -379,11 +379,11 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(frontWallPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), frontWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), frontWallPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
@@ -404,7 +404,7 @@ namespace NugieApp {
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f)}));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f)});
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -436,15 +436,15 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(firstBoxesPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), firstBoxesPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), firstBoxesPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f, glm::radians(0.0f), 0.0f) });
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -476,16 +476,16 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(secondBoxesPrimitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), secondBoxesPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), secondBoxesPrimitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
 		// Object
-		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
+		/* transforms.emplace_back(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)});
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -498,28 +498,28 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), loadedModel.primitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<ObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<MaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<LightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<TransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device, vertices);
+		this->objectModel = std::make_unique<ObjectModel>(this->device.get(), objects, boundBoxes);
+		this->materialModel = std::make_unique<MaterialModel>(this->device.get(), materials);
+		this->lightModel = std::make_unique<LightModel>(this->device.get(), triangleLights, vertices);
+		this->transformationModel = std::make_unique<TransformationModel>(this->device.get(), transforms);
+		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device.get(), vertices);
 
-		this->globalUniforms = std::make_unique<GlobalUniform>(this->device);
+		this->globalUniforms = std::make_unique<GlobalUniform>(this->device.get());
 		this->primitiveModel->createBuffers();
 
 		this->numLights = static_cast<uint32_t>(triangleLights.size());
 	}
 
 	void App::loadSkyLight() {
-		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device);
+		this->primitiveModel = std::make_unique<PrimitiveModel>(this->device.get());
 
 		auto objects = std::vector<Object>();
 		auto materials = std::vector<Material>();
@@ -527,12 +527,12 @@ namespace NugieApp {
 		auto vertices = std::vector<RayTraceVertex>();
 
 		std::vector<std::shared_ptr<BoundBox>> boundBoxes{};
-		std::vector<std::shared_ptr<TransformComponent>> transforms{};
+		std::vector<TransformComponent> transforms{};
 
 		// ----------------------------------------------------------------------------
 		
 		// bawah
-		transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) }));
+		transforms.emplace_back(TransformComponent{ glm::vec3(0.0f), glm::vec3(1.0f), glm::vec3(0.0f) });
 		uint32_t transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -549,11 +549,11 @@ namespace NugieApp {
 		
 		this->primitiveModel->addPrimitive(bottomWallPrimitives, vertices);
 		
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), bottomWallPrimitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), bottomWallPrimitives, &transforms[transformIndex], vertices));
 		uint32_t boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin();
 
 		// ----------------------------------------------------------------------------
 
@@ -575,7 +575,7 @@ namespace NugieApp {
 		// ----------------------------------------------------------------------------
 
 		// Object
-		/* transforms.emplace_back(std::make_shared<TransformComponent>(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
+		/* transforms.emplace_back(TransformComponent{ glm::vec3(275.0f, 200.0f, 250.0f), glm::vec3(200.0f), glm::vec3(0.0f, glm::radians(180.0f), 0.0f)}));
 		transformIndex = static_cast<uint32_t>(transforms.size() - 1);
 
 		objects.emplace_back(Object{ this->primitiveModel->getBvhSize(), this->primitiveModel->getPrimitiveSize(), transformIndex });
@@ -588,21 +588,21 @@ namespace NugieApp {
 
 		this->primitiveModel->addPrimitive(loadedModel.primitives, vertices);
 
-		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), objects.at(objectIndex), loadedModel.primitives, transforms[transformIndex], vertices));
+		boundBoxes.emplace_back(std::make_shared<ObjectBoundBox>(static_cast<uint32_t>(boundBoxes.size() + 1), &objects.at(objectIndex), loadedModel.primitives, &transforms[transformIndex], vertices));
 		boundBoxIndex = static_cast<uint32_t>(boundBoxes.size() - 1);
 
-		transforms[transformIndex]->objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
-		transforms[transformIndex]->objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
+		transforms[transformIndex].objectMaximum = boundBoxes[boundBoxIndex]->getOriginalMax();
+		transforms[transformIndex].objectMinimum = boundBoxes[boundBoxIndex]->getOriginalMin(); */
 
 		// ----------------------------------------------------------------------------
 
-		this->objectModel = std::make_unique<ObjectModel>(this->device, objects, boundBoxes);
-		this->materialModel = std::make_unique<MaterialModel>(this->device, materials);
-		this->lightModel = std::make_unique<LightModel>(this->device, triangleLights, vertices);
-		this->transformationModel = std::make_unique<TransformationModel>(this->device, transforms);
-		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device, vertices);
+		this->objectModel = std::make_unique<ObjectModel>(this->device.get(), objects, boundBoxes);
+		this->materialModel = std::make_unique<MaterialModel>(this->device.get(), materials);
+		this->lightModel = std::make_unique<LightModel>(this->device.get(), triangleLights, vertices);
+		this->transformationModel = std::make_unique<TransformationModel>(this->device.get(), transforms);
+		this->rayTraceVertexModels = std::make_unique<RayTraceVertexModel>(this->device.get(), vertices);
 
-		this->globalUniforms = std::make_unique<GlobalUniform>(this->device);
+		this->globalUniforms = std::make_unique<GlobalUniform>(this->device.get());
 		this->primitiveModel->createBuffers();
 
 		this->numLights = 0u;
@@ -630,7 +630,7 @@ namespace NugieApp {
 			0, 1, 2, 2, 3, 0
 		};
 
-		this->quadModels = std::make_shared<VertexModel>(this->device, modelData);
+		this->quadModels = std::make_shared<VertexModel>(this->device.get(), modelData);
 	}
 
 	RayTraceUbo App::initUbo(uint32_t width, uint32_t height) {
@@ -667,27 +667,27 @@ namespace NugieApp {
 		NugieVulkan::DescriptorPool* descriptorPool = this->renderer->getDescriptorPool();
 		std::vector<NugieVulkan::Image*> swapChainImages = this->renderer->getSwapChain()->getswapChainImages();
 
-		this->swapChainSubRenderer = std::make_unique<SwapChainSubRenderer>(this->device, this->renderer->getSwapChain()->getswapChainImages(), 
+		this->swapChainSubRenderer = std::make_unique<SwapChainSubRenderer>(this->device.get(), this->renderer->getSwapChain()->getswapChainImages(), 
 			this->renderer->getSwapChain()->getSwapChainImageFormat(), static_cast<int>(this->renderer->getSwapChain()->imageCount()), 
 			width, height);
 
-		this->indirectImage = std::make_unique<RayTraceImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
-		this->accumulateImages = std::make_unique<AccumulateImage>(this->device, width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->indirectImage = std::make_unique<RayTraceImage>(this->device.get(), width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
+		this->accumulateImages = std::make_unique<AccumulateImage>(this->device.get(), width, height, static_cast<uint32_t>(this->renderer->getSwapChain()->imageCount()));
 
-		this->objectRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device, width * height);
-		this->lightRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device, width * height);
-		this->directObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
-		this->directLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
-		this->indirectObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
-		this->indirectLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device, width * height);
-		this->indirectShadeShadeBuffer = std::make_shared<IndirectShadeStorageBuffer>(this->device, width * height);
-		this->directShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device, width * height);
-		this->lightShadeBuffer = std::make_shared<LightShadeStorageBuffer>(this->device, width * height);
-		this->missBuffer = std::make_shared<MissRecordStorageBuffer>(this->device, width * height);
-		this->indirectSamplerBuffer = std::make_shared<IndirectSamplerStorageBuffer>(this->device, sortPixelByMorton(width, height));
-		this->indirectDataBuffer = std::make_shared<IndirectDataStorageBuffer>(this->device, width * height);
-		this->directDataBuffer = std::make_shared<DirectDataStorageBuffer>(this->device, width * height);
-		this->sunDirectShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device, width * height);
+		this->objectRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device.get(), width * height);
+		this->lightRayDataBuffer = std::make_shared<RayDataStorageBuffer>(this->device.get(), width * height);
+		this->directObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device.get(), width * height);
+		this->directLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device.get(), width * height);
+		this->indirectObjectHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device.get(), width * height);
+		this->indirectLightHitRecordBuffer = std::make_shared<HitRecordStorageBuffer>(this->device.get(), width * height);
+		this->indirectShadeShadeBuffer = std::make_shared<IndirectShadeStorageBuffer>(this->device.get(), width * height);
+		this->directShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device.get(), width * height);
+		this->lightShadeBuffer = std::make_shared<LightShadeStorageBuffer>(this->device.get(), width * height);
+		this->missBuffer = std::make_shared<MissRecordStorageBuffer>(this->device.get(), width * height);
+		this->indirectSamplerBuffer = std::make_shared<IndirectSamplerStorageBuffer>(this->device.get(), sortPixelByMorton(width, height));
+		this->indirectDataBuffer = std::make_shared<IndirectDataStorageBuffer>(this->device.get(), width * height);
+		this->directDataBuffer = std::make_shared<DirectDataStorageBuffer>(this->device.get(), width * height);
+		this->sunDirectShadeShadeBuffer = std::make_shared<DirectShadeStorageBuffer>(this->device.get(), width * height);
 
 		std::vector<VkDescriptorBufferInfo> indirectShadeBufferInfos[3] {
 			this->indirectShadeShadeBuffer->getBuffersInfo(),
@@ -818,33 +818,33 @@ namespace NugieApp {
 			this->accumulateImages->getImagesInfo()
 		};
 
-		this->indirectShadeDescSet = std::make_unique<IndirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos);
-		this->directShadeDescSet = std::make_unique<DirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos);
-		this->sunDirectShadeDescSet = std::make_unique<SunDirectShadeDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos);
-		this->integratorDescSet = std::make_unique<IntegratorDescSet>(this->device, this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
-		this->directIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
-		this->directIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos);
-		this->indirectIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
-		this->indirectIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device, this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos);
-		this->lightShadeDescSet = std::make_unique<LightShadeDescSet>(this->device, this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
-		this->missDescSet = std::make_unique<MissDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
-		this->indirectSamplerDescSet = std::make_unique<IndirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
-		this->directSamplerDescSet = std::make_unique<DirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
-		this->sunDirectSamplerDescSet = std::make_unique<SunDirectSamplerDescSet>(this->device, this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
-		this->samplingDescSet = std::make_unique<SamplingDescSet>(this->device, this->renderer->getDescriptorPool(), imagesInfo);
+		this->indirectShadeDescSet = std::make_unique<IndirectShadeDescSet>(this->device.get(), this->renderer->getDescriptorPool(), indirectShadeBufferInfos, indirectShadeModelInfos);
+		this->directShadeDescSet = std::make_unique<DirectShadeDescSet>(this->device.get(), this->renderer->getDescriptorPool(), directShadeBufferInfos, directShadeModelInfos);
+		this->sunDirectShadeDescSet = std::make_unique<SunDirectShadeDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectShadeBufferInfos, sunDirectShadeModelInfos);
+		this->integratorDescSet = std::make_unique<IntegratorDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->indirectImage->getImagesInfo(), integratorBufferInfos);
+		this->directIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device.get(), this->renderer->getDescriptorPool(), directIntersectLightBufferInfos, intersectLightModelInfos);
+		this->directIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device.get(), this->renderer->getDescriptorPool(), directIntersectObjectBufferInfos, intersectObjectModelInfos);
+		this->indirectIntersectLightDescSet = std::make_unique<IntersectLightDescSet>(this->device.get(), this->renderer->getDescriptorPool(), indirectIntersectLightBufferInfos, intersectLightModelInfos);
+		this->indirectIntersectObjectDescSet = std::make_unique<IntersectObjectDescSet>(this->device.get(), this->renderer->getDescriptorPool(), indirectIntersectObjectBufferInfos, intersectObjectModelInfos);
+		this->lightShadeDescSet = std::make_unique<LightShadeDescSet>(this->device.get(), this->renderer->getDescriptorPool(), lightShadeBufferInfos, lightShadeModelInfos);
+		this->missDescSet = std::make_unique<MissDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), missBufferInfos);
+		this->indirectSamplerDescSet = std::make_unique<IndirectSamplerDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), indirectSamplerBufferInfos);
+		this->directSamplerDescSet = std::make_unique<DirectSamplerDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), directSamplerBufferInfos, directSamplerModelInfos);
+		this->sunDirectSamplerDescSet = std::make_unique<SunDirectSamplerDescSet>(this->device.get(), this->renderer->getDescriptorPool(), this->globalUniforms->getBuffersInfo(), sunDirectSamplerBufferInfos);
+		this->samplingDescSet = std::make_unique<SamplingDescSet>(this->device.get(), this->renderer->getDescriptorPool(), imagesInfo);
 
-		this->indirectShadeRender = std::make_unique<IndirectShadeRenderSystem>(this->device, this->indirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->directShadeRender = std::make_unique<DirectShadeRenderSystem>(this->device, this->directShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->sunDirectShadeRender = std::make_unique<SunDirectShadeRenderSystem>(this->device, this->sunDirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->integratorRender = std::make_unique<IntegratorRenderSystem>(this->device, this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->intersectLightRender = std::make_unique<IntersectLightRenderSystem>(this->device, this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->intersectObjectRender = std::make_unique<IntersectObjectRenderSystem>(this->device, this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->lightShadeRender = std::make_unique<LightShadeRenderSystem>(this->device, this->lightShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->missRender = std::make_unique<MissRenderSystem>(this->device, this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->indirectSamplerRender = std::make_unique<IndirectSamplerRenderSystem>(this->device, this->indirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->directSamplerRender = std::make_unique<DirectSamplerRenderSystem>(this->device, this->directSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->sunDirectSamplerRender = std::make_unique<SunDirectSamplerRenderSystem>(this->device, this->sunDirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
-		this->samplingRayRender = std::make_unique<SamplingRayRasterRenderSystem>(this->device, this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
+		this->indirectShadeRender = std::make_unique<IndirectShadeRenderSystem>(this->device.get(), this->indirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->directShadeRender = std::make_unique<DirectShadeRenderSystem>(this->device.get(), this->directShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectShadeRender = std::make_unique<SunDirectShadeRenderSystem>(this->device.get(), this->sunDirectShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->integratorRender = std::make_unique<IntegratorRenderSystem>(this->device.get(), this->integratorDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectLightRender = std::make_unique<IntersectLightRenderSystem>(this->device.get(), this->directIntersectLightDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->intersectObjectRender = std::make_unique<IntersectObjectRenderSystem>(this->device.get(), this->directIntersectObjectDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->lightShadeRender = std::make_unique<LightShadeRenderSystem>(this->device.get(), this->lightShadeDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->missRender = std::make_unique<MissRenderSystem>(this->device.get(), this->missDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->indirectSamplerRender = std::make_unique<IndirectSamplerRenderSystem>(this->device.get(), this->indirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->directSamplerRender = std::make_unique<DirectSamplerRenderSystem>(this->device.get(), this->directSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->sunDirectSamplerRender = std::make_unique<SunDirectSamplerRenderSystem>(this->device.get(), this->sunDirectSamplerDescSet->getDescSetLayout()->getDescriptorSetLayout(), width, height, 1u);
+		this->samplingRayRender = std::make_unique<SamplingRayRasterRenderSystem>(this->device.get(), this->samplingDescSet->getDescSetLayout()->getDescriptorSetLayout(), 
 			this->swapChainSubRenderer->getRenderPass()->getRenderPass());
 
 		this->camera = std::make_shared<Camera>(width, height);

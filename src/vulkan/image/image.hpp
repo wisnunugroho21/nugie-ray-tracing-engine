@@ -30,8 +30,6 @@ namespace NugieVulkan
 
       VkDescriptorImageInfo getDescriptorInfo(VkImageLayout desiredImageLayout);
 
-      void copyBufferToImage(Buffer* srcBuffer, CommandBuffer* commandBuffer = nullptr);
-      void copyImageToBuffer(Buffer* destBuffer, CommandBuffer* commandBuffer = nullptr);
       void copyImageFromOther(Image* srcImage, CommandBuffer* commandBuffer = nullptr);
       void copyImageToOther(Image* dstImage, CommandBuffer* commandBuffer = nullptr);
 
