@@ -5,11 +5,11 @@
 #include <unordered_map>
 
 namespace NugieApp {
-	ObjectModel::ObjectModel(NugieVulkan::Device* device, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes) : device{device} {
-		this->createBuffers(objects, createBvh(boundBoxes));
+	ObjectModel::ObjectModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes) : device{device} {
+		this->createBuffers(commandBuffer, objects, createBvh(boundBoxes));
 	}
 
-	void ObjectModel::createBuffers(std::vector<Object> objects, std::vector<BvhNode> bvhNodes) {
+	void ObjectModel::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Object> objects, std::vector<BvhNode> bvhNodes) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Object));
 		auto instanceCount = static_cast<uint32_t>(objects.size());
 
@@ -24,7 +24,7 @@ namespace NugieApp {
 		objectStagingBuffer.map();
 		objectStagingBuffer.writeToBuffer(objects.data());
 
-		this->objectBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->objectBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -32,7 +32,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->objectBuffer->copyFromAnotherBuffer(&objectStagingBuffer);
+		this->objectBuffer->copyFromAnotherBuffer(&objectStagingBuffer, commandBuffer);
 
 		// -------------------------------------------------
 
@@ -50,7 +50,7 @@ namespace NugieApp {
 		bvhStagingBuffer.map();
 		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
 
-		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->bvhBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -58,7 +58,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer, commandBuffer);
 	} 
 } // namespace NugieApp
 

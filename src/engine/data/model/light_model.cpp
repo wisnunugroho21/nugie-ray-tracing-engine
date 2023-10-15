@@ -8,20 +8,20 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	LightModel::LightModel(NugieVulkan::Device* device, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices) : device{device} {
+	LightModel::LightModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices) : device{device} {
 		std::vector<BoundBox*> boundBoxes;
 		for (int i = 0; i < triangleLights.size(); i++) {
 			boundBoxes.push_back(new TriangleLightBoundBox(i + 1, &triangleLights[i], vertices));
 		}
 
-		this->createBuffers(triangleLights, createBvh(boundBoxes));
+		this->createBuffers(commandBuffer, triangleLights, createBvh(boundBoxes));
 
 		for (auto &&boundBox : boundBoxes) {
 			delete boundBox;
 		}
 	}
 
-	void LightModel::createBuffers(std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes) {
+	void LightModel::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(TriangleLight));
 		auto instanceCount = static_cast<uint32_t>(triangleLights.size());
 		
@@ -36,7 +36,7 @@ namespace NugieApp {
 		lightStagingBuffer.map();
 		lightStagingBuffer.writeToBuffer(triangleLights.data());
 
-		this->lightBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->lightBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -44,7 +44,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->lightBuffer->copyFromAnotherBuffer(&lightStagingBuffer);
+		this->lightBuffer->copyFromAnotherBuffer(&lightStagingBuffer, commandBuffer);
 
 		// -------------------------------------------------
 
@@ -62,7 +62,7 @@ namespace NugieApp {
 		bvhStagingBuffer.map();
 		bvhStagingBuffer.writeToBuffer(bvhNodes.data());
 
-		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->bvhBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -70,7 +70,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer, commandBuffer);
 	}
     
 } // namespace NugieApp

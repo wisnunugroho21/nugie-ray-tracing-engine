@@ -8,11 +8,11 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	MaterialModel::MaterialModel(NugieVulkan::Device* device, std::vector<Material> materials) : device{device} {
-		this->createBuffers(materials);
+	MaterialModel::MaterialModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Material> materials) : device{device} {
+		this->createBuffers(commandBuffer, materials);
 	}
 
-	void MaterialModel::createBuffers(std::vector<Material> materials) {
+	void MaterialModel::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Material> materials) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Material));
 		auto instanceCount = static_cast<uint32_t>(materials.size());
 
@@ -27,7 +27,7 @@ namespace NugieApp {
 		materialStagingBuffer.map();
 		materialStagingBuffer.writeToBuffer(materials.data());
 
-		this->materialBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->materialBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -35,7 +35,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->materialBuffer->copyFromAnotherBuffer(&materialStagingBuffer);
+		this->materialBuffer->copyFromAnotherBuffer(&materialStagingBuffer, commandBuffer);
 	} 
 } // namespace NugieApp
 

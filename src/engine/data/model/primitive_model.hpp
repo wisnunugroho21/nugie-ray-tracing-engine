@@ -25,9 +25,9 @@ namespace NugieApp {
       uint32_t getBvhSize() const { return static_cast<uint32_t>(this->bvhNodes.size()); }
 
       void addPrimitive(std::vector<Primitive> primitives, std::vector<RayTraceVertex> vertices);
-      void createBuffers();
+      void createBuffers(NugieVulkan::CommandBuffer *commandBuffer);
 
-      // static std::shared_ptr<std::vector<Primitive>> createPrimitivesFromFile(NugieVulkan::Device* device, const std::string &filePath, uint32_t materialIndex);
+      // static std::vector<Primitive>> createPrimitivesFromFile(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, const std::string &filePath, uint32_t materialIndex);
       
     private:
       NugieVulkan::Device* device;
@@ -35,8 +35,8 @@ namespace NugieApp {
       std::vector<Primitive> primitives{};
       std::vector<BvhNode> bvhNodes{};
       
-      std::unique_ptr<NugieVulkan::Buffer> primitiveBuffer;
-      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> primitiveBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> bvhBuffer;
       
       std::vector<BvhNode> createBvhData(std::vector<Primitive> primitives, std::vector<RayTraceVertex> vertices);
 	};

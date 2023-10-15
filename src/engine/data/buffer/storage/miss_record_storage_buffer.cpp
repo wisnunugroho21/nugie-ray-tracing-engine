@@ -8,14 +8,14 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	MissRecordStorageBuffer::MissRecordStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount) : device{device} {
-		auto datas = std::make_shared<std::vector<MissRecord>>();
+	MissRecordStorageBuffer::MissRecordStorageBuffer(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, uint32_t dataCount) : device{device} {
+		auto datas = std::vector<MissRecord>();
 		for (uint32_t i = 0; i < dataCount; i++) {
 			MissRecord data{};
-			datas->emplace_back(data);
+			datas.emplace_back(data);
 		}
 
-		this->createBuffers(datas);
+		this->createBuffers(commandBuffer, datas);
 	}
 
 	std::vector<VkDescriptorBufferInfo> MissRecordStorageBuffer::getBuffersInfo() {
@@ -28,9 +28,9 @@ namespace NugieApp {
 		return buffersInfo;
 	}
 
-	void MissRecordStorageBuffer::createBuffers(std::shared_ptr<std::vector<MissRecord>> datas) {
+	void MissRecordStorageBuffer::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<MissRecord> datas) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(MissRecord));
-		auto instanceCount = static_cast<uint32_t>(datas->size());
+		auto instanceCount = static_cast<uint32_t>(datas.size());
 
 		this->buffers.clear();
 
@@ -44,9 +44,9 @@ namespace NugieApp {
 			};
 
 			stagingBuffer.map();
-			stagingBuffer.writeToBuffer(datas->data());
+			stagingBuffer.writeToBuffer(datas.data());
 
-			auto buffer = std::make_unique<NugieVulkan::Buffer>(
+			auto buffer = std::make_shared<NugieVulkan::Buffer>(
 				this->device,
 				bufferSize,
 				instanceCount,
@@ -54,7 +54,7 @@ namespace NugieApp {
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			buffer->copyFromAnotherBuffer(&stagingBuffer);
+			buffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 			this->buffers.emplace_back(buffer);
 		}
 	}

@@ -13,8 +13,6 @@ namespace NugieVulkan
       CommandBuffer(Device* device, VkCommandBuffer commandBuffer);
       CommandBuffer(Device* device);
 
-      ~CommandBuffer();
-
       void beginSingleTimeCommand();
       void beginReccuringCommand();
       void endCommand();

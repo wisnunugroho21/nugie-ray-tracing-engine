@@ -5,9 +5,9 @@
 #include <stdexcept>
 
 namespace NugieVulkan {
-	GraphicPipeline::Builder::Builder(Device* device, RenderPass renderPass, VkPipelineLayout pipelineLayout) : device{device} {
+	GraphicPipeline::Builder::Builder(Device* device, RenderPass* renderPass, VkPipelineLayout pipelineLayout) : device{device} {
 		this->pipelineLayout = pipelineLayout;
-		this->renderPass = renderPass.getRenderPass();
+		this->renderPass = renderPass->getRenderPass();
 	}
 
 	GraphicPipeline::Builder& GraphicPipeline::Builder::setDefault(
@@ -263,9 +263,6 @@ namespace NugieVulkan {
 		VkPipelineDynamicStateCreateInfo dynamicStateInfo,
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStagesInfo) 
 	{
-		auto bindingDescriptions = bindingDescriptions;
-		auto attributeDescriptions = attributeDescriptions;
-
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());

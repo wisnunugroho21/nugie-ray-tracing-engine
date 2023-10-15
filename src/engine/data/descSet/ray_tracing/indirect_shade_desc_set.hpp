@@ -21,7 +21,7 @@ namespace NugieApp {
 			std::vector<VkDescriptorSet> descriptorSets;
 
 			void createDescriptor(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool,
-				std::vector<VkDescriptorBufferInfo> buffersInfo[3], VkDescriptorBufferInfo modelsInfo[2]);
+				std::vector<VkDescriptorBufferInfo> buffersInfo[3], VkDescriptorBufferInfo modelsInfo[1]);
 	};
 	
 }

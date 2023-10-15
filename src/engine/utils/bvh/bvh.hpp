@@ -97,9 +97,9 @@ namespace NugieApp {
     BvhNode getGpuModel();
   };
 
-  bool nodeCompare(BvhItemBuild &a, BvhItemBuild &b);
+  bool nodeCompare(BvhItemBuild& a, BvhItemBuild& b);
   Aabb surroundingBox(Aabb box0, Aabb box1);
-  Aabb objectListBoundingBox(std::vector<BoundBox*> &objects);
+  Aabb objectListBoundingBox(std::vector<BoundBox*> objects);
   bool boxCompare(BoundBox* a, BoundBox* b, int axis);
   bool boxXCompare(BoundBox* a, BoundBox* b);
   bool boxYCompare(BoundBox* a, BoundBox* b);

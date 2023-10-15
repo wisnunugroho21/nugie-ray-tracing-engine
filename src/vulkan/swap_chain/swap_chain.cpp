@@ -28,16 +28,12 @@ namespace NugieVulkan {
       vkDestroySwapchainKHR(this->device->getLogicalDevice(), this->swapChain, nullptr);
       swapChain = nullptr;
     }
-  }
-
-  std::vector<Image*> SwapChain::getswapChainImages() const { 
-    auto newSwapChainImages = std::vector<Image*>();
 
     for (auto &&swapChainImage : this->swapChainImages) {
-      newSwapChainImages.emplace_back(swapChainImage.get());
+      if (swapChainImage != nullptr) {
+        delete swapChainImage;
+      }
     }
-
-    return newSwapChainImages;
   }
 
   VkResult SwapChain::acquireNextImage(uint32_t *imageIndex, std::vector<VkFence> inFlightFences, VkSemaphore imageAvailableSemaphore) {
@@ -142,7 +138,7 @@ namespace NugieVulkan {
 
     this->swapChainImages.clear();
     for (uint32_t i = 0; i < imageCount; i++) {
-      auto swapChainImage = std::make_unique<Image>(this->device, extent.width, extent.height, tempSwapChainImages[i], 1, this->swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+      auto swapChainImage = new Image(this->device, extent.width, extent.height, tempSwapChainImages[i], 1, this->swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
       this->swapChainImages.push_back(swapChainImage);
     }
   }

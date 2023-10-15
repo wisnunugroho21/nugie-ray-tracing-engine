@@ -15,13 +15,13 @@
 namespace NugieApp {
 	class SunDirectSamplerRenderSystem {
 		public:
-			SunDirectSamplerRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
+			SunDirectSamplerRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
 			~SunDirectSamplerRenderSystem();
 
 			void render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, uint32_t randomSeed = 1);
 
 		private:
-			void createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout);
+			void createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout);
 			void createPipeline();
 
 			NugieVulkan::Device* device;

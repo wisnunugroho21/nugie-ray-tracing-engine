@@ -8,14 +8,14 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	DirectShadeStorageBuffer::DirectShadeStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount) : device{device} {
+	DirectShadeStorageBuffer::DirectShadeStorageBuffer(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, uint32_t dataCount) : device{device} {
 		auto datas = std::vector<DirectShadeRecord>();
 		for (uint32_t i = 0; i < dataCount; i++) {
 			DirectShadeRecord data{};
 			datas.emplace_back(data);
 		}
 
-		this->createBuffers(datas);
+		this->createBuffers(commandBuffer, datas);
 	}
 
 	std::vector<VkDescriptorBufferInfo> DirectShadeStorageBuffer::getBuffersInfo() {
@@ -28,7 +28,7 @@ namespace NugieApp {
 		return buffersInfo;
 	}
 
-	void DirectShadeStorageBuffer::createBuffers(std::vector<DirectShadeRecord> datas) {
+	void DirectShadeStorageBuffer::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<DirectShadeRecord> datas) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(DirectShadeRecord));
 		auto instanceCount = static_cast<uint32_t>(datas.size());
 
@@ -46,7 +46,7 @@ namespace NugieApp {
 			stagingBuffer.map();
 			stagingBuffer.writeToBuffer(datas.data());
 
-			auto buffer = std::make_unique<NugieVulkan::Buffer>(
+			auto buffer = std::make_shared<NugieVulkan::Buffer>(
 				this->device,
 				bufferSize,
 				instanceCount,
@@ -54,7 +54,7 @@ namespace NugieApp {
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			buffer->copyFromAnotherBuffer(&stagingBuffer);
+			buffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 			this->buffers.emplace_back(buffer);
 		}
 	}

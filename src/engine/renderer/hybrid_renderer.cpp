@@ -5,16 +5,13 @@
 #include <string>
 
 namespace NugieApp {
-	HybridRenderer::HybridRenderer(NugieVulkan::Window* window, NugieVulkan::Device* device) {
+	HybridRenderer::HybridRenderer(NugieVulkan::Window* window, NugieVulkan::Device* device) : device{device}, window{window} {
 		this->recreateSwapChain();
 		this->createSyncObjects(static_cast<uint32_t>(this->swapChain->imageCount()));
 
 		this->createCommandPool();
 		this->createDescriptorPool();
-
-		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
-			this->commandBuffers.emplace_back(std::make_unique<NugieVulkan::CommandBuffer>(this->device));
-		}
+		this->createCommandBuffers();
 	}
 
 	HybridRenderer::~HybridRenderer() {
@@ -71,6 +68,7 @@ namespace NugieApp {
 		imageAvailableSemaphores.resize(NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT);
 		renderFinishedSemaphores.resize(NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT);
 		inFlightFences.resize(NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT);
+		this->transferFences.resize(1);
 
 		VkSemaphoreCreateInfo semaphoreInfo = {};
 		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -82,11 +80,32 @@ namespace NugieApp {
 		for (size_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
 		  if (vkCreateSemaphore(this->device->getLogicalDevice(), &semaphoreInfo, nullptr, &this->imageAvailableSemaphores[i]) != VK_SUCCESS ||
 				vkCreateSemaphore(this->device->getLogicalDevice(), &semaphoreInfo, nullptr, &this->renderFinishedSemaphores[i]) != VK_SUCCESS ||
-				vkCreateFence(this->device->getLogicalDevice(), &fenceInfo, nullptr, &this->inFlightFences[i]) != VK_SUCCESS) 
+				vkCreateFence(this->device->getLogicalDevice(), &fenceInfo, nullptr, &this->inFlightFences[i]) != VK_SUCCESS)
 		  {
 				throw std::runtime_error("failed to create synchronization objects for a frame!");
 		  }
 		}
+
+		if (vkCreateFence(this->device->getLogicalDevice(), &fenceInfo, nullptr, &this->transferFences[0]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create synchronization objects for transfer operation!");
+		}
+	}
+
+	void HybridRenderer::createCommandBuffers() {
+		std::vector<VkCommandBuffer*> newCommandBuffers;
+		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT + 1; i++) {
+			newCommandBuffers.emplace_back(new VkCommandBuffer());
+		}
+
+		this->commandPool->allocate(newCommandBuffers);
+		this->commandBuffers.clear();
+
+		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
+			this->commandBuffers.emplace_back(std::make_unique<NugieVulkan::CommandBuffer>(this->device, *newCommandBuffers[i]));
+		}
+
+		this->transferCommandBuffers.clear();
+		this->transferCommandBuffers.emplace_back(std::make_unique<NugieVulkan::CommandBuffer>(this->device, *newCommandBuffers[NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT]));
 	}
 
 	bool HybridRenderer::acquireFrame() {
@@ -115,9 +134,9 @@ namespace NugieApp {
 		return this->commandBuffers[this->currentFrameIndex].get();
 	}
 
-	void HybridRenderer::endCommand(NugieVulkan::CommandBuffer* commandBuffer) {
-		assert(this->isFrameStarted && "can't start command while frame still in progress");
-		commandBuffer->endCommand();
+	NugieVulkan::CommandBuffer* HybridRenderer::beginTransferCommand() {
+		this->transferCommandBuffers[0]->beginReccuringCommand();
+		return this->transferCommandBuffers[0].get();
 	}
 
 	void HybridRenderer::submitCommands(std::vector<NugieVulkan::CommandBuffer*> commandBuffers) {
@@ -140,6 +159,17 @@ namespace NugieApp {
 		std::vector<VkPipelineStageFlags> waitStages = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
 		commandBuffer->submitCommand(this->device->getGraphicsQueue(this->currentFrameIndex), waitSemaphores, waitStages, signalSemaphores, this->inFlightFences[this->currentFrameIndex]);
+	}
+
+	void HybridRenderer::submitTransferCommand(NugieVulkan::CommandBuffer* commandBuffer) {
+		vkResetFences(this->device->getLogicalDevice(), 1, &this->transferFences[0]);
+
+		std::vector<VkSemaphore> waitSemaphores = {};
+		std::vector<VkSemaphore> signalSemaphores = {};
+		std::vector<VkPipelineStageFlags> waitStages = {};
+
+		commandBuffer->submitCommand(this->device->getTransferQueue(0), waitSemaphores, waitStages, signalSemaphores, this->transferFences[0]);
+		vkWaitForFences(this->device->getLogicalDevice(), 1u, &this->transferFences[0], VK_TRUE, std::numeric_limits<uint64_t>::max());
 	}
 
 	bool HybridRenderer::presentFrame() {

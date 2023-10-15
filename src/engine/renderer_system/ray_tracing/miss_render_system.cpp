@@ -5,7 +5,7 @@
 #include <string>
 
 namespace NugieApp {
-	MissRenderSystem::MissRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
+	MissRenderSystem::MissRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
 		: device{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayout);
@@ -16,8 +16,8 @@ namespace NugieApp {
 		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void MissRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
-		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+	void MissRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout) {
+		VkDescriptorSetLayout setLayout = descriptorSetLayout->getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

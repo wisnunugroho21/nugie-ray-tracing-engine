@@ -6,7 +6,7 @@
 
 int main(int argc, char const *argv[])
 {
-    nugiEngine::EngineApp app{};
+    NugieApp::App app{};
 
     try {
         app.run();

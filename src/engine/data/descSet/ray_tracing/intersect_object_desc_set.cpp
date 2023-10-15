@@ -1,5 +1,5 @@
 #include "intersect_object_desc_set.hpp"
-#include "../../../vulkan/descriptor/descriptor_writer.hpp"
+#include "../../../../vulkan/descriptor/descriptor_writer.hpp"
 
 namespace NugieApp {
   IntersectObjectDescSet::IntersectObjectDescSet(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool,

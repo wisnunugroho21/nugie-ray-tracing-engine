@@ -40,10 +40,12 @@ namespace NugieApp {
 			}
 
 			NugieVulkan::CommandBuffer* beginCommand();
-			void endCommand(NugieVulkan::CommandBuffer*);
+			NugieVulkan::CommandBuffer* beginTransferCommand();
 
 			void submitCommands(std::vector<NugieVulkan::CommandBuffer*> commandBuffer);
 			void submitCommand(NugieVulkan::CommandBuffer* commandBuffer);
+
+			void submitTransferCommand(NugieVulkan::CommandBuffer* commandBuffer);
 
 			bool acquireFrame();
 			bool presentFrame();
@@ -53,11 +55,13 @@ namespace NugieApp {
 			void createSyncObjects(uint32_t imageCount);
 			void createDescriptorPool();
 			void createCommandPool();
+			void createCommandBuffers();
 
 			NugieVulkan::Window* window;
 			NugieVulkan::Device* device;
 
 			std::vector<std::unique_ptr<NugieVulkan::CommandBuffer>> commandBuffers;
+			std::vector<std::unique_ptr<NugieVulkan::CommandBuffer>> transferCommandBuffers;
 
 			std::unique_ptr<NugieVulkan::CommandPool> commandPool;
 			std::unique_ptr<NugieVulkan::DescriptorPool> descriptorPool;
@@ -66,6 +70,7 @@ namespace NugieApp {
 			std::vector<VkSemaphore> imageAvailableSemaphores;
 			std::vector<VkSemaphore> renderFinishedSemaphores;
 			std::vector<VkFence> inFlightFences;
+			std::vector<VkFence> transferFences;
 
 			uint32_t currentImageIndex = 0, currentFrameIndex = 0;
 			bool isFrameStarted = false;

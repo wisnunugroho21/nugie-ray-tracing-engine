@@ -16,7 +16,7 @@
 namespace NugieApp {
 	class ObjectModel {
     public:
-      ObjectModel(NugieVulkan::Device* device, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes);
+      ObjectModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Object> objects, std::vector<BoundBox*> boundBoxes);
 
       VkDescriptorBufferInfo getObjectInfo() { return this->objectBuffer->descriptorInfo();  }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
@@ -24,9 +24,9 @@ namespace NugieApp {
     private:
       NugieVulkan::Device* device;
       
-      std::unique_ptr<NugieVulkan::Buffer> objectBuffer;
-      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> objectBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> bvhBuffer;
 
-      void createBuffers(std::vector<Object> objects, std::vector<BvhNode> bvhNodes);
+      void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Object> objects, std::vector<BvhNode> bvhNodes);
 	};
 } // namespace NugieApp

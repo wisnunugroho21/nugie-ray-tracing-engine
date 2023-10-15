@@ -4,7 +4,7 @@
 #include <array>
 
 namespace NugieApp {
-  SwapChainSubRenderer::SwapChainSubRenderer(NugieVulkan::Device* device, std::vector<NugieVulkan::Image*> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height) 
+  SwapChainSubRenderer::SwapChainSubRenderer(NugieVulkan::Device* device, std::vector<NugieVulkan::Image*> swapChainImages, VkFormat swapChainImageFormat, uint32_t imageCount, uint32_t width, uint32_t height) 
     : device{device}, swapChainImages{swapChainImages}, width{width}, height{height}
   {
     this->createColorResources(swapChainImageFormat, imageCount);
@@ -12,13 +12,13 @@ namespace NugieApp {
     this->createRenderPass(swapChainImageFormat, imageCount);
   }
 
-  void SwapChainSubRenderer::createColorResources(VkFormat swapChainImageFormat, int imageCount) {
+  void SwapChainSubRenderer::createColorResources(VkFormat swapChainImageFormat, uint32_t imageCount) {
     VkFormat colorFormat = swapChainImageFormat;
 
     auto msaaSamples = this->device->getMSAASamples();
     this->colorImages.clear();
 
-    for (int i = 0; i < imageCount; i++) {
+    for (uint32_t i = 0; i < imageCount; i++) {
       auto colorImage = NugieVulkan::Image(
         this->device, this->width, this->height, 1, msaaSamples, colorFormat,
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
@@ -29,13 +29,13 @@ namespace NugieApp {
     }
   }
 
-  void SwapChainSubRenderer::createDepthResources(int imageCount) {
+  void SwapChainSubRenderer::createDepthResources(uint32_t imageCount) {
     VkFormat depthFormat = this->findDepthFormat();
     
     auto msaaSamples = this->device->getMSAASamples();
     this->depthImages.clear();
 
-    for (int i = 0; i < imageCount; i++) {
+    for (uint32_t i = 0; i < imageCount; i++) {
       auto depthImage = NugieVulkan::Image(
         this->device, this->width, this->height, 1, msaaSamples, depthFormat, 
         VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -46,7 +46,7 @@ namespace NugieApp {
     }
   }
 
-  void SwapChainSubRenderer::createRenderPass(VkFormat swapChainImageFormat, int imageCount) {
+  void SwapChainSubRenderer::createRenderPass(VkFormat swapChainImageFormat, uint32_t imageCount) {
     auto msaaSamples = this->device->getMSAASamples();
 
     VkAttachmentDescription depthAttachment{};
@@ -116,7 +116,7 @@ namespace NugieApp {
 			.addSubpass(subpass)
 			.addDependency(dependency);
 
-    for (int i = 0; i < imageCount; i++) {
+    for (uint32_t i = 0; i < imageCount; i++) {
 			renderPassBuilder.addViewImages({
         this->colorImages[i].getImageView(), 
         this->depthImages[i].getImageView(),

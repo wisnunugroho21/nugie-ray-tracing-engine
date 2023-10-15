@@ -10,7 +10,7 @@
 namespace NugieApp {
   class SwapChainSubRenderer {
     public:
-      SwapChainSubRenderer(NugieVulkan::Device* device, std::vector<NugieVulkan::Image*> swapChainImages, VkFormat swapChainImageFormat, int imageCount, int width, int height);
+      SwapChainSubRenderer(NugieVulkan::Device* device, std::vector<NugieVulkan::Image*> swapChainImages, VkFormat swapChainImageFormat, uint32_t imageCount, uint32_t width, uint32_t height);
       
       NugieVulkan::RenderPass* getRenderPass() const { return this->renderPass.get(); }
 
@@ -18,7 +18,7 @@ namespace NugieApp {
 			void endRenderPass(NugieVulkan::CommandBuffer* commandBuffer);
       
     private:
-      int width, height;
+      uint32_t width, height;
       NugieVulkan::Device* device;
 
       std::vector<NugieVulkan::Image> colorImages;
@@ -29,9 +29,9 @@ namespace NugieApp {
 
       VkFormat findDepthFormat();
 
-      void createColorResources(VkFormat swapChainImageFormat, int imageCount);
-      void createDepthResources(int imageCount);
-      void createRenderPass(VkFormat swapChainImageFormat, int imageCount);
+      void createColorResources(VkFormat swapChainImageFormat, uint32_t imageCount);
+      void createDepthResources(uint32_t imageCount);
+      void createRenderPass(VkFormat swapChainImageFormat, uint32_t imageCount);
   };
   
 } // namespace NugieApp

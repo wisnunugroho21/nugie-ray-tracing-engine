@@ -3,10 +3,12 @@
 #include "../device/device.hpp"
 #include "../image/image.hpp"
 #include "../command/command_buffer.hpp"
+#include "../command/command_pool.hpp"
 
 #include <memory>
  
 namespace NugieVulkan {
+  class Image;
  
 class Buffer {
  public:
@@ -52,7 +54,7 @@ class Buffer {
 
   void transitionBuffer(VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
     VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 
-    uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, CommandBuffer* commandBuffer = nullptr);
+    uint32_t dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, CommandBuffer* commandBuffer  = nullptr);
 
   static void transitionBuffer(std::vector<Buffer*> buffers, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, 
     VkAccessFlags srcAccess, VkAccessFlags dstAccess, uint32_t srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, 

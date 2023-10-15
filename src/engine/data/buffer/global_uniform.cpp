@@ -28,7 +28,7 @@ namespace NugieApp {
 		this->uniformBuffers.clear();
 
 		for (uint32_t i = 0; i < NugieVulkan::Device::MAX_FRAMES_IN_FLIGHT; i++) {
-			auto uniformBuffer = std::make_unique<NugieVulkan::Buffer>(
+			auto uniformBuffer = std::make_shared<NugieVulkan::Buffer>(
 				this->device,
 				sizeof(RayTraceUbo),
 				1u,

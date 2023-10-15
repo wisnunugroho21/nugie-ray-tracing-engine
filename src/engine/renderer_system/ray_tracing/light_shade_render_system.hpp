@@ -15,13 +15,13 @@
 namespace NugieApp {
 	class LightShadeRenderSystem {
 		public:
-			LightShadeRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
+			LightShadeRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
 			~LightShadeRenderSystem();
 
 			void render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets);
 
 		private:
-			void createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout);
+			void createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout);
 			void createPipeline();
 
 			NugieVulkan::Device* device;

@@ -16,16 +16,16 @@
 namespace NugieApp {
 	class TransformationModel {
 		public:
-			TransformationModel(NugieVulkan::Device* device, std::vector<Transformation> transformations);
-			TransformationModel(NugieVulkan::Device* device, std::vector<TransformComponent> transformationComponents);
+			TransformationModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Transformation> transformations);
+			TransformationModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<TransformComponent> transformationComponents);
 
 			VkDescriptorBufferInfo getTransformationInfo() { return this->transformationBuffer->descriptorInfo();  }
 			
 		private:
 			NugieVulkan::Device* device;
-			std::unique_ptr<NugieVulkan::Buffer> transformationBuffer;
+			std::shared_ptr<NugieVulkan::Buffer> transformationBuffer;
 
 			std::vector<Transformation> convertToMatrix(std::vector<TransformComponent> transformations);
-			void createBuffers(std::vector<Transformation> transformations);
+			void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Transformation> transformations);
 	};
 } // namespace NugieApp

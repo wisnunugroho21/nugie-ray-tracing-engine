@@ -16,7 +16,7 @@
 namespace NugieApp {
 	class LightModel {
     public:
-      LightModel(NugieVulkan::Device* device, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices);
+      LightModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<TriangleLight> triangleLights, std::vector<RayTraceVertex> vertices);
 
       VkDescriptorBufferInfo getLightInfo() { return this->lightBuffer->descriptorInfo(); }
       VkDescriptorBufferInfo getBvhInfo() { return this->bvhBuffer->descriptorInfo(); }
@@ -24,9 +24,9 @@ namespace NugieApp {
     private:
       NugieVulkan::Device* device;
       
-      std::unique_ptr<NugieVulkan::Buffer> lightBuffer;
-      std::unique_ptr<NugieVulkan::Buffer> bvhBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> lightBuffer;
+      std::shared_ptr<NugieVulkan::Buffer> bvhBuffer;
 
-      void createBuffers(std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes);
+      void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<TriangleLight> triangleLights, std::vector<BvhNode> bvhNodes);
 	};
 } // namespace NugieApp

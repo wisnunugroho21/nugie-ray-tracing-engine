@@ -15,14 +15,14 @@
 namespace NugieApp {
 	class RayTraceVertexModel {
 		public:
-			RayTraceVertexModel(NugieVulkan::Device* device, std::vector<RayTraceVertex> vertices);
+			RayTraceVertexModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<RayTraceVertex> vertices);
 
 			VkDescriptorBufferInfo getVertexnfo() { return this->vertexBuffer->descriptorInfo(); }
 			
 		private:
 			NugieVulkan::Device* device;
 			
-			std::unique_ptr<NugieVulkan::Buffer> vertexBuffer;
-			void createVertexBuffers(std::vector<RayTraceVertex> vertices);
+			std::shared_ptr<NugieVulkan::Buffer> vertexBuffer;
+			void createVertexBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<RayTraceVertex> vertices);
 	};
 } // namespace NugieApp

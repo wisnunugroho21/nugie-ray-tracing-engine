@@ -30,7 +30,7 @@ namespace NugieVulkan {
 		public:
 			class Builder {
 				public:
-					Builder(Device* device, RenderPass renderPass, VkPipelineLayout pipelineLayout);
+					Builder(Device* device, RenderPass* renderPass, VkPipelineLayout pipelineLayout);
 
 					std::vector<VkDynamicState> getDynamicStates() const { return this->dynamicStates; }
 					std::vector<VkPipelineShaderStageCreateInfo> getShaderStagesInfo() const { return this->shaderStagesInfo; }

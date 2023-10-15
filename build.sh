@@ -2,5 +2,5 @@
 mkdir -p build
 cd build
 cmake -S ../ -B .
-make && ./NugieEngine
+make && ./Nugie-Ray-Tracing-Engine
 cd ..

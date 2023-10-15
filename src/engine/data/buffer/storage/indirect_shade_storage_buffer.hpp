@@ -16,7 +16,7 @@
 namespace NugieApp {
 	class IndirectShadeStorageBuffer {
 		public:
-			IndirectShadeStorageBuffer(NugieVulkan::Device* device, uint32_t dataCount);
+			IndirectShadeStorageBuffer(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, uint32_t dataCount);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
@@ -25,8 +25,8 @@ namespace NugieApp {
 			
 		private:
 			NugieVulkan::Device* device;
-			std::vector<std::unique_ptr<NugieVulkan::Buffer>> buffers;
+			std::vector<std::shared_ptr<NugieVulkan::Buffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<IndirectShadeRecord>> datas);
+			void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<IndirectShadeRecord> datas);
 	};
 } // namespace NugieApp

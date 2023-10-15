@@ -8,11 +8,11 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	RayTraceVertexModel::RayTraceVertexModel(NugieVulkan::Device* device, std::vector<RayTraceVertex> vertices) : device{device} {
-		this->createVertexBuffers(vertices);
+	RayTraceVertexModel::RayTraceVertexModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<RayTraceVertex> vertices) : device{device} {
+		this->createVertexBuffers(commandBuffer, vertices);
 	}
 
-	void RayTraceVertexModel::createVertexBuffers(std::vector<RayTraceVertex> vertices) {
+	void RayTraceVertexModel::createVertexBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<RayTraceVertex> vertices) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(RayTraceVertex));
 		auto instanceCount = static_cast<uint32_t>(vertices.size());
 
@@ -27,7 +27,7 @@ namespace NugieApp {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer(vertices.data());
 
-		this->vertexBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->vertexBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -35,7 +35,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->vertexBuffer->copyFromAnotherBuffer(&stagingBuffer);
+		this->vertexBuffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 	} 
 } // namespace NugieApp
 

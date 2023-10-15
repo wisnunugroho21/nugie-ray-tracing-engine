@@ -3,15 +3,6 @@
 #include <iostream>
 
 namespace NugieVulkan {
-	CommandBuffer::~CommandBuffer() {
-		vkFreeCommandBuffers(
-      this->device->getLogicalDevice(), 
-      this->device->getCommandPool(), 
-      1, 
-      &this->commandBuffer
-    );
-	}
-
 	CommandBuffer::CommandBuffer(Device* device, VkCommandBuffer commandBuffer) 
 		: device{device}, commandBuffer {commandBuffer} 
 	{

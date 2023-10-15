@@ -8,12 +8,12 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	VertexModel::VertexModel(NugieVulkan::Device* device, const VertexModelData &datas) : device{device} {
-		this->createVertexBuffers(datas.vertices);
-		this->createIndexBuffer(datas.indices);
+	VertexModel::VertexModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, const VertexModelData &datas) : device{device} {
+		this->createVertexBuffers(commandBuffer, datas.vertices);
+		this->createIndexBuffer(commandBuffer, datas.indices);
 	}
 
-	void VertexModel::createVertexBuffers(const std::vector<Vertex> &vertices) {
+	void VertexModel::createVertexBuffers(NugieVulkan::CommandBuffer *commandBuffer, const std::vector<Vertex> &vertices) {
 		this->vertextCount = static_cast<uint32_t>(vertices.size());
 		assert(vertextCount >= 3 && "Vertex count must be at least 3");
 
@@ -31,7 +31,7 @@ namespace NugieApp {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void *) vertices.data());
 
-		this->vertexBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->vertexBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			vertexSize,
 			this->vertextCount,
@@ -39,10 +39,10 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->vertexBuffer->copyFromAnotherBuffer(&stagingBuffer);
+		this->vertexBuffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 	}
 
-	void VertexModel::createIndexBuffer(const std::vector<uint32_t> &indices) { 
+	void VertexModel::createIndexBuffer(NugieVulkan::CommandBuffer *commandBuffer, const std::vector<uint32_t> &indices) { 
 		this->indexCount = static_cast<uint32_t>(indices.size());
 		this->hasIndexBuffer = this->indexCount > 0;
 
@@ -64,7 +64,7 @@ namespace NugieApp {
 		stagingBuffer.map();
 		stagingBuffer.writeToBuffer((void *) indices.data());
 
-		this->indexBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->indexBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			indexSize,
 			this->indexCount,
@@ -72,7 +72,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->indexBuffer->copyFromAnotherBuffer(&stagingBuffer);
+		this->indexBuffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 	}
 
 	void VertexModel::bind(NugieVulkan::CommandBuffer* commandBuffer) {

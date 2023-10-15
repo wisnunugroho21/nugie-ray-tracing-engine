@@ -1,5 +1,5 @@
 #include "direct_sampler_desc_set.hpp"
-#include "../../../vulkan/descriptor/descriptor_writer.hpp"
+#include "../../../../vulkan/descriptor/descriptor_writer.hpp"
 
 namespace NugieApp {
   DirectSamplerDescSet::DirectSamplerDescSet(NugieVulkan::Device* device, NugieVulkan::DescriptorPool* descriptorPool,

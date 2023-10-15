@@ -27,10 +27,16 @@ namespace NugieApp {
 			boundBoxes.push_back(new PrimitiveBoundBox(i + 1, &primitives.at(i), vertices));
 		}
 
-		return createBvh(boundBoxes);
+		auto bvhNodes = createBvh(boundBoxes);
+
+		for (auto &&boundBox : boundBoxes) {
+			delete boundBox;
+		}
+
+		return bvhNodes;
 	}
 
-	void PrimitiveModel::createBuffers() {
+	void PrimitiveModel::createBuffers(NugieVulkan::CommandBuffer *commandBuffer) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Primitive));
 		auto instanceCount = static_cast<uint32_t>(this->primitives.size());
 
@@ -45,7 +51,7 @@ namespace NugieApp {
 		primitiveStagingBuffer.map();
 		primitiveStagingBuffer.writeToBuffer(this->primitives.data());
 
-		this->primitiveBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->primitiveBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -53,7 +59,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->primitiveBuffer->copyFromAnotherBuffer(&primitiveStagingBuffer);
+		this->primitiveBuffer->copyFromAnotherBuffer(&primitiveStagingBuffer, commandBuffer);
 
 		// -------------------------------------------------
 
@@ -71,7 +77,7 @@ namespace NugieApp {
 		bvhStagingBuffer.map();
 		bvhStagingBuffer.writeToBuffer(this->bvhNodes.data());
 
-		this->bvhBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->bvhBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -79,10 +85,10 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer);
+		this->bvhBuffer->copyFromAnotherBuffer(&bvhStagingBuffer, commandBuffer);
 	}
 
-	/* std::shared_ptr<std::vector<Primitive>> PrimitiveModel::createPrimitivesFromFile(NugieVulkan::Device* device, const std::string &filePath, uint32_t materialIndex) {
+	/* std::vector<Primitive>> PrimitiveModel::createPrimitivesFromFile(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, const std::string &filePath, uint32_t materialIndex) {
 		tinyobj::attrib_t attrib;
 		std::vector<tinyobj::shape_t> shapes;
 		std::vector<tinyobj::material_t> materials;

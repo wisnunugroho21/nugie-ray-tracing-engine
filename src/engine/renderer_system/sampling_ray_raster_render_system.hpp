@@ -17,14 +17,14 @@
 namespace NugieApp {
 	class SamplingRayRasterRenderSystem {
 		public:
-			SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, NugieVulkan::RenderPass renderPass);
+			SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, NugieVulkan::RenderPass* renderPass);
 			~SamplingRayRasterRenderSystem();
 
 			void render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets, VertexModel* model, uint32_t randomSeed = 1);
 		
 		private:
-			void createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout);
-			void createPipeline(NugieVulkan::RenderPass renderPass);
+			void createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout);
+			void createPipeline(NugieVulkan::RenderPass* renderPass);
 
 			NugieVulkan::Device* device;
 			

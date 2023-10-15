@@ -16,7 +16,7 @@
 namespace NugieApp {
 	class IndirectSamplerStorageBuffer {
 		public:
-			IndirectSamplerStorageBuffer(NugieVulkan::Device* device, std::shared_ptr<std::vector<IndirectSamplerData>> datas);
+			IndirectSamplerStorageBuffer(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<IndirectSamplerData> datas);
 
 			std::vector<VkDescriptorBufferInfo> getBuffersInfo();
 
@@ -27,8 +27,8 @@ namespace NugieApp {
 			
 		private:
 			NugieVulkan::Device* device;
-			std::vector<std::unique_ptr<NugieVulkan::Buffer>> buffers;
+			std::vector<std::shared_ptr<NugieVulkan::Buffer>> buffers;
 
-			void createBuffers(std::shared_ptr<std::vector<IndirectSamplerData>> datas);
+			void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<IndirectSamplerData> datas);
 	};
 } // namespace NugieApp

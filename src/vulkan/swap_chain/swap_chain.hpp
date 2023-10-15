@@ -26,7 +26,7 @@ namespace NugieVulkan {
     size_t imageCount() const { return this->swapChainImages.size(); }
     uint32_t width() const { return this->swapChainExtent.width; }
     uint32_t height() const { return this->swapChainExtent.height; }
-    std::vector<Image*> getswapChainImages() const;
+    std::vector<Image*> getswapChainImages() const { return this->swapChainImages; }
 
     float extentAspectRatio() {
       return static_cast<float>(this->swapChainExtent.width) / static_cast<float>(this->swapChainExtent.height);
@@ -54,7 +54,7 @@ namespace NugieVulkan {
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
 
-    std::vector<std::unique_ptr<Image>> swapChainImages;
+    std::vector<Image*> swapChainImages;
 
     Device* device;
     VkExtent2D windowExtent;

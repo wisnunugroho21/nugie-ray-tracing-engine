@@ -10,7 +10,7 @@
 #include <string>
 
 namespace NugieApp {
-	IndirectSamplerRenderSystem::IndirectSamplerRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
+	IndirectSamplerRenderSystem::IndirectSamplerRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample) 
 		: device{device}, width{width}, height{height}, nSample{nSample}
 	{
 		this->createPipelineLayout(descriptorSetLayout);
@@ -21,13 +21,13 @@ namespace NugieApp {
 		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void IndirectSamplerRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
+	void IndirectSamplerRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(RayTracePushConstant);
 
-		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+		VkDescriptorSetLayout setLayout = descriptorSetLayout->getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;

@@ -12,7 +12,7 @@
 #include "../data/model/vertex_model.hpp"
 
 namespace NugieApp {
-	SamplingRayRasterRenderSystem::SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, NugieVulkan::RenderPass renderPass)
+	SamplingRayRasterRenderSystem::SamplingRayRasterRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, NugieVulkan::RenderPass* renderPass)
 		: device{device}
 	{
 		this->createPipelineLayout(descriptorSetLayout);
@@ -23,13 +23,13 @@ namespace NugieApp {
 		vkDestroyPipelineLayout(this->device->getLogicalDevice(), this->pipelineLayout, nullptr);
 	}
 
-	void SamplingRayRasterRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout) {
+	void SamplingRayRasterRenderSystem::createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout) {
 		VkPushConstantRange pushConstantRange{};
 		pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 		pushConstantRange.offset = 0;
 		pushConstantRange.size = sizeof(RayTracePushConstant);
 
-		VkDescriptorSetLayout setLayout = descriptorSetLayout.getDescriptorSetLayout();
+		VkDescriptorSetLayout setLayout = descriptorSetLayout->getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -43,7 +43,7 @@ namespace NugieApp {
 		}
 	}
 
-	void SamplingRayRasterRenderSystem::createPipeline(NugieVulkan::RenderPass renderPass) {
+	void SamplingRayRasterRenderSystem::createPipeline(NugieVulkan::RenderPass* renderPass) {
 		assert(this->pipelineLayout != nullptr && "Cannot create pipeline before pipeline layout");
 
 		this->pipeline = NugieVulkan::GraphicPipeline::Builder(this->device, renderPass, this->pipelineLayout)

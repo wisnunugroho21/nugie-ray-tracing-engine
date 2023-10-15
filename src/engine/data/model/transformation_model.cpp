@@ -8,12 +8,12 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	TransformationModel::TransformationModel(NugieVulkan::Device* device, std::vector<Transformation> transformations) : device{device} {
-		this->createBuffers(transformations);
+	TransformationModel::TransformationModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Transformation> transformations) : device{device} {
+		this->createBuffers(commandBuffer, transformations);
 	}
 
-	TransformationModel::TransformationModel(NugieVulkan::Device* device, std::vector<TransformComponent> transformationComponents) : device{device} {
-		this->createBuffers(this->convertToMatrix(transformationComponents));
+	TransformationModel::TransformationModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<TransformComponent> transformationComponents) : device{device} {
+		this->createBuffers(commandBuffer, this->convertToMatrix(transformationComponents));
 	}
 
 	std::vector<Transformation> TransformationModel::convertToMatrix(std::vector<TransformComponent> transformations) {
@@ -31,7 +31,7 @@ namespace NugieApp {
 		return newTransforms;
 	}
 
-	void TransformationModel::createBuffers(std::vector<Transformation> transformations) {
+	void TransformationModel::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Transformation> transformations) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(Transformation));
 		auto instanceCount = static_cast<uint32_t>(transformations.size());
 
@@ -46,7 +46,7 @@ namespace NugieApp {
 		transformationStagingBuffer.map();
 		transformationStagingBuffer.writeToBuffer(transformations.data());
 
-		this->transformationBuffer = std::make_unique<NugieVulkan::Buffer>(
+		this->transformationBuffer = std::make_shared<NugieVulkan::Buffer>(
 			this->device,
 			bufferSize,
 			instanceCount,
@@ -54,7 +54,7 @@ namespace NugieApp {
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 		);
 
-		this->transformationBuffer->copyFromAnotherBuffer(&transformationStagingBuffer);
+		this->transformationBuffer->copyFromAnotherBuffer(&transformationStagingBuffer, commandBuffer);
 	} 
 } // namespace NugieApp
 

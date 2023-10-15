@@ -15,13 +15,13 @@
 namespace NugieApp {
 	class MissRenderSystem {
 		public:
-			MissRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
+			MissRenderSystem(NugieVulkan::Device* device, NugieVulkan::DescriptorSetLayout* descriptorSetLayout, uint32_t width, uint32_t height, uint32_t nSample);
 			~MissRenderSystem();
 
 			void render(NugieVulkan::CommandBuffer* commandBuffer, VkDescriptorSet descriptorSets);
 
 		private:
-			void createPipelineLayout(NugieVulkan::DescriptorSetLayout descriptorSetLayout);
+			void createPipelineLayout(NugieVulkan::DescriptorSetLayout* descriptorSetLayout);
 			void createPipeline();
 
 			NugieVulkan::Device* device;

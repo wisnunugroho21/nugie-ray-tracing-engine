@@ -31,7 +31,7 @@ namespace NugieApp {
 
 	class VertexModel {
 	public:
-		VertexModel(NugieVulkan::Device* device, const VertexModelData &data);
+		VertexModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, const VertexModelData &data);
 
 		void bind(NugieVulkan::CommandBuffer* commandBuffer);
 		void draw(NugieVulkan::CommandBuffer* commandBuffer);
@@ -39,15 +39,15 @@ namespace NugieApp {
 	private:
 		NugieVulkan::Device* device;
 		
-		std::unique_ptr<NugieVulkan::Buffer> vertexBuffer;
+		std::shared_ptr<NugieVulkan::Buffer> vertexBuffer;
 		uint32_t vertextCount;
 
-		std::unique_ptr<NugieVulkan::Buffer> indexBuffer;
+		std::shared_ptr<NugieVulkan::Buffer> indexBuffer;
 		uint32_t indexCount;
 
 		bool hasIndexBuffer = false;
 
-		void createVertexBuffers(const std::vector<Vertex> &vertices);
-		void createIndexBuffer(const std::vector<uint32_t> &indices);
+		void createVertexBuffers(NugieVulkan::CommandBuffer *commandBuffer, const std::vector<Vertex> &vertices);
+		void createIndexBuffer(NugieVulkan::CommandBuffer *commandBuffer, const std::vector<uint32_t> &indices);
 	};
 } // namespace NugieApp

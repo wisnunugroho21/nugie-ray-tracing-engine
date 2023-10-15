@@ -8,6 +8,8 @@
 
 namespace NugieVulkan
 {
+  class Buffer;
+
   class Image
   {
     public:

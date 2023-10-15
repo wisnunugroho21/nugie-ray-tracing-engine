@@ -140,7 +140,7 @@ namespace NugieApp {
     return Aabb{ glm::min(box0.min, box1.min), glm::max(box0.max, box1.max) };
   }
 
-  Aabb objectListBoundingBox(std::vector<std::shared_ptr<BoundBox>> &objects) {
+  Aabb objectListBoundingBox(std::vector<BoundBox*> objects) {
     Aabb tempBox;
     Aabb outputBox;
     bool firstBox = true;

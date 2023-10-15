@@ -15,14 +15,14 @@
 namespace NugieApp {
 	class MaterialModel {
 		public:
-			MaterialModel(NugieVulkan::Device* device, std::vector<Material> materials);
+			MaterialModel(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<Material> materials);
 
 			VkDescriptorBufferInfo getMaterialInfo() { return this->materialBuffer->descriptorInfo();  }
 			
 		private:
 			NugieVulkan::Device* device;
-			std::unique_ptr<NugieVulkan::Buffer> materialBuffer;
+			std::shared_ptr<NugieVulkan::Buffer> materialBuffer;
 
-			void createBuffers(std::vector<Material> materials);
+			void createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<Material> materials);
 	};
 } // namespace NugieApp

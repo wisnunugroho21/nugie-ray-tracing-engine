@@ -3,7 +3,7 @@ message(STATUS "Local .env.cmake: ${LOCAL_ENV}")
 
 cmake_minimum_required(VERSION 3.24.0)
 
-set(NAME NugieEngine)
+set(NAME Nugie-Ray-Tracing-Engine)
 set(CMAKE_CXX_STANDARD 17)
 
 message(STATUS "using ${CMAKE_GENERATOR}")

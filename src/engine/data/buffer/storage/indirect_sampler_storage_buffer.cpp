@@ -8,8 +8,8 @@
 #include <glm/gtx/hash.hpp>
 
 namespace NugieApp {
-	IndirectSamplerStorageBuffer::IndirectSamplerStorageBuffer(NugieVulkan::Device* device, std::shared_ptr<std::vector<IndirectSamplerData>> datas) : device{device} {
-		this->createBuffers(datas);
+	IndirectSamplerStorageBuffer::IndirectSamplerStorageBuffer(NugieVulkan::Device* device, NugieVulkan::CommandBuffer *commandBuffer, std::vector<IndirectSamplerData> datas) : device{device} {
+		this->createBuffers(commandBuffer, datas);
 	}
 
 	std::vector<VkDescriptorBufferInfo> IndirectSamplerStorageBuffer::getBuffersInfo() {
@@ -22,9 +22,9 @@ namespace NugieApp {
 		return buffersInfo;
 	}
 
-	void IndirectSamplerStorageBuffer::createBuffers(std::shared_ptr<std::vector<IndirectSamplerData>> datas) {
+	void IndirectSamplerStorageBuffer::createBuffers(NugieVulkan::CommandBuffer *commandBuffer, std::vector<IndirectSamplerData> datas) {
 		auto bufferSize = static_cast<VkDeviceSize>(sizeof(IndirectSamplerData));
-		auto instanceCount = static_cast<uint32_t>(datas->size());
+		auto instanceCount = static_cast<uint32_t>(datas.size());
 		
 		this->buffers.clear();
 
@@ -38,9 +38,9 @@ namespace NugieApp {
 			};
 
 			stagingBuffer.map();
-			stagingBuffer.writeToBuffer(datas->data());
+			stagingBuffer.writeToBuffer(datas.data());
 
-			auto buffer = std::make_unique<NugieVulkan::Buffer>(
+			auto buffer = std::make_shared<NugieVulkan::Buffer>(
 				this->device,
 				bufferSize,
 				instanceCount,
@@ -48,7 +48,7 @@ namespace NugieApp {
 				VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 			);
 
-			buffer->copyFromAnotherBuffer(&stagingBuffer);
+			buffer->copyFromAnotherBuffer(&stagingBuffer, commandBuffer);
 			this->buffers.emplace_back(buffer);
 		}
 	}

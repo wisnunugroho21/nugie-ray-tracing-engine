@@ -359,7 +359,7 @@ namespace NugieVulkan {
     vkBindBufferMemory(this->device->getLogicalDevice(), this->buffer, this->memory, 0);
   }
 
-  void Buffer::copyFromAnotherBuffer(Buffer* srcBuffer, CommandBuffer* commandBuffer = nullptr) {
+  void Buffer::copyFromAnotherBuffer(Buffer* srcBuffer, CommandBuffer* commandBuffer) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
@@ -383,7 +383,7 @@ namespace NugieVulkan {
     }
   }
 
-  void Buffer::copyToAnotherBuffer(Buffer* destBuffer, CommandBuffer* commandBuffer = nullptr) {
+  void Buffer::copyToAnotherBuffer(Buffer* destBuffer, CommandBuffer* commandBuffer) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
@@ -407,7 +407,7 @@ namespace NugieVulkan {
     }
   }
 
-  void Buffer::copyBufferToImage(Image* destImage, CommandBuffer* commandBuffer = nullptr) {
+  void Buffer::copyBufferToImage(Image* destImage, CommandBuffer* commandBuffer) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {
@@ -447,7 +447,7 @@ namespace NugieVulkan {
     }
   }
 
-  void Buffer::copyImageToBuffer(Image* srcImage, CommandBuffer* commandBuffer = nullptr) {
+  void Buffer::copyImageToBuffer(Image* srcImage, CommandBuffer* commandBuffer) {
     bool isCommandBufferCreatedHere = false;
     
     if (commandBuffer == nullptr) {

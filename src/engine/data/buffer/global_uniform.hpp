@@ -20,7 +20,7 @@ namespace NugieApp {
 
 		private:
       NugieVulkan::Device* device;
-			std::vector<std::unique_ptr<NugieVulkan::Buffer>> uniformBuffers;
+			std::vector<std::shared_ptr<NugieVulkan::Buffer>> uniformBuffers;
 
 			void createUniformBuffer();
 	};
