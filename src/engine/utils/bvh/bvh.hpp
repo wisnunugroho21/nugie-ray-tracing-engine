@@ -5,7 +5,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../sort/sort.hpp"
 #include "../transform/transform.hpp"
 #include "../../ray_ubo.hpp"
 

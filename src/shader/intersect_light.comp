@@ -116,7 +116,7 @@ float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
   float tNear = max(max(t1.x, t1.y), t1.z);
   float tFar = min(min(t2.x, t2.y), t2.z);
 
-  return tNear <= tFar ? tNear : 1000000000000.0f;
+  return tNear <= tFar ? tNear : FLT_MAX;
 }
 
 // ------------- Triangle Light-------------
@@ -127,7 +127,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
   hit.dir = dirMax;
 
   BvhNode rootNode = lightBvhNodes[0u];
-  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) == 1000000000000.0f) {
+  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) == FLT_MAX) {
     return hit;
   }
 
@@ -167,8 +167,8 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     uint leftNodeIndex = curNode.leftNode;
     uint rightNodeIndex = curNode.rightNode;
 
-    float leftDist = 1000000000000.0f;
-    float rightDist = 1000000000000.0f;
+    float leftDist = FLT_MAX;
+    float rightDist = FLT_MAX;
 
     if (leftNodeIndex > 0u) {
       BvhNode leftNode = lightBvhNodes[leftNodeIndex - 1u];
@@ -180,33 +180,26 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       rightDist = intersectAABB(r, rightNode.minimum, rightNode.maximum);
     }
 
-    if (leftDist >= 1000000000000.0f) {
-      if (rightDist < 1000000000000.0f) {
-        stack[stackIndex] = rightNodeIndex;
-        stackIndex++;
-      }
-
+    if (leftDist == FLT_MAX && rightDist == FLT_MAX) {
       continue;
     }
-
-    if (rightDist >= 1000000000000.0f) {
-      stack[stackIndex] = leftNodeIndex;
-      stackIndex++;
+    
+    if (leftDist == FLT_MAX) {
+      stack[stackIndex++] = rightNodeIndex;
+      continue;
+    }
+    
+    if (rightDist == FLT_MAX) {
+      stack[stackIndex++] = leftNodeIndex;
       continue;
     }
 
     if (leftDist <= rightDist) {
-      stack[stackIndex] = rightNodeIndex;
-      stackIndex++;
-
-      stack[stackIndex] = leftNodeIndex;
-      stackIndex++;
+      stack[stackIndex++] = rightNodeIndex;
+      stack[stackIndex++] = leftNodeIndex;
     } else {
-      stack[stackIndex] = leftNodeIndex;
-      stackIndex++;
-
-      stack[stackIndex] = rightNodeIndex;
-      stackIndex++;
+      stack[stackIndex++] = leftNodeIndex;
+      stack[stackIndex++] = rightNodeIndex;
     }
   }
 

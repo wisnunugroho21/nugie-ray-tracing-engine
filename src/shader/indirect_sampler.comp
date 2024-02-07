@@ -43,7 +43,7 @@ void main() {
   rayData.ray.direction = isPrimaryRay ? rayDirection : samplerData.nextRay.direction;
 
   rayData.dirMin = 0.01f;
-  rayData.dirMax = vec3(1000000000000.0f);
+  rayData.dirMax = vec3(FLT_MAX);
   rayData.rayBounce = samplerData.rayBounce;
 
   objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;

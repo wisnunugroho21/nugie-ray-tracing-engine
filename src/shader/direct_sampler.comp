@@ -109,7 +109,7 @@ void main() {
   rayData.ray.origin = objectHit.point;
   rayData.ray.direction = isHitObject ? triangleRandomDirection(lights[lightIndex].indices, rayData.ray.origin, objectHit.rayBounce) : vec3(0.0f);
   rayData.dirMin = 0.01f;
-  rayData.dirMax = vec3(1000000000000.0f);
+  rayData.dirMax = vec3(FLT_MAX);
   rayData.rayBounce = objectHit.rayBounce;
 
   objectRayBuffer.rayDatas[gl_GlobalInvocationID.x] = rayData;
