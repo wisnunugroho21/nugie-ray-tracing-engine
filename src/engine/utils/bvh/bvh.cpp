@@ -119,11 +119,7 @@ namespace nugiEngine {
         return node;
       }
       
-      node.leftObjIndex = objects[0]->index;
-
-      if (objects.size() > 1) {
-        node.rightObjIndex = objects[1]->index;
-      }
+      node.objIndex = objects[0]->index;
     } else {
       node.leftNode = leftNodeIndex;
       node.rightNode = rightNodeIndex;
@@ -177,7 +173,7 @@ namespace nugiEngine {
   }
 
   float findPrimitiveSplitPosition(BvhItemBuild node, int axis, float length) {
-    float bestCost = 1000000000000.0f;
+    float bestCost = FLT_MAX;
     float splitPos = 0.0f;
 
     BvhBinSAH bvhBins[SPLIT_NUMBER];
@@ -258,9 +254,8 @@ namespace nugiEngine {
       size_t objectSpan = currentNode.objects.size();
       std::sort(currentNode.objects.begin(), currentNode.objects.end(), comparator);
 
-      if (objectSpan <= 2) {
+      if (objectSpan == 1) {
         intermediate.push_back(currentNode);
-        continue;
       } else {
         float length = currentNode.box.max[axis] - currentNode.box.min[axis];
         float splitPos = findPrimitiveSplitPosition(currentNode, axis, length); //  std::ceil(objectSpan / 2);

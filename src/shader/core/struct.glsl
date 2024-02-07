@@ -36,8 +36,7 @@ struct SunLight {
 struct BvhNode {
   uint leftNode;
   uint rightNode;
-  uint leftObjIndex;
-  uint rightObjIndex;
+  uint objIndex;
 
   vec3 maximum;
   vec3 minimum;

@@ -121,10 +121,6 @@ float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 }
 
 HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, uint firstPrimitiveIndex, uint transformIndex) {
-  HitRecord hit;
-  hit.isHit = false;
-  hit.dir = dirMax;
-
   Transformation curTransf = transformations[transformIndex];
   BvhNode curNode = primitiveBvhNodes[firstBvhIndex];
 
@@ -132,7 +128,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
   r.direction = mat3(curTransf.dirInverseMatrix) * r.direction;
 
   if (intersectAABB(r, curNode.minimum, curNode.maximum) >= FLT_MAX) {
-    return hit;
+    return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
   }
 
   uint stack[32];
@@ -149,33 +145,19 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
 
     curNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex];
 
-    uint primIndex = curNode.leftObjIndex;
+    uint primIndex = curNode.objIndex;
     if (primIndex >= 1u) {
       Primitive leftPrimitive = primitives[primIndex - 1u + firstPrimitiveIndex]; 
-      HitRecord tempHit = hitTriangle(leftPrimitive.indices, r, dirMin, hit.dir, transformIndex, leftPrimitive.materialIndex);
+      HitRecord hit = hitTriangle(leftPrimitive.indices, r, dirMin, dirMax, transformIndex, leftPrimitive.materialIndex);
 
-      if (tempHit.isHit) {
-        hit = tempHit;
+      if (hit.isHit) {
         hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
+        return hit;
       }
     }
 
-    primIndex = curNode.rightObjIndex;    
-    if (primIndex >= 1u) {
-      Primitive rightPrimitive = primitives[primIndex - 1u + firstPrimitiveIndex];
-      HitRecord tempHit = hitTriangle(rightPrimitive.indices, r, dirMin, hit.dir, transformIndex, rightPrimitive.materialIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = primIndex - 1u + firstPrimitiveIndex;
-      }
-    }
-
-    uint leftNodeIndex = curNode.leftNode;
-    uint rightNodeIndex = curNode.rightNode;
-
-    float leftDist = FLT_MAX;
-    float rightDist = FLT_MAX;
+    uint leftNodeIndex = curNode.leftNode, rightNodeIndex = curNode.rightNode;
+    float leftDist = FLT_MAX, rightDist = FLT_MAX;
 
     if (leftNodeIndex > 0u) {
       BvhNode leftNode = primitiveBvhNodes[leftNodeIndex - 1u + firstBvhIndex];
@@ -210,17 +192,14 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     }
   }
 
-  return hit;
+  return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
 }
 
 HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
-  HitRecord hit;
-  hit.isHit = false;
-  hit.dir = dirMax;
-
   BvhNode curNode = objectBvhNodes[0u];
+  
   if (intersectAABB(r, curNode.minimum, curNode.maximum) >= FLT_MAX) {
-    return hit;
+    return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
   }
 
   uint stack[30];
@@ -236,31 +215,18 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 
     curNode = objectBvhNodes[currentNode - 1u];
 
-    uint objIndex = curNode.leftObjIndex;
+    uint objIndex = curNode.objIndex;
     if (objIndex >= 1u) {
       Object leftObject = objects[objIndex - 1u];
-      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, leftObject.firstBvhIndex, leftObject.firstPrimitiveIndex, leftObject.transformIndex);
+      HitRecord hit = hitPrimitiveBvh(r, dirMin, dirMax, leftObject.firstBvhIndex, leftObject.firstPrimitiveIndex, leftObject.transformIndex);
 
-      if (tempHit.isHit) {
-        hit = tempHit;
+      if (hit.isHit) {
+        return hit;
       }
     }
 
-    objIndex = curNode.rightObjIndex;
-    if (objIndex >= 1u) {
-      Object rightObject = objects[objIndex - 1u];
-      HitRecord tempHit = hitPrimitiveBvh(r, dirMin, hit.dir, rightObject.firstBvhIndex, rightObject.firstPrimitiveIndex, rightObject.transformIndex);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-      }
-    }
-
-    uint leftNodeIndex = curNode.leftNode;
-    uint rightNodeIndex = curNode.rightNode;
-
-    float leftDist = FLT_MAX;
-    float rightDist = FLT_MAX;
+    uint leftNodeIndex = curNode.leftNode, rightNodeIndex = curNode.rightNode;
+    float leftDist = FLT_MAX, rightDist = FLT_MAX;
 
     if (leftNodeIndex > 0u) {
       BvhNode leftNode = objectBvhNodes[leftNodeIndex - 1u];
@@ -295,7 +261,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     }
   }
 
-  return hit;
+  return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
 }
 
 void main() {

@@ -122,13 +122,10 @@ float intersectAABB(Ray r, vec3 boxMin, vec3 boxMax) {
 // ------------- Triangle Light-------------
 
 HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
-  HitRecord hit;
-  hit.isHit = false;
-  hit.dir = dirMax;
+  BvhNode curNode = lightBvhNodes[0u];
 
-  BvhNode rootNode = lightBvhNodes[0u];
-  if (intersectAABB(r, rootNode.minimum, rootNode.maximum) == FLT_MAX) {
-    return hit;
+  if (intersectAABB(r, curNode.minimum, curNode.maximum) == FLT_MAX) {
+    return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
   }
 
   uint stack[30];
@@ -142,33 +139,20 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
       continue;
     }
 
-    BvhNode curNode = lightBvhNodes[currentNode - 1u];
+    curNode = lightBvhNodes[currentNode - 1u];
 
-    uint lightIndex = curNode.leftObjIndex;
+    uint lightIndex = curNode.objIndex;
     if (lightIndex >= 1u) {
-      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
+      HitRecord hit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, dirMax);
 
-      if (tempHit.isHit) {
-        hit = tempHit;
+      if (hit.isHit) {
         hit.hitIndex = lightIndex - 1u;
+        return hit;
       }
     }
 
-    lightIndex = curNode.rightObjIndex;    
-    if (lightIndex >= 1u) {
-      HitRecord tempHit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, hit.dir);
-
-      if (tempHit.isHit) {
-        hit = tempHit;
-        hit.hitIndex = lightIndex - 1u;
-      }
-    }
-
-    uint leftNodeIndex = curNode.leftNode;
-    uint rightNodeIndex = curNode.rightNode;
-
-    float leftDist = FLT_MAX;
-    float rightDist = FLT_MAX;
+    uint leftNodeIndex = curNode.leftNode, rightNodeIndex = curNode.rightNode;
+    float leftDist = FLT_MAX, rightDist = FLT_MAX;
 
     if (leftNodeIndex > 0u) {
       BvhNode leftNode = lightBvhNodes[leftNodeIndex - 1u];
@@ -203,7 +187,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     }
   }
 
-  return hit;
+  return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
 }
 
 void main() {
