@@ -133,8 +133,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
 
   int stackIndex = 1;
   while(stackIndex > 0 && stackIndex <= 30) {
-    stackIndex--;
-    uint currentNode = stack[stackIndex];
+    uint currentNode = stack[--stackIndex];
     if (currentNode == 0u) {
       continue;
     }
@@ -142,7 +141,7 @@ HitRecord hitTriangleLightBvh(Ray r, float dirMin, vec3 dirMax) {
     curNode = lightBvhNodes[currentNode - 1u];
 
     uint lightIndex = curNode.objIndex;
-    if (lightIndex >= 1u) {
+    if (lightIndex > 0u) {
       HitRecord hit = hitTriangleLight(lights[lightIndex - 1u].indices, r, dirMin, dirMax);
 
       if (hit.isHit) {

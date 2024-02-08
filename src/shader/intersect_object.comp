@@ -137,8 +137,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
   int stackIndex = 1;
 
   while(stackIndex > 0 && stackIndex <= 30) {
-    stackIndex--;
-    uint currentNode = stack[stackIndex];
+    uint currentNode = stack[--stackIndex];
     if (currentNode == 0u) {
       continue;
     }
@@ -146,7 +145,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
     curNode = primitiveBvhNodes[currentNode - 1u + firstBvhIndex];
 
     uint primIndex = curNode.objIndex;
-    if (primIndex >= 1u) {
+    if (primIndex > 0u) {
       Primitive leftPrimitive = primitives[primIndex - 1u + firstPrimitiveIndex]; 
       HitRecord hit = hitTriangle(leftPrimitive.indices, r, dirMin, dirMax, transformIndex, leftPrimitive.materialIndex);
 
@@ -197,7 +196,7 @@ HitRecord hitPrimitiveBvh(Ray r, float dirMin, vec3 dirMax, uint firstBvhIndex, 
 
 HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
   BvhNode curNode = objectBvhNodes[0u];
-  
+
   if (intersectAABB(r, curNode.minimum, curNode.maximum) >= FLT_MAX) {
     return HitRecord(false, 0u, 0u, 0u, vec3(0.0f), vec3(0.0f), vec3(0.0f), vec2(0.0f));
   }
@@ -207,8 +206,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
 
   int stackIndex = 1;
   while(stackIndex > 0 && stackIndex <= 30) {
-    stackIndex--;
-    uint currentNode = stack[stackIndex];
+    uint currentNode = stack[--stackIndex];
     if (currentNode == 0u) {
       continue;
     }
@@ -216,7 +214,7 @@ HitRecord hitObjectBvh(Ray r, float dirMin, vec3 dirMax) {
     curNode = objectBvhNodes[currentNode - 1u];
 
     uint objIndex = curNode.objIndex;
-    if (objIndex >= 1u) {
+    if (objIndex > 0u) {
       Object leftObject = objects[objIndex - 1u];
       HitRecord hit = hitPrimitiveBvh(r, dirMin, dirMax, leftObject.firstBvhIndex, leftObject.firstPrimitiveIndex, leftObject.transformIndex);
 
